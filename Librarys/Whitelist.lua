@@ -37,6 +37,25 @@ local function hashClientIP()
     return HashFunction(clientIP)
 end
 
+local function decodeWhitelistData(data)
+    return game:GetService("HttpService"):JSONDecode(data)
+end
+
+local function fetchWhitelistData()
+    local success, response = pcall(function()
+        local response = requestfunc({
+            Url = "https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/ez.json",
+            Method = "GET"
+        })
+        return response and response.Body
+    end)
+    if success then
+        Whitelist = decodeWhitelistData(response) or {}
+    end
+end
+
+fetchWhitelistData()
+
 local ChatTagModule = {}
 local hashedClientIP = hashClientIP()
 ChatTagModule.hashedClientIP = hashedClientIP
@@ -123,24 +142,5 @@ function ChatTagModule.update_tag_meta()
     end
     return ChatTag
 end
-
-local function decodeWhitelistData(data)
-    return game:GetService("HttpService"):JSONDecode(data)
-end
-
-local function fetchWhitelistData()
-    local success, response = pcall(function()
-        local response = requestfunc({
-            Url = "https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/ez.json",
-            Method = "GET"
-        })
-        return response and response.Body
-    end)
-    if success then
-        Whitelist = decodeWhitelistData(response) or {}
-    end
-end
-
-fetchWhitelistData()
 
 return ChatTagModule

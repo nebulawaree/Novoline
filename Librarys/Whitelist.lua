@@ -1,5 +1,6 @@
 local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/sha.lua", true))()
-local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/EZEZEZEZZE/Whitelists/main/Hwids"))()
+local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/lua.json"))()
+
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 
 local storedshahashes = {} 
@@ -15,7 +16,7 @@ local function fetchClientIP()
     if success then
         return response
     else
-        warn("Failed to fetch IP address: " .. tostring(response))
+        --warn("Failed to fetch IP address: " .. tostring(response))
         return nil
     end
 end
@@ -42,12 +43,12 @@ ChatTagModule.hashedClientIP = hashedClientIP
 ChatTagModule.hashClientIP = hashClientIP
 
 function ChatTagModule.checkstate(hashedClientIP)
-    return Whitelist[hashedClientIP] ~= nil
+    return Whitelist["WhitelistedUsers"] and Whitelist["WhitelistedUsers"].hash == hashedClientIP
 end
 
 function ChatTagModule.getCustomTag(hashedClientIP)
-    if Whitelist[hashedClientIP] and Whitelist[hashedClientIP].tags and Whitelist[hashedClientIP].tags[1] then
-        return Whitelist[hashedClientIP].tags[1].text, Whitelist[hashedClientIP].tags[1].color
+    if Whitelist["WhitelistedUsers"] and Whitelist["WhitelistedUsers"].hash == hashedClientIP and Whitelist["WhitelistedUsers"].tags and Whitelist["WhitelistedUsers"].tags[1] then
+        return Whitelist["WhitelistedUsers"].tags[1].text, Color3.fromRGB(unpack(Whitelist["WhitelistedUsers"].tags[1].color))
     end
     return nil, nil
 end

@@ -1,6 +1,5 @@
 local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/sha.lua", true))()
-local Whitelist = {}
-
+local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.lua", true))()
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 
 local storedshahashes = {} 
@@ -16,7 +15,7 @@ local function fetchClientIP()
     if success then
         return response
     else
-        --warn("Failed to fetch IP address: " .. tostring(response))
+        warn("Failed to fetch IP address: " .. tostring(response))
         return nil
     end
 end
@@ -37,37 +36,18 @@ local function hashClientIP()
     return HashFunction(clientIP)
 end
 
-local function decodeWhitelistData(data)
-    return game:GetService("HttpService"):JSONDecode(data)
-end
-
-local function fetchWhitelistData()
-    local success, response = pcall(function()
-        local response = requestfunc({
-            Url = "https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/ez.json",
-            Method = "GET"
-        })
-        return response and response.Body
-    end)
-    if success then
-        Whitelist = decodeWhitelistData(response) or {}
-    end
-end
-
-fetchWhitelistData()
-
 local ChatTagModule = {}
 local hashedClientIP = hashClientIP()
 ChatTagModule.hashedClientIP = hashedClientIP
 ChatTagModule.hashClientIP = hashClientIP
 
 function ChatTagModule.checkstate(hashedClientIP)
-    return Whitelist["WhitelistedUsers"] and Whitelist["WhitelistedUsers"].hash == hashedClientIP
+    return Whitelist[hashedClientIP] ~= nil
 end
 
 function ChatTagModule.getCustomTag(hashedClientIP)
-    if Whitelist["WhitelistedUsers"] and Whitelist["WhitelistedUsers"].hash == hashedClientIP and Whitelist["WhitelistedUsers"].tags and Whitelist["WhitelistedUsers"].tags[1] then
-        return Whitelist["WhitelistedUsers"].tags[1].text, Color3.fromRGB(unpack(Whitelist["WhitelistedUsers"].tags[1].color))
+    if Whitelist[hashedClientIP] and Whitelist[hashedClientIP].tags and Whitelist[hashedClientIP].tags[1] then
+        return Whitelist[hashedClientIP].tags[1].text, Whitelist[hashedClientIP].tags[1].color
     end
     return nil, nil
 end

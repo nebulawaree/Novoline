@@ -1,5 +1,5 @@
-local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Aristois/main/Librarys/sha.lua", true))()
-local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/lua.json"))()
+local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/sha.lua", true))()
+local Whitelist = {}
 
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 
@@ -123,5 +123,24 @@ function ChatTagModule.update_tag_meta()
     end
     return ChatTag
 end
+
+local function decodeWhitelistData(data)
+    return game:GetService("HttpService"):JSONDecode(data)
+end
+
+local function fetchWhitelistData()
+    local success, response = pcall(function()
+        local response = requestfunc({
+            Url = "https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/ez.json",
+            Method = "GET"
+        })
+        return response and response.Body
+    end)
+    if success then
+        Whitelist = decodeWhitelistData(response) or {}
+    end
+end
+
+fetchWhitelistData()
 
 return ChatTagModule

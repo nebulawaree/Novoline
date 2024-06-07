@@ -1,4 +1,5 @@
 local queueonteleport = (syn and syn.queue_on_teleport) or queue_for_teleport or queue_on_teleport or queueonteleport
+shared.ReadFile = true
 
 if not isfolder("Aristois") then
     makefolder("Aristois")
@@ -90,7 +91,6 @@ end
 local BedWarsgame = table.find(bedwarsidtable, placeid)
 local BridgeDuelgame = table.find(bridgeduelidtable, placeid)
 
-shared.ReadFile = true
 shared.AristoisPlaceId = ""
 
 if BedWarsgame then 
@@ -126,5 +126,5 @@ else
 end
 
 if queueonteleport then
-    queueonteleport('loadstring(readfile("Aristois/NewMainScript.lua"))()')
+   queueonteleport('loadstring(readfile("Aristois/NewMainScript.lua"))()')
 end

@@ -89,7 +89,7 @@ local Window = GuiLibrary:CreateWindow({
     ConfigurationSaving = {
        Enabled = true,
        FolderName = "Aristois/configs",
-       FileName = tostring(shared.AristoisPlaceId) .. ".lua"
+       FileName = tostring(game.PlaceId) .. ".lua"
     },
     Discord = {
        Enabled = false,

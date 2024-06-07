@@ -19,10 +19,10 @@ local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserIn
 
 local Table = {
     ChatStrings1 = {
-        ["KVOP25KYFPPP4"] = "Aristois",
+        ["HYPE73WZNQRT5"] = "Aristois",
     },
     ChatStrings2 = {
-        ["Aristois"] = "KVOP25KYFPPP4",
+        ["Aristois"] = "HYPE73WZNQRT5",
     },
     checkedPlayers = {},
     Box = function()

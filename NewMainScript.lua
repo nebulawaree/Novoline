@@ -17,7 +17,7 @@ if not isfolder("Aristois/assets") then
 end
 
 local function fetchLatestCommit()
-    local response = game:HttpGet("https://api.github.com/repos/EZEZEZEZZE/Aristois/commits")
+    local response = game:HttpGet("https://api.github.com/repos/XzynAstralz/Aristois/commits")
     local commits = game:GetService("HttpService"):JSONDecode(response)
     if commits and #commits > 0 then
         return commits[1].sha
@@ -62,7 +62,7 @@ local bridgeduelidtable = {
 }
 
 local function updateFiles(commitHash)
-    local baseUrl = "https://raw.githubusercontent.com/EZEZEZEZZE/Aristois/" .. commitHash .. "/"
+    local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
     local filesToUpdate = {
         "NewMainScript.lua", 
         "GuiLibrary.lua", 
@@ -110,7 +110,7 @@ if shared.AristoisPlaceId == 6872274481 or shared.AristoisPlaceId == 11630038968
     if shared.ReadFile then
         loadstring(readfile("Aristois/Games/" .. shared.AristoisPlaceId .. ".lua"))()
     else
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/EZEZEZEZZE/Aristois/main/Games/" .. shared.AristoisPlaceId .. ".lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Aristois/main/Games/" .. shared.AristoisPlaceId .. ".lua"))()
     end
 else
     local placeFilePrivate = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
@@ -120,7 +120,7 @@ else
         if shared.ReadFile then
             loadstring(readfile("Aristois/Universal.lua"))()
         else
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/EZEZEZEZZE/Aristois/main/Universal.lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Aristois/main/Universal.lua"))()
         end
     end
 end

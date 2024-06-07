@@ -1,5 +1,4 @@
 local queueonteleport = (syn and syn.queue_on_teleport) or queue_for_teleport or queue_on_teleport or queueonteleport
-shared.ReadFile = true
 
 if not isfolder("Aristois") then
     makefolder("Aristois")
@@ -114,7 +113,7 @@ if shared.AristoisPlaceId == 6872274481 or shared.AristoisPlaceId == 11630038968
     end
 else
     local placeFilePrivate = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
-    if fileExists(placeFilePrivate) then
+    if isfile(placeFilePrivate) then
         loadstring(readfile(placeFilePrivate))()
     else
         if shared.ReadFile then

@@ -672,7 +672,7 @@ runcode(function()
                     if IsAlive(lplr) then
                         if nearest then
                             local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                            if distanceToNearest <= 18 then
+                            if distanceToNearest <= 25 then
                                 if not clonedStatsGui then
                                     clonedStatsGui = StatsGuiTemplate:Clone()
                                     clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)

@@ -404,7 +404,7 @@ runcode(function()
     })
     local KillauraDistance = Blatant:CreateSlider({
         Name = "Distance",
-        Range = {1, 32},
+        Range = {1, 50},
         Increment = 1,
         Suffix = "Studs",
         CurrentValue = 32,
@@ -820,6 +820,115 @@ runcode(function()
 end)
 
 runcode(function()
+    local StatsGuiTemplate = game:GetObjects("rbxassetid://17778819925")[1]
+    local clonedStatsGui = nil
+
+    local function UpdateHealthBar(fill, currentHealth, maxHealth)
+        fill.Size = UDim2.new(currentHealth / maxHealth, 0, 1, 0)
+    end
+
+    local function UpdateHpText(Hp, currentHealth)
+        Hp.Text = tostring(math.floor(currentHealth + 0.5)) .. "%"
+    end
+
+    local function SetPlayerIcon(Playericon, player)
+        local userId = player.UserId
+        local thumbType = Enum.ThumbnailType.HeadShot
+        local thumbSize = Enum.ThumbnailSize.Size420x420
+        local content, isReady = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+        if isReady then
+            Playericon.Image = content
+        end
+    end
+
+    local DisplayNames = {Enabled = false}
+    local TargethubToggle = Utility:CreateToggle({
+        Name = "TargetHub",
+        CurrentValue = false,
+        Flag = "TargetHub",
+        Callback = function(callback)
+            if callback then
+                RunLoops:BindToHeartbeat("TargetHub", function()
+                    if IsAlive(lplr) then
+                        if nearest then
+                            local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                            if distanceToNearest <= 18 then
+                                if not clonedStatsGui then
+                                    clonedStatsGui = StatsGuiTemplate:Clone()
+                                    clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
+                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
+                                    clonedStatsGui.Size = UDim2.new(0, 1000, 0, 100)
+                                    clonedStatsGui.CanvasGroup.Content.Position = UDim2.new(0, 0, 0, 0)
+                                    local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
+                                    local username = clonedStatsGui.CanvasGroup.Content.username
+                                    SetPlayerIcon(Playericon, nearest)
+                                    if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
+                                        local Health = clonedStatsGui.CanvasGroup.Content.Health
+                                        local bar = Health.bar
+                                        local fill = bar.fill
+                                        local Hp = clonedStatsGui.CanvasGroup.Content.Hp
+                                        local maxHealth = nearest.Character.Humanoid.MaxHealth
+                                        local currentHealth = nearest.Character.Humanoid.Health
+                                        UpdateHpText(Hp, currentHealth)
+                                        UpdateHealthBar(fill, currentHealth, maxHealth)
+                                        username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
+                                    end
+                                else
+                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
+                                    if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
+                                        local Health = clonedStatsGui.CanvasGroup.Content.Health
+                                        local bar = Health.bar
+                                        local fill = bar.fill
+                                        local Hp = clonedStatsGui.CanvasGroup.Content.Hp
+                                        local maxHealth = nearest.Character.Humanoid.MaxHealth
+                                        local currentHealth = nearest.Character.Humanoid.Health
+                                        UpdateHpText(Hp, currentHealth)
+                                        UpdateHealthBar(fill, currentHealth, maxHealth)
+                                        local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
+                                        SetPlayerIcon(Playericon, nearest)
+                                        local username = clonedStatsGui.CanvasGroup.Content.username
+                                        username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
+                                    end
+                                end
+                            else
+                                if clonedStatsGui then
+                                    clonedStatsGui:Destroy()
+                                    clonedStatsGui = nil
+                                end
+                            end
+                        else
+                            if clonedStatsGui then
+                                clonedStatsGui:Destroy()
+                                clonedStatsGui = nil
+                            end
+                        end
+                    else
+                        if clonedStatsGui then
+                            clonedStatsGui:Destroy()
+                            clonedStatsGui = nil
+                        end
+                    end
+                end)
+            else
+                RunLoops:UnbindFromHeartbeat("TargetHub")
+                if clonedStatsGui then
+                    clonedStatsGui:Destroy()
+                    clonedStatsGui = nil
+                end
+            end
+        end
+    })
+    local DisplayNamesToggle = Utility:CreateToggle({
+        Name = "DisplayNames",
+        CurrentValue = false,
+        Flag = "DisplayNames",
+        Callback = function(val)
+            DisplayNames.Enabled = val
+        end
+    })
+end)
+
+runcode(function()
     local Section = Utility:CreateSection("NameTags", true)
     local espfolder = Instance.new("Folder", ScreenGui)
     espfolder.Name = "ESP"
@@ -954,7 +1063,7 @@ runcode(function()
         Callback = function(callback)
             enabled = callback
             if callback then
-                RunLoops:BindToHeartbeat("NameTags", function(dt)
+                RunLoops:BindToHeartbeat("Utility", function(dt)
                     for _, player in ipairs(game.Players:GetPlayers()) do 
                         if player.Character then
                             if not nametags[player] then
@@ -971,7 +1080,7 @@ runcode(function()
                     end
                 end)
             else
-                RunLoops:UnbindFromHeartbeat("NameTags")
+                RunLoops:UnbindFromHeartbeat("Utility")
                 espfolder:ClearAllChildren()
                 for player, tag in pairs(nametags) do
                     if tag then
@@ -1016,122 +1125,6 @@ runcode(function()
         Callback = function(val)
             esphealth = val
             updateAllNametags()
-        end
-    })
-    local ColorPicker = Utility:CreateColorPicker({
-        Name = "Color Picker",
-        Info = 'info or description',
-        SectionParent = Section, 
-        Color = Color3.fromRGB(2,255,255),
-        Flag = "ColorPicker1",
-        Callback = function(Value)
-        end
-    })
-end)
-
-runcode(function()
-    local Section = Utility:CreateSection("TargetHub", true)
-    local StatsGuiTemplate = game:GetObjects("rbxassetid://17778819925")[1] 
-    local clonedStatsGui = nil
-    local function UpdateHealthBar(fill, currentHealth, maxHealth)
-        fill.Size = UDim2.new(currentHealth / maxHealth, 0, 1, 0)
-    end
-
-    local function UpdateHpText(Hp, currentHealth)
-        Hp.Text = tostring(math.floor(currentHealth + 0.5)) .. "%"
-    end
-
-    local function SetPlayerIcon(Playericon, player)
-        local userId = player.UserId
-        local thumbType = Enum.ThumbnailType.HeadShot
-        local thumbSize = Enum.ThumbnailSize.Size420x420
-        local content, isReady = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
-        if isReady then
-            Playericon.Image = content
-        end
-    end
-    local DisplayNames = {Enabled = false}
-    local TargethubToggle = Utility:CreateToggle({
-        Name = "TargetHub",
-        CurrentValue = false,
-        Flag = "TargetHub",
-        Callback = function(callback)
-            if callback then
-                RunLoops:BindToHeartbeat("TargetHub", function()
-                    if IsAlive(lplr) then
-                        if nearest then
-                            local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                            if distanceToNearest <= 18 then
-                                if not clonedStatsGui then
-                                    clonedStatsGui = StatsGuiTemplate:Clone()
-                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart 
-                                    clonedStatsGui.Size = UDim2.new(0, 1000, 0, 100) 
-                                    clonedStatsGui.CanvasGroup.Content.Position = UDim2.new(0, 0, 0, 0)
-                                    local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
-                                    local username = clonedStatsGui.CanvasGroup.Content.username
-                                    SetPlayerIcon(Playericon, nearest)
-                                    if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
-                                        local Health = clonedStatsGui.CanvasGroup.Content.Health
-                                        local bar = Health.bar
-                                        local fill = bar.fill
-                                        local Hp = clonedStatsGui.CanvasGroup.Content.Hp
-                                        local maxHealth = nearest.Character.Humanoid.MaxHealth
-                                        local currentHealth = nearest.Character.Humanoid.Health
-                                        UpdateHpText(Hp, currentHealth)
-                                        UpdateHealthBar(fill, currentHealth, maxHealth)
-                                        username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
-                                    end 
-                                else
-                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
-                                    if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
-                                        local Health = clonedStatsGui.CanvasGroup.Content.Health
-                                        local bar = Health.bar
-                                        local fill = bar.fill
-                                        local Hp = clonedStatsGui.CanvasGroup.Content.Hp
-                                        local maxHealth = nearest.Character.Humanoid.MaxHealth
-                                        local currentHealth = nearest.Character.Humanoid.Health
-                                        UpdateHpText(Hp, currentHealth)
-                                        UpdateHealthBar(fill, currentHealth, maxHealth)
-                                        local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
-                                        SetPlayerIcon(Playericon, nearest)
-                                        local username = clonedStatsGui.CanvasGroup.Content.username
-                                        username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
-                                    end 
-                                end                         
-                            else
-                                if clonedStatsGui then
-                                    clonedStatsGui:Destroy()
-                                    clonedStatsGui = nil
-                                end
-                            end
-                        else
-                            if clonedStatsGui then
-                                clonedStatsGui:Destroy()
-                                clonedStatsGui = nil
-                            end
-                        end
-                    else
-                        if clonedStatsGui then
-                            clonedStatsGui:Destroy()
-                            clonedStatsGui = nil
-                        end
-                    end
-                end)
-            else
-                RunLoops:UnbindFromHeartbeat("TargetHub")
-                if clonedStatsGui then
-                    clonedStatsGui:Destroy()
-                    clonedStatsGui = nil
-                end
-            end
-        end
-    })
-    local DisplayNamesToggle = Utility:CreateToggle({
-        Name = "DisplayNames",
-        CurrentValue = false,
-        Flag = "DisplayNames",
-        Callback = function(val)
-            DisplayNames.Enabled = val
         end
     })
 end)

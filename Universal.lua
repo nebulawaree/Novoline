@@ -977,32 +977,35 @@ runcode(function()
 end)
 
 Players.PlayerAdded:Connect(function(player)
-    if CheckPlayerType(WhitelistModule.hashedClientIP) == "PRIVATE" then
-        local chatStrings = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") or TextChatService
+    if CheckPlayerType(player) == "PRIVATE" then
+        local replicatedStorage = game:GetService("ReplicatedStorage")
+        local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. clients.ChatStrings2.Aristois, "All")
+            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
-    if CheckPlayerType(v) == "PRIVATE" then
-        local chatStrings = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") or TextChatService
+    if CheckPlayerType(player) == "PRIVATE" then
+        local replicatedStorage = game:GetService("ReplicatedStorage")
+        local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. clients.ChatStrings2.Aristois, "All")
+            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end
 
 if lplr then
-    local whitelisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
-    if whitelisted then
-        local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") or TextChatService
+    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
+    if weightlisted then
+        local players, replicatedStorage = game:GetService("Players"), game:GetService("ReplicatedStorage")
+        local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
         if onMessageDoneFiltering then
             onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-                local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                if messageData.MessageType == "Whisper" and message == clients.ChatStrings2.Aristois then
+                local speaker, message = players[messageData.FromSpeaker], messageData.Message
+                if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                     GuiLibrary:Notify({
                         Title = "Aristois",
                         Content = messageData.FromSpeaker .. " is using Aristois!",

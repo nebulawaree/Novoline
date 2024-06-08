@@ -1232,21 +1232,21 @@ runcode(function()
 end)
 
 Players.PlayerAdded:Connect(function(player)
-    if CheckPlayerType(WhitelistModule.hashedClientIP) == "PRIVATE" then
+    if CheckPlayerType(player) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. clients.ChatStrings2.Aristois, "All")
+            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
-    if CheckPlayerType(v) == "PRIVATE" then
+    if CheckPlayerType(player) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. clients.ChatStrings2.Aristois, "All")
+            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end
@@ -1260,7 +1260,7 @@ if lplr then
         if onMessageDoneFiltering then
             onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                 local speaker, message = players[messageData.FromSpeaker], messageData.Message
-                if messageData.MessageType == "Whisper" and message == clients.ChatStrings2.Aristois then
+                if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                     GuiLibrary:Notify({
                         Title = "Aristois",
                         Content = messageData.FromSpeaker .. " is using Aristois!",
@@ -1280,6 +1280,7 @@ if lplr then
         end
     end
 end
+
 
 WhitelistModule.update_tag_meta()
 GuiLibrary:LoadConfiguration()

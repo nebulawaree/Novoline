@@ -559,7 +559,7 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("DeviceSpoofer", true)
+    local Section = Utility:CreateSection("DeviceSpoofer", true)
     local selectedDevices = {Enum.Platform.Windows}
 
     local DeviceSpoofer = Utility:CreateToggle({

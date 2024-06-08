@@ -36,15 +36,55 @@ local Table = {
     end
 }
 
-local function CheckPlayerType(player)
-    local hashedIP = WhitelistModule.hashClientIP()
-    if WhitelistModule.checkstate(hashedIP) then
+local checkedPlayers_mt = {
+    __metatable = "Locked"
+}
+local WhitelistModule_mt = {
+    __metatable = "Locked"
+}
+
+function Table.CheckPlayerType(plr)
+    if not plr then
+        return "UNKNOWN"
+    end
+
+    if getmetatable(Table.checkedPlayers) then
+        return "UNKNOWN"
+    end
+    
+    if getmetatable(WhitelistModule) then
+        return "UNKNOWN"
+    end
+    
+    if Table.checkedPlayers[plr] then
+        return "PRIVATE"
+    end
+    
+    if not WhitelistModule or not WhitelistModule.checkstate then
+        return "UNKNOWN"
+    end
+    
+    if type(WhitelistModule.checkstate) ~= "function" then
+        return "UNKNOWN"
+    end
+    
+    if getmetatable(WhitelistModule.checkstate) then
+        return "UNKNOWN"
+    end
+
+    if WhitelistModule.checkstate(plr) then
+        Table.checkedPlayers[plr] = true 
         return "PRIVATE"
     else
-        return "PUBLIC"
+        return "DEFAULT"
     end
 end
 
+setmetatable(Table.checkedPlayers, checkedPlayers_mt)
+
+setmetatable(WhitelistModule, WhitelistModule_mt)
+
+local CheckPlayerType = Table.CheckPlayerType
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
 
 local Window = GuiLibrary:CreateWindow({

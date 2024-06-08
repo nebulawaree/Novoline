@@ -10,8 +10,8 @@ local bridgeduelidtable = {
     11630038968
 }
 
-local BedWarsgame = table.find(bedwarsidtable, placeid)
-local BridgeDuelgame = table.find(bridgeduelidtable, placeid)
+local BedWarsgame = table.find(bedwarsidtable, game.PlaceId)
+local BridgeDuelgame = table.find(bridgeduelidtable, game.PlaceId)
 shared.AristoisPlaceId = ""
 shared.SwitchServers = false 
 

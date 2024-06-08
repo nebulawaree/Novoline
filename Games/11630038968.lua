@@ -699,13 +699,10 @@ runcode(function()
     local Section = Blatant:CreateSection("AutoWin", true)
     local minY = -153.3984832763672
     local maxY = -12.753118515014648
-
     local speed = {["Value"] = 27}
-
     local function getNearestPlayer(radius)
         local closestPlayer = nil
         local closestDistance = radius
-
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= lplr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                 local playerY = player.Character.HumanoidRootPart.Position.Y
@@ -718,7 +715,6 @@ runcode(function()
                 end
             end
         end
-
         return closestPlayer
     end
 
@@ -743,6 +739,7 @@ runcode(function()
             end
         end
     end
+        
     local function randomString()
         local char = lplr.Character
         local length = math.random(10, 20)
@@ -752,6 +749,7 @@ runcode(function()
         end
         return table.concat(array)
     end
+        
     local initialCollideStates = {}
     local AutoWinToggle = Blatant:CreateToggle({
         Name = "AutoWin",
@@ -768,7 +766,7 @@ runcode(function()
                         end
                     end
                 end)
-                if initialCollideStates == nil then
+                if next(initialCollideStates) == nil then
                     initialCollideStates = {}
                     for _, part in pairs(workspace:GetDescendants()) do
                         if part:IsA("BasePart") then
@@ -776,7 +774,6 @@ runcode(function()
                         end
                     end
                 end
-
                 RunLoops:BindToHeartbeat("DisableCollision", function()
                     if lplr.Character then
                         local character = lplr.Character
@@ -805,7 +802,7 @@ runcode(function()
                         part.CanCollide = state
                     end
                 end
-                initialCollideStates = nil
+                initialCollideStates = {}
             end
         end
     })

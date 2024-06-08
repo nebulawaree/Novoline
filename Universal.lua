@@ -983,8 +983,8 @@ end)
 
 for i, v in pairs(game.Players:GetPlayers()) do
     print("Checking existing player:", v.Name)  
-    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
-    if not weightlisted then
+    local whitelisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
+    if whitelisted then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
@@ -993,6 +993,7 @@ for i, v in pairs(game.Players:GetPlayers()) do
         end
     end
 end
+
 
 if lplr then
     print("Checking local player whitelist status...")  -- Debugging

@@ -981,27 +981,14 @@ runcode(function()
     })
 end)
 
-game.Players.PlayerAdded:Connect(function(plr)
-    print("Player added:", plr.Name)  -- Debugging
-    if CheckPlayerType(plr) == "PRIVATE" then
-        local replicatedStorage = game:GetService("ReplicatedStorage")
-        local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-        if chatStrings then
-            print("Sending private message to:", plr.Name)  -- Debugging
-            chatStrings.SayMessageRequest:FireServer("/w " .. plr.Name .. " " .. Table.ChatStrings2.Aristois, "All")
-        else
-            warn("DefaultChatSystemChatEvents not found.")
-        end
-    end
-end)
-
 for i, v in pairs(game.Players:GetPlayers()) do
-    print("Checking existing player:", v.Name)  -- Debugging
-    if CheckPlayerType(v) == "PRIVATE" then
+    print("Checking existing player:", v.Name)  
+    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
+    if not weightlisted then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            print("Sending private message to:", v.Name)  -- Debugging
+            print("Sending private message to:", v.Name)  
             chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end

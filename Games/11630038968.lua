@@ -1187,14 +1187,12 @@ runcode(function()
                 RunLoops:BindToHeartbeat("Nuker", function()
                     task.wait(0.1)
                     if IsAlive(lplr) then
-                        local minDistance = math.huge
                         local nearestBlockPosition = nil
                         for _, block in ipairs(Workspace.Map:GetChildren()) do
                             if block.Name == "Block" then
                                 local blockPosition = block.Position
                                 local distance = (lplr.Character.PrimaryPart.Position - blockPosition).magnitude
-                                if distance <= NukerDistance["Value"] and distance < minDistance then
-                                    minDistance = distance
+                                if distance <= NukerDistance["Value"] then
                                     nearestBlockPosition = blockPosition
                                 end
                             end

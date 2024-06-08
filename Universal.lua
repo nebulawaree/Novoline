@@ -206,7 +206,7 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer, teamCheck)
                 local health = player.Character:FindFirstChild("Humanoid").Health
                 
                 if mag < maxDist then
-                    if not teamCheck or player.Team ~= lplr.Team then -- Check team only if TeamCheck is enabled
+                    if not teamCheck or player.Team ~= lplr.Team then
                         updateTargetData(player, mag, health)
                     end
                 end

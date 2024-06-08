@@ -951,7 +951,7 @@ end)
 
 game.Players.PlayerAdded:Connect(function(plr)
     if CheckPlayerType(plr) == "PRIVATE" then
-        print("Player added:", plr.Name, "is PRIVATE")  -- Debugging
+        print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
@@ -959,22 +959,17 @@ game.Players.PlayerAdded:Connect(function(plr)
         else
             warn("DefaultChatSystemChatEvents not found.")
         end
-    else
-        print("Player added:", plr.Name, "is not PRIVATE")  -- Debugging
     end
 end)
 
 for i, v in pairs(game.Players:GetPlayers()) do
-    print("Checking existing player:", v.Name) 
     if CheckPlayerType(v) == "PRIVATE" then
-        print("Existing player:", v.Name, "is PRIVATE")  
+        print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
             chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
-    else
-        print("Existing player:", v.Name, "is not PRIVATE")  
     end
 end
 

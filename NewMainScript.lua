@@ -62,12 +62,9 @@ local function updateFiles(commitHash)
     writefile("Aristois/commithash.txt", commitHash)
 end
 
-local function downloadFile(url, filePath)
-    local response = game:HttpGet(url, true)
-    if response then
-        writefile(filePath, response)
-    end
+local updateAvailable, latestCommit = updateAvailable()
+if updateAvailable then
+    updateFiles(latestCommit)
 end
 
-task.wait(0.3)
 return loadstring(readfile("Aristois/MainScript.lua"))() 

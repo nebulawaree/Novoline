@@ -260,15 +260,16 @@ local function SpeedMultiplier()
     return multiplier
 end
 
+local swordMatch = nil
 local function findClosestMatch(name)
     local backpack = lplr.Backpack
     local chr = lplr.Character
-    for _, item in ipairs(backpack:GetChildren()) do
+    for _, item in ipairs(chr:GetChildren()) do
         if item.Name:find(name) then
             return item
         end
     end
-    for _, item in ipairs(chr:GetChildren()) do
+    for _, item in ipairs(backpack:GetChildren()) do
         if item.Name:find(name) then
             return item
         end
@@ -277,7 +278,10 @@ local function findClosestMatch(name)
 end
 
 local function GetSword()
-    local swordMatch = findClosestMatch("Sword")
+    if swordMatch then
+        return swordMatch
+    end
+    swordMatch = findClosestMatch("Sword")
     if swordMatch then
         return swordMatch.Name
     end

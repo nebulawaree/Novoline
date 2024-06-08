@@ -51,7 +51,7 @@ end
 
 local function updateFiles(commitHash)
     local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
-    local filesToUpdate = {"NewMainScript.lua", "GuiLibrary.lua", "MainScript.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
+    local filesToUpdate = {"NewMainScript.lua", "GuiLibrary.lua", "Universal.lua","Librarys/Whitelist.lua", "Games/11630038968.lua"}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
         if not fileExists(localFilePath) or updateAvailable then
@@ -69,4 +69,4 @@ local function downloadFile(url, filePath)
     end
 end
 
-return loadstring(readfile("Aristois/MainScript.lua"))() 
+return loadstring(readfile("Aristois/MainScript.lua.lua"))() 

@@ -40,7 +40,7 @@ local function CheckPlayerType()
     if not WhitelistModule or not WhitelistModule.checkstate or type(WhitelistModule.checkstate) ~= "function" then
         return "UNKNOWN"
     end
-    
+
     if WhitelistModule.checkstate(WhitelistModule.hashedUserData) then
         return "PRIVATE"
     else
@@ -945,7 +945,7 @@ runcode(function()
 end)
 
 game.Players.PlayerAdded:Connect(function(plr)
-    if not CheckPlayerType() == "PRIVATE" then
+    if CheckPlayerType() == "DEFAULT" then
         print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
@@ -958,7 +958,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 end)
 
 for i, v in pairs(game.Players:GetPlayers()) do
-    if not CheckPlayerType() == "PRIVATE" then
+    if CheckPlayerType() == "DEFAULT" then
         print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")

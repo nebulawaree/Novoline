@@ -69,4 +69,5 @@ local function downloadFile(url, filePath)
     end
 end
 
+task.wait(0.3)
 loadstring(readfile("Aristois/MainScript.lua"))() 

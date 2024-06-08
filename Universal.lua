@@ -36,12 +36,17 @@ local Table = {
     end
 }
 
-local function CheckPlayerType()
+
+local function CheckPlayerType(plr)
+    if not plr then
+        return "UNKNOWN"
+    end
+    
     if not WhitelistModule or not WhitelistModule.checkstate then
         return "UNKNOWN"
     end
-
-    if WhitelistModule.checkstate(WhitelistModule.hashedUserData) then
+    
+    if WhitelistModule.checkstate(plr) then
         return "PRIVATE"
     else
         return "DEFAULT"
@@ -944,64 +949,36 @@ runcode(function()
     })
 end)
 
-
-game.Players.PlayerAdded:Connect(function(plr)
-    if CheckPlayerType() == "DEFAULT" then
-        print("there is a priv user in your game")
+Players.PlayerAdded:Connect(function(player)
+    if CheckPlayerType(player) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            local anyPrivatePlayer = false
-            for _, player in ipairs(game.Players:GetPlayers()) do
-                if CheckPlayerType(player) == "PRIVATE" then
-                    anyPrivatePlayer = true
-                    break
-                end
-            end
-            if anyPrivatePlayer and CheckPlayerType(plr) == "DEFAULT" then
-                chatStrings.SayMessageRequest:FireServer("/w " .. plr.Name .. " " .. Table.ChatStrings2.Aristois, "All")
-            end
-        else
-            warn("DefaultChatSystemChatEvents not found.")
+            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end)
 
-for i, v in pairs(game.Players:GetPlayers()) do
-    if CheckPlayerType(v) == "DEFAULT" then
-        print("there is a priv user in your game")
+for _, player in ipairs(Players:GetPlayers()) do
+    if CheckPlayerType(player) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            local anyPrivatePlayer = false
-            for _, player in ipairs(game.Players:GetPlayers()) do
-                if CheckPlayerType(player) == "PRIVATE" then
-                    anyPrivatePlayer = true
-                    break
-                end
-            end
-            if anyPrivatePlayer and CheckPlayerType(v) == "DEFAULT" then
-                chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. Table.ChatStrings2.Aristois, "All")
-            end
+            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end
 
-
 if lplr then
-    print("Checking local player whitelist status...")  -- Debugging
-    local whitelisted = WhitelistModule.checkstate(WhitelistModule.hashedUserData)
-    if whitelisted then
-        print("Local player is whitelisted.")  -- Debugging
+    local weightlisted = WhitelistModule.checkstate(WhitelistModule.combinedHash)
+    if weightlisted then
         local players, replicatedStorage = game:GetService("Players"), game:GetService("ReplicatedStorage")
         local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
         if onMessageDoneFiltering then
             onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                 local speaker, message = players[messageData.FromSpeaker], messageData.Message
-                print("Received message from:", messageData.FromSpeaker, "Message:", message)  -- Debugging
                 if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
-                    print("Aristois message detected from:", messageData.FromSpeaker)  -- Debugging
                     GuiLibrary:Notify({
                         Title = "Aristois",
                         Content = messageData.FromSpeaker .. " is using Aristois!",
@@ -1011,23 +988,16 @@ if lplr then
                             Ignore = {
                                 Name = "Okay!",
                                 Callback = function()
-                                    print("The user tapped Okay!")  -- Debugging
+                                    print("The user tapped Okay!")
                                 end
                             },
                         },
                     })
                 end
             end)
-        else
-            print("OnMessageDoneFiltering not found.")  -- Debugging
         end
-    else
-        print("Local player is not whitelisted.")  -- Debugging
     end
-else
-    print("lplr is nil.")  -- Debugging
 end
-
 
 WhitelistModule.update_tag_meta()
 GuiLibrary:LoadConfiguration()

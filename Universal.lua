@@ -37,6 +37,10 @@ local Table = {
 }
 
 local function CheckPlayerType()
+    if not WhitelistModule or not WhitelistModule.checkstate or type(WhitelistModule.checkstate) ~= "function" then
+        return "UNKNOWN"
+    end
+    
     if WhitelistModule.checkstate(WhitelistModule.hashedUserData) then
         return "PRIVATE"
     else

@@ -53,4 +53,3 @@ local ServerSwitchScript = [[
 ]]
 
 queueonteleport(ServerSwitchScript)
-

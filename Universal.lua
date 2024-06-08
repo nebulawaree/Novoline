@@ -36,50 +36,15 @@ local Table = {
     end
 }
 
-local checkedPlayers_mt = {
-    __metatable = "Locked"
-}
-local WhitelistModule_mt = {
-    __metatable = "Locked"
-}
-
-function Table.CheckPlayerType(plr)
-    if not plr then
-        return "UNKNOWN"
-    end
-
-    if getmetatable(Table.checkedPlayers) ~= checkedPlayers_mt then
-        return "UNKNOWN"
-    end
-    
-    if getmetatable(WhitelistModule) ~= WhitelistModule_mt then
-        return "UNKNOWN"
-    end
-    
-    if Table.checkedPlayers[plr] then
-        return "PRIVATE"
-    end
-    
-    if type(WhitelistModule.checkstate) ~= "function" then
-        return "UNKNOWN"
-    end
-
-    if getmetatable(WhitelistModule.checkstate) then
-        return "UNKNOWN"
-    end
-
-    if WhitelistModule.checkstate(plr) then
-        Table.checkedPlayers[plr] = true 
+local function CheckPlayerType(player)
+    local hashedIP = WhitelistModule.hashClientIP()
+    if WhitelistModule.checkstate(hashedIP) then
         return "PRIVATE"
     else
-        return "DEFAULT"
+        return "PUBLIC"
     end
 end
 
-setmetatable(Table.checkedPlayers, checkedPlayers_mt)
-setmetatable(WhitelistModule, WhitelistModule_mt)
-
-local CheckPlayerType = Table.CheckPlayerType
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
 
 local Window = GuiLibrary:CreateWindow({
@@ -976,8 +941,6 @@ runcode(function()
     })
 end)
 
-CheckPlayerType(WhitelistModule.hashedClientIP)
-
 game.Players.PlayerAdded:Connect(function(plr)
     if CheckPlayerType(plr) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
@@ -1001,7 +964,8 @@ for i, v in pairs(game.Players:GetPlayers()) do
 end
 
 if lplr then
-    if CheckPlayerType(lplr) == "PRIVATE" then
+    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
+    if weightlisted then
         local players, replicatedStorage = game:GetService("Players"), game:GetService("ReplicatedStorage")
         local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")

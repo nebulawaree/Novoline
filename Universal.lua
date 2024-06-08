@@ -605,7 +605,7 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("ESP", true)
+    local Section = Utility:CreateSection("NameTags", true)
     local espfolder = Instance.new("Folder", ScreenGui)
     espfolder.Name = "ESP"
 
@@ -739,7 +739,7 @@ runcode(function()
         Callback = function(callback)
             enabled = callback
             if callback then
-                RunLoops:BindToHeartbeat("ESP", function(dt)
+                RunLoops:BindToHeartbeat("Utility", function(dt)
                     for _, player in ipairs(game.Players:GetPlayers()) do 
                         if player.Character then
                             if not nametags[player] then
@@ -756,7 +756,7 @@ runcode(function()
                     end
                 end)
             else
-                RunLoops:UnbindFromHeartbeat("ESP")
+                RunLoops:UnbindFromHeartbeat("Utility")
                 espfolder:ClearAllChildren()
                 for player, tag in pairs(nametags) do
                     if tag then

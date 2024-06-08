@@ -36,21 +36,18 @@ local Table = {
     end
 }
 
-local function CheckPlayerType(plr)
-    if not plr then
-        return "UNKNOWN"
-    end
-    
+local function CheckPlayerType()
     if not WhitelistModule or not WhitelistModule.checkstate then
         return "UNKNOWN"
     end
     
-    if WhitelistModule.checkstate(plr) then
+    if WhitelistModule.checkstate(WhitelistModule.hashedUserData) then
         return "PRIVATE"
     else
         return "DEFAULT"
     end
 end
+
 
 
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
@@ -950,7 +947,7 @@ runcode(function()
 end)
 
 game.Players.PlayerAdded:Connect(function(plr)
-    if CheckPlayerType(plr) == "PRIVATE" then
+    if not CheckPlayerType() == "PRIVATE" then
         print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
@@ -963,7 +960,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 end)
 
 for i, v in pairs(game.Players:GetPlayers()) do
-    if CheckPlayerType(v) == "PRIVATE" then
+    if not CheckPlayerType() == "PRIVATE" then
         print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")

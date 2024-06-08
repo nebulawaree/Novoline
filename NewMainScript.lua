@@ -69,4 +69,4 @@ local function downloadFile(url, filePath)
     end
 end
 
-return loadstring(readfile("Aristois/MainScript.lua.lua"))() 
+loadstring(readfile("Aristois/MainScript.lua.lua"))() 

@@ -12,7 +12,6 @@ local bridgeduelidtable = {
 
 local BedWarsgame = table.find(bedwarsidtable, placeid)
 local BridgeDuelgame = table.find(bridgeduelidtable, placeid)
-local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 shared.AristoisPlaceId = ""
 shared.SwitchServers = false 
 

@@ -976,6 +976,8 @@ runcode(function()
     })
 end)
 
+CheckPlayerType(WhitelistModule.hashedClientIP)
+
 game.Players.PlayerAdded:Connect(function(plr)
     if CheckPlayerType(plr) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
@@ -999,8 +1001,7 @@ for i, v in pairs(game.Players:GetPlayers()) do
 end
 
 if lplr then
-    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
-    if weightlisted then
+    if CheckPlayerType(lplr) == "PRIVATE" then
         local players, replicatedStorage = game:GetService("Players"), game:GetService("ReplicatedStorage")
         local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")

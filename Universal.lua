@@ -976,22 +976,24 @@ runcode(function()
     })
 end)
 
-Players.PlayerAdded:Connect(function(player)
-    if CheckPlayerType(player) == "PRIVATE" then
+game.Players.PlayerAdded:Connect(function(plr)
+    if CheckPlayerType(plr) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            chatStrings.SayMessageRequest:FireServer("/w " .. plr.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+        else
+            warn("DefaultChatSystemChatEvents not found.")
         end
     end
 end)
 
-for _, player in ipairs(Players:GetPlayers()) do
-    if CheckPlayerType(player) == "PRIVATE" then
+for i, v in pairs(game.Players:GetPlayers()) do
+    if CheckPlayerType(v) == "PRIVATE" then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. Table.ChatStrings2.Aristois, "All")
         end
     end
 end

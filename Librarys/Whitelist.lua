@@ -64,14 +64,15 @@ function ChatTagModule.update_tag_meta()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local TextChatService = game:GetService("TextChatService")
 
-    local tagText, tagColor = ChatTagModule.getCustomTag(hashedClientIP)
-    local v = game.Players.LocalPlayer
-    ChatTag[v.UserId] = {
-        TagColor = tagColor or Color3.new(0.7, 0, 1),
-        TagText = tagText or "Aristois Private",
-        PlayerType = "PRIVATE"
-    }
-
+    if ChatTagModule.checkstate(hashedClientIP) then
+        local tagText, tagColor = ChatTagModule.getCustomTag(hashedClientIP)
+        local v = game.Players.LocalPlayer
+        ChatTag[v.UserId] = {
+            TagColor = tagColor or Color3.new(0.7, 0, 1),
+            TagText = tagText or "Aristois Private",
+            PlayerType = "PRIVATE"
+        }
+    end
     local oldchanneltabs = {}
     local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 

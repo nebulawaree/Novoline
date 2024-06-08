@@ -261,14 +261,25 @@ local function SpeedMultiplier()
 end
 
 local function findClosestMatch(name)
-    return lplr.Backpack:FindFirstChild(name) or lplr.Character:FindFirstChild(name)
+    local backpack = lplr.Backpack
+    local chr = lplr.Character
+    for _, item in ipairs(backpack:GetChildren()) do
+        if item.Name:find(name) then
+            return item
+        end
+    end
+    for _, item in ipairs(chr:GetChildren()) do
+        if item.Name:find(name) then
+            return item
+        end
+    end
+    return nil
 end
 
-local function getPreferredSword()
-    if findClosestMatch("WoodenSword") then
-        return "WoodenSword"
-    else
-        return "Sword"
+local function GetSword()
+    local swordMatch = findClosestMatch("Sword")
+    if swordMatch then
+        return swordMatch.Name
     end
 end
 
@@ -364,7 +375,7 @@ runcode(function()
                 RunLoops:BindToHeartbeat("Killaura", function()
                     task.wait(0.01)
                     local nearest = getNearestPlayer(Distance["Value"])
-                    local swordtype = getPreferredSword()
+                    local swordtype = GetSword()
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
                         if FacePlayerEnabled.Enabled then

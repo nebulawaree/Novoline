@@ -39,12 +39,11 @@ local function updateAvailable()
     local latestCommit = fetchLatestCommit()
     if latestCommit then
         local lastCommitFile = "Aristois/commithash.txt"
-        if fileExists(lastCommitFile) then
-            local lastCommit = readfile(lastCommitFile)
-            return lastCommit ~= latestCommit, latestCommit
-        else
+        if not isfile(lastCommitFile) then
             return true, latestCommit
         end
+        local lastCommit = readfile(lastCommitFile)
+        return lastCommit ~= latestCommit or latestCommit == "main", latestCommit
     end
     return false, nil
 end
@@ -54,7 +53,7 @@ local function updateFiles(commitHash)
     local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
-        if not fileExists(localFilePath) or updateAvailable then
+        if not fileExists(localFilePath) or updateAvailable() then
             local fileUrl = baseUrl .. filePath
             downloadFile(fileUrl, localFilePath)
         end
@@ -67,4 +66,4 @@ if updateAvailable then
     updateFiles(latestCommit)
 end
 
-return loadstring(readfile("Aristois/MainScript.lua"))() 
+return loadstring(readfile("Aristois/MainScript.lua"))()

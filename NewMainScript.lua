@@ -70,4 +70,4 @@ local function downloadFile(url, filePath)
 end
 
 task.wait(0.3)
-loadstring(readfile("Aristois/MainScript.lua"))() 
+return loadstring(readfile("Aristois/MainScript.lua"))() 

@@ -1,5 +1,3 @@
-local queueonteleport = (syn and syn.queue_on_teleport) or queue_for_teleport or queue_on_teleport or queueonteleport
-
 if not isfolder("Aristois") then
     makefolder("Aristois")
 end
@@ -51,25 +49,9 @@ local function updateAvailable()
     return false, nil
 end
 
-local bedwarsidtable = {
-    6872274481,
-    8444591321,
-    8560631822
-}
-
-local bridgeduelidtable = {
-    11630038968
-}
-
 local function updateFiles(commitHash)
     local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
-    local filesToUpdate = {
-        "NewMainScript.lua", 
-        "GuiLibrary.lua", 
-        "Universal.lua",
-        "Librarys/Whitelist.lua",
-        "Games/11630038968.lua"
-    }
+    local filesToUpdate = {"NewMainScript.lua", "GuiLibrary.lua", "Universal.lua","Librarys/Whitelist.lua", "Games/11630038968.lua"}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
         if not fileExists(localFilePath) or updateAvailable then
@@ -87,43 +69,4 @@ local function downloadFile(url, filePath)
     end
 end
 
-local BedWarsgame = table.find(bedwarsidtable, placeid)
-local BridgeDuelgame = table.find(bridgeduelidtable, placeid)
-
-shared.AristoisPlaceId = ""
-
-if BedWarsgame then 
-    shared.AristoisPlaceId = 6872274481
-elseif BridgeDuelgame then
-    shared.AristoisPlaceId = 11630038968
-else
-    shared.AristoisPlaceId = game.PlaceId
-end
-
-local updateAvailable, latestCommit = updateAvailable()
-if updateAvailable then
-    updateFiles(latestCommit)
-end
-
-if shared.AristoisPlaceId == 6872274481 or shared.AristoisPlaceId == 11630038968 then
-    if shared.ReadFile then
-        loadstring(readfile("Aristois/Games/" .. shared.AristoisPlaceId .. ".lua"))()
-    else
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Aristois/main/Games/" .. shared.AristoisPlaceId .. ".lua"))()
-    end
-else
-    local placeFilePrivate = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
-    if isfile(placeFilePrivate) then
-        loadstring(readfile(placeFilePrivate))()
-    else
-        if shared.ReadFile then
-            loadstring(readfile("Aristois/Universal.lua"))()
-        else
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Aristois/main/Universal.lua"))()
-        end
-    end
-end
-
-if queueonteleport then
-   queueonteleport('loadstring(readfile("Aristois/NewMainScript.lua"))()')
-end
+return loadstring(readfile("Aristois/MainScript.lua.lua"))() 

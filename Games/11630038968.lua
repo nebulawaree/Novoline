@@ -353,7 +353,7 @@ runcode(function()
     local Boxes = {Enabled = false}
     local boxHandleAdornment = Table.Box()
     local Distance = {Value = 32}
-     local function updateBoxAdornment(nearest)
+    local function updateBoxAdornment(nearest)
         if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") then
             if boxHandleAdornment.Parent ~= nearest.Character then
                 boxHandleAdornment.Adornee = Boxes.Enabled and nearest.Character.HumanoidRootPart or nil
@@ -391,11 +391,7 @@ runcode(function()
                         end
                         updateBoxAdornment(nearest)
                         if not lplr.Character:GetAttribute("Blocking") then
-                            local args = {
-                                [1] = true,
-                                [2] = swordtype
-                            }
-                            game:GetService("ReplicatedStorage").Packages.Knit.Services.ToolService.RF.ToggleBlockSword:InvokeServer(unpack(args))
+                            ToolService.ToggleBlockSword:InvokeServer(true, swordtype)
                         end
                     else
                         updateBoxAdornment(nil)

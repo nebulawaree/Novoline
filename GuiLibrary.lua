@@ -10,7 +10,6 @@ Arrays  | Designing + Programming + New Features
 
 ]]
 
-
 local Release = "Release 1B"
 local NotificationDuration = 6.5
 local RayfieldFolder = "Rayfield"
@@ -256,7 +255,7 @@ local function LoadConfiguration(Configuration)
 	end
 end
 
-function RayfieldLibrary.SaveConfiguration()
+local function SaveConfiguration()
 	if not CEnabled then return end
 	local Data = {}
 	for i,v in pairs(RayfieldLibrary.Flags) do
@@ -1564,7 +1563,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Button.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 					TweenService:Create(Button.ElementIndicator, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0.9}):Play()
 				else
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 					TweenService:Create(Button, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
 					TweenService:Create(Button.ElementIndicator, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
 					TweenService:Create(Button.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
@@ -1880,7 +1879,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 
 				if InputSettings.RemoveTextAfterFocusLost then Input.InputFrame.InputBox.Text = "" end
-				RayfieldLibrary.SaveConfiguration()
+				SaveConfiguration()
 			end)
 
 			Input.MouseEnter:Connect(function()
@@ -2110,7 +2109,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						table.remove(DropdownSettings.Items.Selected,table.find(DropdownSettings.Items.Selected,OptionInTable))
 						RefreshSelected()
 						TweenService:Create(DropdownOption, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
-						RayfieldLibrary.SaveConfiguration()
+						SaveConfiguration()
 						return
 					end
 					if not Multi and DropdownSettings.Items.Selected[1] then
@@ -2162,7 +2161,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						
 					end
 					Debounce = false
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 				end)
 			end
 			local function AddOptions(Options,Selected)
@@ -2555,7 +2554,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						Dropdown.List.Visible = false
 					end
 					Debounce = false	
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 				end)
 			end
 			
@@ -2710,7 +2709,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				CheckingForKey = false
 				if Keybind.KeybindFrame.KeybindBox.Text == nil or "" then
 					Keybind.KeybindFrame.KeybindBox.Text = KeybindSettings.CurrentKeybind
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 				end
 			end)
 
@@ -2731,7 +2730,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						Keybind.KeybindFrame.KeybindBox.Text = tostring(NewKeyNoEnum)
 						KeybindSettings.CurrentKeybind = tostring(NewKeyNoEnum)
 						Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
-						RayfieldLibrary.SaveConfiguration()
+						SaveConfiguration()
 					end
 				elseif KeybindSettings.CurrentKeybind ~= nil and (input.KeyCode == Enum.KeyCode[KeybindSettings.CurrentKeybind] and not processed) then  --Test
 					local Held = true
@@ -2779,7 +2778,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Keybind.KeybindFrame.KeybindBox.Text = tostring(NewKeybind)
 				KeybindSettings.CurrentKeybind = tostring(NewKeybind)
 				Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
-				RayfieldLibrary.RayfieldLibrary()
+				SaveConfiguration()
 			end
 			function KeybindSettings:Destroy()
 				Keybind:Destroy()
@@ -2910,7 +2909,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 				end
-				RayfieldLibrary.RayfieldLibrary()
+
+				SaveConfiguration()
 			end)
 			function ToggleSettings:Set(NewToggleValue)
 				if NewToggleValue then
@@ -2955,7 +2955,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 				end
-				RayfieldLibrary.RayfieldLibrary()
+				SaveConfiguration()
 			end
 			function ToggleSettings:Destroy()
 				Toggle:Destroy()
@@ -3131,7 +3131,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 				local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 				ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-				RayfieldLibrary.SaveConfiguration()
+				SaveConfiguration()
 			end)
 			--RGB
 			local function rgbBoxes(box,toChange)
@@ -3150,7 +3150,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 				local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 				ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-				RayfieldLibrary.SaveConfiguration()
+				SaveConfiguration()
 			end
 
 			ColorPicker.RGB.RInput.InputBox.FocusLost:connect(function()
@@ -3197,7 +3197,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					ColorPicker.HexInput.InputBox.Text = string.format("#%02X%02X%02X",color.R*0xFF,color.G*0xFF,color.B*0xFF)
 					pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 				end
 				if sliderDragging then 
 					local localX = math.clamp(mouse.X-Slider.AbsolutePosition.X,0,Slider.AbsoluteSize.X)
@@ -3215,7 +3215,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					ColorPicker.HexInput.InputBox.Text = string.format("#%02X%02X%02X",color.R*0xFF,color.G*0xFF,color.B*0xFF)
 					pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 				end
 			end)
 
@@ -3376,7 +3376,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 
 					SliderSettings.CurrentValue = NewValue
-					RayfieldLibrary.SaveConfiguration()
+					SaveConfiguration()
 				end
 			end
 			Slider.Main.Interact.MouseButton1Down:Connect(function(X)
@@ -3412,7 +3412,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 				end
 				SliderSettings.CurrentValue = NewVal
-				RayfieldLibrary.SaveConfiguration()
+				SaveConfiguration()
 			end
 			function SliderSettings:Destroy()
 				Slider:Destroy()

@@ -52,9 +52,5 @@ local ServerSwitchScript = [[
     end
 ]]
 
-if shared.SwitchServers then
-    GuiLibrary:SaveConfiguration()
-end
-
 queueonteleport(ServerSwitchScript)
 

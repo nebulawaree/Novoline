@@ -37,7 +37,7 @@ local Table = {
 }
 
 local function CheckPlayerType()
-    if not WhitelistModule or not WhitelistModule.checkstate or type(WhitelistModule.checkstate) ~= "function" then
+    if not WhitelistModule or not WhitelistModule.checkstate then
         return "UNKNOWN"
     end
 
@@ -944,13 +944,23 @@ runcode(function()
     })
 end)
 
+
 game.Players.PlayerAdded:Connect(function(plr)
     if CheckPlayerType() == "DEFAULT" then
         print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. plr.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            local anyPrivatePlayer = false
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if CheckPlayerType(player) == "PRIVATE" then
+                    anyPrivatePlayer = true
+                    break
+                end
+            end
+            if anyPrivatePlayer and CheckPlayerType(plr) == "DEFAULT" then
+                chatStrings.SayMessageRequest:FireServer("/w " .. plr.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            end
         else
             warn("DefaultChatSystemChatEvents not found.")
         end
@@ -958,15 +968,25 @@ game.Players.PlayerAdded:Connect(function(plr)
 end)
 
 for i, v in pairs(game.Players:GetPlayers()) do
-    if CheckPlayerType() == "DEFAULT" then
+    if CheckPlayerType(v) == "DEFAULT" then
         print("there is a priv user in your game")
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
-            chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            local anyPrivatePlayer = false
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if CheckPlayerType(player) == "PRIVATE" then
+                    anyPrivatePlayer = true
+                    break
+                end
+            end
+            if anyPrivatePlayer and CheckPlayerType(v) == "DEFAULT" then
+                chatStrings.SayMessageRequest:FireServer("/w " .. v.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            end
         end
     end
 end
+
 
 if lplr then
     print("Checking local player whitelist status...")  -- Debugging

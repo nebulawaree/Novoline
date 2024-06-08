@@ -37,18 +37,12 @@ local Table = {
 }
 
 local function CheckPlayerType()
-    if not WhitelistModule or not WhitelistModule.checkstate then
-        return "UNKNOWN"
-    end
-    
     if WhitelistModule.checkstate(WhitelistModule.hashedUserData) then
         return "PRIVATE"
     else
         return "DEFAULT"
     end
 end
-
-
 
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
 

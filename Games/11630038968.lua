@@ -378,7 +378,7 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
                     task.wait(0.01)
-                    local nearest = getNearestPlayer(Distance["Value"])
+                    nearest = getNearestPlayer(Distance["Value"])
                     local swordtype = GetSword()
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)

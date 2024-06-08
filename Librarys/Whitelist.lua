@@ -4,25 +4,8 @@ local requestfunc = syn and syn.request or http and http.request or http_request
 
 local storedshahashes = {} 
 
-local function fetchClientIP()
-    local success, response = pcall(function()
-        local response = requestfunc({
-            Url = "https://api.ipify.org",
-            Method = "GET"
-        })
-        return response and response.Body
-    end)
-    if success then
-        return response
-    else
-        warn("Failed to fetch IP address: " .. tostring(response))
-        return nil
-    end
-end
-
-local function hashClientIP()
-    local clientIP = fetchClientIP()
-    if not clientIP then
+local function hashUserData(userId, username)
+    if not userId or not username then
         return nil
     end
     
@@ -33,21 +16,38 @@ local function hashClientIP()
         return storedshahashes[tostring(str)]
     end
     
-    return HashFunction(clientIP)
+    local userData = userId .. username
+    return HashFunction(userData)
 end
+
+local function fetchUserData()
+    local success, response = pcall(function()
+        local username = game.Players.LocalPlayer.Name
+        local userId = game.Players.LocalPlayer.UserId
+        local hashedUserData = hashUserData(userId, username)
+        return hashedUserData
+    end)
+    if success then
+        return response
+    else
+        warn("Failed to fetch user data: " .. tostring(response))
+        return nil
+    end
+end
+
+local combinedHash = fetchUserData()
 
 local ChatTagModule = {}
-local hashedClientIP = hashClientIP()
-ChatTagModule.hashedClientIP = hashedClientIP
-ChatTagModule.hashClientIP = hashClientIP
+ChatTagModule.hashedUserData = combinedHash
+ChatTagModule.hashUserData = hashUserData
 
-function ChatTagModule.checkstate(hashedClientIP)
-    return Whitelist[hashedClientIP] ~= nil
+function ChatTagModule.checkstate(hashedUserData)
+    return Whitelist[hashedUserData] ~= nil
 end
 
-function ChatTagModule.getCustomTag(hashedClientIP)
-    if Whitelist[hashedClientIP] and Whitelist[hashedClientIP].tags and Whitelist[hashedClientIP].tags[1] then
-        return Whitelist[hashedClientIP].tags[1].text, Whitelist[hashedClientIP].tags[1].color
+function ChatTagModule.getCustomTag(hashedUserData)
+    if Whitelist[hashedUserData] and Whitelist[hashedUserData].tags and Whitelist[hashedUserData].tags[1] then
+        return Whitelist[hashedUserData].tags[1].text, Whitelist[hashedUserData].tags[1].color
     end
     return nil, nil
 end
@@ -64,8 +64,8 @@ function ChatTagModule.update_tag_meta()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local TextChatService = game:GetService("TextChatService")
 
-    if ChatTagModule.checkstate(hashedClientIP) then
-        local tagText, tagColor = ChatTagModule.getCustomTag(hashedClientIP)
+    if ChatTagModule.checkstate(combinedHash) then
+        local tagText, tagColor = ChatTagModule.getCustomTag(combinedHash)
         local v = game.Players.LocalPlayer
         ChatTag[v.UserId] = {
             TagColor = tagColor or Color3.new(0.7, 0, 1),

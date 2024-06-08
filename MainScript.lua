@@ -57,4 +57,3 @@ if shared.SwitchServers then
 end
 
 queueonteleport(ServerSwitchScript)
-

@@ -102,20 +102,6 @@ function ChatTagModule.update_tag_meta()
             return properties
         end
     end
-    for _, otherPlayer in ipairs(Players:GetPlayers()) do
-        if otherPlayer.UserId ~= player.UserId then
-            local otherHashedCombined = hashUserIdAndUsername(otherPlayer.UserId, otherPlayer.Name)
-            if ChatTagModule.checkstate(otherHashedCombined) then
-                local otherTagText, otherTagColor = ChatTagModule.getCustomTag(otherHashedCombined)
-                ChatTag[otherPlayer.UserId] = {
-                    TagColor = otherTagColor or Color3.new(0.7, 0, 1),
-                    TagText = otherTagText or "Aristois Private",
-                    PlayerType = "PRIVATE"
-                }
-            end
-        end
-    end
-    
     return ChatTag
 end
 

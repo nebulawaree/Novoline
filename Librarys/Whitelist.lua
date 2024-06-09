@@ -104,14 +104,6 @@ function ChatTagModule.UpdateTags()
     return ChatTag
 end
 
-function ChatTagModule.AddExtraTag(targetPlayer, tagText, tagColor)
-    ChatTag[targetPlayer.UserId] = {
-        TagColor = tagColor,
-        TagText = tagText,
-        PlayerType = "PRIVATE"
-    }
-end
-
 for i, player in pairs(game.Players:GetPlayers()) do
     if ChatTagModule.checkstate(player) then
         local tagText, tagColor = ChatTagModule.getCustomTag(player)

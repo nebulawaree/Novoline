@@ -1120,5 +1120,5 @@ if lplr then
     end
 end
 
-WhitelistModule.update_tag_meta()
+WhitelistModule.UpdateTags()
 GuiLibrary:LoadConfiguration()

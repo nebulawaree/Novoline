@@ -388,7 +388,7 @@ runcode(function()
     })
 end)
 
-local SpeedSlider = {["Value"] = 22}
+local SpeedSlider = {["Value"] = 27}
 runcode(function()
     local Section = Blatant:CreateSection("Speed", true)
     local lastMoveTime = tick()
@@ -447,7 +447,7 @@ runcode(function()
         Range = {1, 30},
         Increment = 1,
         Suffix = "Speed.",
-        CurrentValue = 30,
+        CurrentValue = 27,
         Flag = "DistanceSlider",
         Callback = function(Value)
             SpeedSlider["Value"] = Value

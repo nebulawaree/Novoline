@@ -1294,15 +1294,16 @@ runcode(function()
                     local origin = clone.HumanoidRootPart.Position
                     local direction = Vector3.new(0, -1, 0)
                     local raycastParams = RaycastParams.new()
-                    raycastParams.FilterDescendantsInstances = {clone, lplr.Character}
-                    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-                    local ray = Ray.new(origin, direction * 7)
-                    local part, position = workspace:FindPartOnRayWithIgnoreList(ray, {clone, lplr.Character}, false, false)
-                    if part then
+                    raycastParams.FilterType = Enum.RaycastFilterType.Whitelist
+                    raycastParams.IgnoreWater = true
+                    local ray = Ray.new(origin, direction * 8)
+                    local part, position = workspace:FindPartOnRayWithIgnoreList(ray, {clone, lplr.Character}, false, true)
+                    if part and part:IsA("BasePart") and part.CanCollide then
                         teleportCharacter(position)
                         oldChar.HumanoidRootPart.Velocity = Vector3.new(oldChar.HumanoidRootPart.Velocity.X, 0, oldChar.HumanoidRootPart.Velocity.Z)
                     else
-                        local newPosition = origin + Vector3.new(0, 1000, 0)
+                        oldChar.HumanoidRootPart.Velocity = Vector3.new(oldChar.HumanoidRootPart.Velocity.X, 0, oldChar.HumanoidRootPart.Velocity.Z)
+                        local newPosition = origin + Vector3.new(0, -3, 0)
                         teleportCharacter(newPosition)
                     end
                 end)
@@ -1312,7 +1313,6 @@ runcode(function()
         end
     })
 end)
-
 game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then

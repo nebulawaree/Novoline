@@ -15,6 +15,7 @@ local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
+local getcustomasset = getsynasset or getcustomasset
 
 local Table = {
     ChatStrings1 = {
@@ -842,7 +843,7 @@ runcode(function()
     end
 
     local DisplayNames = {Enabled = false}
-    local TargethubToggle = Utility:CreateToggle({
+    local TargethubToggle = Render:CreateToggle({
         Name = "TargetHub",
         CurrentValue = false,
         Flag = "TargetHub",
@@ -852,7 +853,7 @@ runcode(function()
                     if IsAlive(lplr) then
                         if nearest then
                             local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                            if distanceToNearest <= 18 then
+                            if distanceToNearest <= 25 and IsAlive(nearest) then
                                 if not clonedStatsGui then
                                     clonedStatsGui = StatsGuiTemplate:Clone()
                                     clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
@@ -918,7 +919,7 @@ runcode(function()
             end
         end
     })
-    local DisplayNamesToggle = Utility:CreateToggle({
+    local DisplayNamesToggle = Render:CreateToggle({
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
@@ -929,7 +930,7 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("NameTags", true)
+    local Section = Render:CreateSection("NameTags", true)
     local espfolder = Instance.new("Folder", ScreenGui)
     espfolder.Name = "ESP"
 
@@ -1056,14 +1057,14 @@ runcode(function()
         end
     end
 
-    local NameTags = Utility:CreateToggle({
+    local NameTags = Render:CreateToggle({
         Name = "NameTags",
         CurrentValue = false,
         Flag = "NameTags",
         Callback = function(callback)
             enabled = callback
             if callback then
-                RunLoops:BindToHeartbeat("Utility", function(dt)
+                RunLoops:BindToHeartbeat("NameTags", function(dt)
                     for _, player in ipairs(game.Players:GetPlayers()) do 
                         if player.Character then
                             if not nametags[player] then
@@ -1080,7 +1081,7 @@ runcode(function()
                     end
                 end)
             else
-                RunLoops:UnbindFromHeartbeat("Utility")
+                RunLoops:UnbindFromHeartbeat("NameTags")
                 espfolder:ClearAllChildren()
                 for player, tag in pairs(nametags) do
                     if tag then
@@ -1100,7 +1101,7 @@ runcode(function()
             end
         end
     })  
-    local DisplayNames = Utility:CreateToggle({
+    local DisplayNames = Render:CreateToggle({
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
@@ -1109,7 +1110,7 @@ runcode(function()
             updateAllNametags()
         end
     })
-    local Names = Utility:CreateToggle({
+    local Names = Render:CreateToggle({
         Name = "Names",
         CurrentValue = false,
         Flag = "espnames",
@@ -1118,7 +1119,7 @@ runcode(function()
             updateAllNametags()
         end
     })
-    local Health = Utility:CreateToggle({
+    local Health = Render:CreateToggle({
         Name = "Health",
         CurrentValue = false,
         Flag = "esphealth",
@@ -1129,45 +1130,132 @@ runcode(function()
     })
 end)
 
-if IsOnMobile then 
-    task.wait(2)
-    runcode(function()
-        local Section = Blatant:CreateSection("DeviceSpoofer", true)
-        local DeviceSpoofer = Utility:CreateToggle({
-            Name = "Device Spoofer",
-            CurrentValue = false,
-            Flag = "Device",
-            Callback = function(callback)
-                if callback then
-                    pcall(function() game.Players.LocalPlayer.PlayerGui.MainGui.MobileButtons.Visible = false end)
-                    local originalNamecall
+runcode(function()
+    local Section = Render:CreateSection("Cape", true)
+    local function CreateCape(character, texture)
+        local humanoid = character:WaitForChild("Humanoid")
+        local torso = nil
+        if humanoid.RigType == Enum.HumanoidRigType.R15 then
+            torso = character:WaitForChild("UpperTorso")
+        else
+            torso = character:WaitForChild("Torso")
+        end
+        local cape = Instance.new("Part", torso.Parent)
+        cape.Name = "Cape"
+        cape.Anchored = false
+        cape.CanCollide = false
+        cape.TopSurface = 0
+        cape.BottomSurface = 0
+        cape.Size = Vector3.new(0.2, 0.2, 0.2)
+        cape.Transparency = 1
+        local decal = Instance.new("Decal", cape)
+        decal.Texture = texture
+        decal.Face = "Back"
+        local mesh = Instance.new("BlockMesh", cape)
+        mesh.Scale = Vector3.new(9, 17.5, 0.5)
+        local motor = Instance.new("Motor", cape)
+        motor.Part0 = cape
+        motor.Part1 = torso
+        motor.MaxVelocity = 0.01
+        motor.C0 = CFrame.new(0, 2, 0) * CFrame.Angles(0, math.rad(90), 0)
+        motor.C1 = CFrame.new(0, 1, 0.45) * CFrame.Angles(0, math.rad(90), 0)
+        local wave = false
+        repeat
+            task.wait(1 / 44)
+            decal.Transparency = torso.Transparency
+            local angle = 0.1
+            local oldMagnitude = torso.Velocity.Magnitude
+            local maxVelocity = 0.002
+            if wave then
+                angle = angle + ((torso.Velocity.Magnitude / 10) * 0.05) + 0.05
+                wave = false
+            else
+                wave = true
+            end
+            angle = angle + math.min(torso.Velocity.Magnitude / 11, 0.5)
+            motor.MaxVelocity = math.min((torso.Velocity.Magnitude / 111), 0.04)
+            motor.DesiredAngle = -angle
+            if motor.CurrentAngle < -0.2 and motor.DesiredAngle > -0.2 then
+                motor.MaxVelocity = 0.04
+            end
+            repeat task.wait() until motor.CurrentAngle == motor.DesiredAngle or math.abs(torso.Velocity.Magnitude - oldMagnitude) >= (torso.Velocity.Magnitude / 10) + 1
+            if torso.Velocity.Magnitude < 0.1 then
+                task.wait(0.1)
+            end
+        until not cape or cape.Parent ~= torso.Parent
+    end
 
-                    originalNamecall = hookmetamethod(game, "__namecall", function(...)
-                        local args = {...}
-                        local self = args[1]
-                        local method = getnamecallmethod()
+    local function DestroyCape(character)
+        local cape = character:FindFirstChild("Cape")
+        if cape then
+            cape:Destroy()
+        end
+    end
+    local Connection
+    local CapeToggle = Render:CreateToggle({
+        Name = "Cape",
+        CurrentValue = false,
+        Flag = "Cape",
+        Callback = function(enabled)
+            if enabled then
+                CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
+                Connection = lplr.CharacterAdded:Connect(function(v)
+                    task.wait()
+                    CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
+                end)
+            else
+                Connection:Disconnect()
+                DestroyCape(lplr.Character)
+            end
+        end
+    })
+end)
 
-                        if self == UserInputService or self == GuiService then
-                            if method == "GetPlatform" then
-                                return Enum.Platform.Windows
-                            elseif method == "IsTenFootInterface" then
-                                return false
-                            end
+runcode(function()
+    local Section = Utility:CreateSection("DeviceSpoofer", true)
+    local selectedDevices = {Enum.Platform.Windows}
+
+    local DeviceSpoofer = Utility:CreateToggle({
+        Name = "Device Spoofer",
+        CurrentValue = false,
+        Flag = "Device",
+        Callback = function(callback)
+            if callback then
+                local originalNamecall
+                originalNamecall = hookmetamethod(game, "__namecall", function(...)
+                    local args = {...}
+                    local self = args[1]
+                    local method = getnamecallmethod()
+
+                    if self == UserInputService or self == GuiService then
+                        if method == "GetPlatform" then
+                            return selectedDevices[1]
                         end
-                        return originalNamecall(...)
-                    end)
-                    getgenv().originalNamecall = originalNamecall
-                else
-                    pcall(function() game.Players.LocalPlayer.PlayerGui.MainGui.MobileButtons.Visible = true end)
-                    if getgenv().originalNamecall then
-                        hookmetamethod(game, "__namecall", getgenv().originalNamecall)
-                        getgenv().originalNamecall = nil
                     end
+                    return originalNamecall(...)
+                end)
+                getgenv().originalNamecall = originalNamecall
+            else
+                if getgenv().originalNamecall then
+                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
+                    getgenv().originalNamecall = nil
                 end
             end
-        })
-    end)
-end
+        end
+    })
+    local Dropdown = Utility:CreateDropdown({
+        Name = "Device Selector",
+        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
+        CurrentOption = "Windows",
+        Flag = "DeviceSelector", 
+        Callback = function(Option)
+            selectedDevices = {}
+            for _, device in ipairs(Option) do
+                table.insert(selectedDevices, Enum.Platform[device])
+            end
+        end,
+    })
+end)
 
 runcode(function()
     local NukerEnabled = false

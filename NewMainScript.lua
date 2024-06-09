@@ -1,3 +1,4 @@
+local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 if not isfolder("Aristois") then
     makefolder("Aristois")
 end
@@ -59,6 +60,14 @@ local function updateFiles(commitHash)
         end
     end
     writefile("Aristois/commithash.txt", commitHash)
+end
+
+if fileExists("Aristois/assets/cape.png") == false then
+    local req = requestfunc({
+        Url = "https://cdn.discordapp.com/attachments/1009513335303180398/1029389409751150612/unknown.png",
+        Method = "GET"
+    })
+    writefile("Aristois/assets/cape.png", req.Body)
 end
 
 local updateAvailable, latestCommit = updateAvailable()

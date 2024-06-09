@@ -10,6 +10,8 @@ local Camera = Workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local TextChatService = game:GetService("TextService")
+local getcustomasset = getsynasset or getcustomasset
+local customassetcheck = (getsynasset or getcustomasset) and true
 
 local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
@@ -37,24 +39,56 @@ local Table = {
 }
 
 
-local function CheckPlayerType(plr)
+local checkedPlayers_mt = {
+    __metatable = "Locked"
+}
+local WhitelistModule_mt = {
+    __metatable = "Locked"
+}
+
+function Table.CheckPlayerType(plr)
     if not plr then
         return "UNKNOWN"
+    end
+
+    if getmetatable(Table.checkedPlayers) then
+        return "UNKNOWN"
+    end
+    
+    if getmetatable(WhitelistModule) then
+        return "UNKNOWN"
+    end
+    
+    if Table.checkedPlayers[plr] then
+        return "PRIVATE"
     end
     
     if not WhitelistModule or not WhitelistModule.checkstate then
         return "UNKNOWN"
     end
     
+    if type(WhitelistModule.checkstate) ~= "function" then
+        return "UNKNOWN"
+    end
+    
+    if getmetatable(WhitelistModule.checkstate) then
+        return "UNKNOWN"
+    end
+
     if WhitelistModule.checkstate(plr) then
+        Table.checkedPlayers[plr] = true 
         return "PRIVATE"
     else
         return "DEFAULT"
     end
 end
 
-local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
+setmetatable(Table.checkedPlayers, checkedPlayers_mt)
 
+setmetatable(WhitelistModule, WhitelistModule_mt)
+
+local CheckPlayerType = Table.CheckPlayerType
+local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
 local Window = GuiLibrary:CreateWindow({
     Name = "Rayfield Example Window",
     LoadingTitle = "Rayfield Interface Suite",
@@ -179,7 +213,7 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer, teamCheck)
                 local health = player.Character:FindFirstChild("Humanoid").Health
                 
                 if mag < maxDist then
-                    if not teamCheck or player.Team ~= lplr.Team then -- Check team only if TeamCheck is enabled
+                    if not teamCheck or player.Team ~= lplr.Team then
                         updateTargetData(player, mag, health)
                     end
                 end
@@ -195,7 +229,6 @@ local function SpeedMultiplier()
     local multiplier = baseMultiplier
     return multiplier
 end
-
 
 local function runcode(func) func() end
 
@@ -217,7 +250,6 @@ runcode(function()
         end
         return tools
     end
-
     local AutoClicker = Combat:CreateToggle({
         Name = "AutoClicker",
         CurrentValue = false,
@@ -578,17 +610,17 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("HitBoxExpander", true)
+    local Section = Blatant:CreateSection("HitBoxs", true)
     local OriginalProperties = {} 
     local BoxSize = {["Value"] = 10}
-    local HitBoxExpanderT = Blatant:CreateToggle({
-        Name = "HitBoxExpander ",
+    local HitBoxs = Blatant:CreateToggle({
+        Name = "HitBoxs",
         CurrentValue = false,
-        Flag = "Device",
+        Flag = "HitBoxExpander",
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("HitBoxExpander", function()
-                    for i,v in (Players:GetPlayers()) do
+                    for i,v in ipairs(Players:GetPlayers()) do
                         if v ~= lplr then
                             local character = v.Character
                             if character and IsAlive(v) then
@@ -605,11 +637,10 @@ runcode(function()
                                 character.HumanoidRootPart.BrickColor = BrickColor.new("Really blue")
                                 character.HumanoidRootPart.Material = Enum.Material.Neon
                                 character.HumanoidRootPart.CanCollide = true
-                                task.wait(0.1)
                             end
                         end
                     end
-                    task.wait()
+                    task.wait(0.1)
                 end)
             else
                 RunLoops:UnbindFromHeartbeat("HitBoxExpander")
@@ -628,10 +659,10 @@ runcode(function()
 
     local HitBoxSize = Blatant:CreateSlider({
         Name = "HitBoxSize",
-        Range = {1, 60},
+        Range = {1, 30},
         Increment = 1,
         Suffix = "Size",
-        CurrentValue = 15,
+        CurrentValue = 10,
         Flag = "HitBoxSize",
         Callback = function(Value)
             BoxSize["Value"] = Value
@@ -662,7 +693,7 @@ runcode(function()
     end
 
     local DisplayNames = {Enabled = false}
-    local TargethubToggle = Utility:CreateToggle({
+    local TargethubToggle = Render:CreateToggle({
         Name = "TargetHub",
         CurrentValue = false,
         Flag = "TargetHub",
@@ -672,7 +703,7 @@ runcode(function()
                     if IsAlive(lplr) then
                         if nearest then
                             local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                            if distanceToNearest <= 25 then
+                            if distanceToNearest <= 25 and IsAlive(nearest) then
                                 if not clonedStatsGui then
                                     clonedStatsGui = StatsGuiTemplate:Clone()
                                     clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
@@ -738,7 +769,7 @@ runcode(function()
             end
         end
     })
-    local DisplayNamesToggle = Utility:CreateToggle({
+    local DisplayNamesToggle = Render:CreateToggle({
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
@@ -749,7 +780,92 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("NameTags", true)
+    local Section = Render:CreateSection("Cape", true)
+    local function CreateCape(character, texture)
+        local humanoid = character:WaitForChild("Humanoid")
+        local torso = nil
+        if humanoid.RigType == Enum.HumanoidRigType.R15 then
+            torso = character:WaitForChild("UpperTorso")
+        else
+            torso = character:WaitForChild("Torso")
+        end
+        local cape = Instance.new("Part", torso.Parent)
+        cape.Name = "Cape"
+        cape.Anchored = false
+        cape.CanCollide = false
+        cape.TopSurface = 0
+        cape.BottomSurface = 0
+        cape.Size = Vector3.new(0.2, 0.2, 0.2)
+        cape.Transparency = 1
+        local decal = Instance.new("Decal", cape)
+        decal.Texture = texture
+        decal.Face = "Back"
+        local mesh = Instance.new("BlockMesh", cape)
+        mesh.Scale = Vector3.new(9, 17.5, 0.5)
+        local motor = Instance.new("Motor", cape)
+        motor.Part0 = cape
+        motor.Part1 = torso
+        motor.MaxVelocity = 0.01
+        motor.C0 = CFrame.new(0, 2, 0) * CFrame.Angles(0, math.rad(90), 0)
+        motor.C1 = CFrame.new(0, 1, 0.45) * CFrame.Angles(0, math.rad(90), 0)
+        local wave = false
+        repeat
+            task.wait(1 / 44)
+            decal.Transparency = torso.Transparency
+            local angle = 0.1
+            local oldMagnitude = torso.Velocity.Magnitude
+            local maxVelocity = 0.002
+            if wave then
+                angle = angle + ((torso.Velocity.Magnitude / 10) * 0.05) + 0.05
+                wave = false
+            else
+                wave = true
+            end
+            angle = angle + math.min(torso.Velocity.Magnitude / 11, 0.5)
+            motor.MaxVelocity = math.min((torso.Velocity.Magnitude / 111), 0.04)
+            motor.DesiredAngle = -angle
+            if motor.CurrentAngle < -0.2 and motor.DesiredAngle > -0.2 then
+                motor.MaxVelocity = 0.04
+            end
+            repeat task.wait() until motor.CurrentAngle == motor.DesiredAngle or math.abs(torso.Velocity.Magnitude - oldMagnitude) >= (torso.Velocity.Magnitude / 10) + 1
+            if torso.Velocity.Magnitude < 0.1 then
+                task.wait(0.1)
+            end
+        until not cape or cape.Parent ~= torso.Parent
+    end
+
+    local function DestroyCape(character)
+        local cape = character:FindFirstChild("Cape")
+        if cape then
+            cape:Destroy()
+        end
+    end
+
+    local Connection
+    local CapeToggle = Render:CreateToggle({
+        Name = "Cape",
+        CurrentValue = false,
+        Flag = "Cape",
+        Callback = function(enabled)
+            if enabled then
+                CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
+                Connection = lplr.CharacterAdded:Connect(function(v)
+                    task.wait()
+                    CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
+                end)
+            else
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil 
+                end
+                DestroyCape(lplr.Character)
+            end
+        end
+    })    
+end)
+
+runcode(function()
+    local Section = Render:CreateSection("NameTags", true)
     local espfolder = Instance.new("Folder", ScreenGui)
     espfolder.Name = "ESP"
 
@@ -876,16 +992,16 @@ runcode(function()
         end
     end
 
-    local NameTags = Utility:CreateToggle({
+    local NameTags = Render:CreateToggle({
         Name = "NameTags",
         CurrentValue = false,
         Flag = "NameTags",
         Callback = function(callback)
             enabled = callback
             if callback then
-                RunLoops:BindToHeartbeat("Utility", function(dt)
+                RunLoops:BindToHeartbeat("NameTags", function(dt)
                     for _, player in ipairs(game.Players:GetPlayers()) do 
-                        if player.Character then
+                        if player ~= lplr and player.Character and IsAlive(player) then
                             if not nametags[player] then
                                 createNametag(player)
                             else
@@ -900,7 +1016,7 @@ runcode(function()
                     end
                 end)
             else
-                RunLoops:UnbindFromHeartbeat("Utility")
+                RunLoops:UnbindFromHeartbeat("NameTags")
                 espfolder:ClearAllChildren()
                 for player, tag in pairs(nametags) do
                     if tag then
@@ -919,8 +1035,8 @@ runcode(function()
                 end
             end
         end
-    })  
-    local DisplayNames = Utility:CreateToggle({
+    })
+    local DisplayNames = Render:CreateToggle({
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
@@ -929,7 +1045,7 @@ runcode(function()
             updateAllNametags()
         end
     })
-    local Names = Utility:CreateToggle({
+    local Names = Render:CreateToggle({
         Name = "Names",
         CurrentValue = false,
         Flag = "espnames",
@@ -938,7 +1054,7 @@ runcode(function()
             updateAllNametags()
         end
     })
-    local Health = Utility:CreateToggle({
+    local Health = Render:CreateToggle({
         Name = "Health",
         CurrentValue = false,
         Flag = "esphealth",
@@ -970,7 +1086,7 @@ for _, player in ipairs(Players:GetPlayers()) do
 end
 
 if lplr then
-    local weightlisted = WhitelistModule.checkstate(WhitelistModule.combinedHash)
+    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
     if weightlisted then
         local players, replicatedStorage = game:GetService("Players"), game:GetService("ReplicatedStorage")
         local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
@@ -998,6 +1114,5 @@ if lplr then
         end
     end
 end
-
 WhitelistModule.update_tag_meta()
 GuiLibrary:LoadConfiguration()

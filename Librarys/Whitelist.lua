@@ -19,11 +19,13 @@ local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
 ChatTagModule.hashedCombined = hashedCombined
 ChatTagModule.hashUserIdAndUsername = hashUserIdAndUsername
 
-function ChatTagModule.checkstate(hashedCombined)
+function ChatTagModule.checkstate(player)
+    local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
     return Whitelist[hashedCombined] ~= nil
 end
 
-function ChatTagModule.getCustomTag(hashedCombined)
+function ChatTagModule.getCustomTag(player)
+    local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] and Whitelist[hashedCombined].tags and Whitelist[hashedCombined].tags[1] then
         return Whitelist[hashedCombined].tags[1].text, Whitelist[hashedCombined].tags[1].color
     end
@@ -37,22 +39,19 @@ end
 
 local ChatTag = {}
 
-function ChatTagModule.update_tag_meta()
+function ChatTagModule.UpdateTags()
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local TextChatService = game:GetService("TextChatService")
 
-    if not ChatTagModule.checkstate(hashedCombined) then
-        return ChatTag
+    local tagText, tagColor = ChatTagModule.getCustomTag(player)
+    if tagText and tagColor then
+        ChatTag[player.UserId] = {
+            TagColor = tagColor,
+            TagText = tagText,
+            PlayerType = "PRIVATE"
+        }
     end
-
-    local tagText, tagColor = ChatTagModule.getCustomTag(hashedCombined)
-    local v = game.Players.LocalPlayer
-    ChatTag[v.UserId] = {
-        TagColor = tagColor or Color3.new(0.7, 0, 1),
-        TagText = tagText or "Aristois Private",
-        PlayerType = "PRIVATE"
-    }
 
     local oldchanneltabs = {}
     local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
@@ -92,17 +91,30 @@ function ChatTagModule.update_tag_meta()
         TextChatService.OnIncomingMessage = function(message)
             local properties = Instance.new("TextChatMessageProperties")
             if message.TextSource then
-                local player = Players:GetPlayerByUserId(message.TextSource.UserId)
-                if player and ChatTag[player.UserId] then
-                    local r, g, b = ChatTag[player.UserId].TagColor.r * 255, ChatTag[player.UserId].TagColor.g * 255, ChatTag[player.UserId].TagColor.b * 255
+                local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
+                if sender and ChatTag[sender.UserId] then
+                    local r, g, b = ChatTag[sender.UserId].TagColor.r * 255, ChatTag[sender.UserId].TagColor.g * 255, ChatTag[sender.UserId].TagColor.b * 255
                     local hexColor = rgbToHex(r, g, b)
-                    properties.PrefixText = "<font color='" .. hexColor .. "'>[" .. ChatTag[player.UserId].TagText .. "]</font> " .. message.PrefixText
+                    properties.PrefixText = "<font color='" .. hexColor .. "'>[" .. ChatTag[sender.UserId].TagText .. "]</font> " .. message.PrefixText
                 end
             end
             return properties
         end
     end
     return ChatTag
+end
+
+for i, player in pairs(game.Players:GetPlayers()) do
+    if ChatTagModule.checkstate(player) then
+        local tagText, tagColor = ChatTagModule.getCustomTag(player)
+        if tagText and tagColor then
+            ChatTag[player.UserId] = {
+                TagColor = tagColor,
+                TagText = tagText,
+                PlayerType = "PRIVATE"
+            } 
+        end
+    end
 end
 
 return ChatTagModule

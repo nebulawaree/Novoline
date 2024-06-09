@@ -405,7 +405,7 @@ runcode(function()
     })
     local KillauraDistance = Blatant:CreateSlider({
         Name = "Distance",
-        Range = {1, 50},
+        Range = {1, 32},
         Increment = 1,
         Suffix = "Studs",
         CurrentValue = 32,

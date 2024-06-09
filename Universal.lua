@@ -1045,6 +1045,7 @@ if lplr then
                 local speaker = Players[messageData.FromSpeaker]
                 local message = messageData.Message
                 if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                    print(messageData.FromSpeaker)
                     GuiLibrary:Notify({
                         Title = "Aristois",
                         Content = messageData.FromSpeaker .. " is using Aristois!",
@@ -1059,7 +1060,7 @@ if lplr then
                             },
                         },
                     })
-                end
+                end 
             end)
         end
     end

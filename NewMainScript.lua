@@ -50,7 +50,7 @@ end
 
 local function updateFiles(commitHash)
     local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
-    local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
+    local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua", "assets"}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
         if not fileExists(localFilePath) or updateAvailable() then

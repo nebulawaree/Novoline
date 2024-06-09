@@ -68,6 +68,14 @@ local function updateFiles(commitHash)
     writefile("Aristois/commithash.txt", commitHash)
 end
 
+if betterisfile("Aristois/assets/cape.png") == false then
+    local req = requestfunc({
+        Url = "https://github.com/XzynAstralz/Aristois/raw/main/assets/cape.png",
+        Method = "GET"
+    })
+    writefile("Aristois/assets/cape.png", req.Body)
+end
+
 local updateAvailable, latestCommit = updateAvailable()
 if updateAvailable then
     updateFiles(latestCommit)

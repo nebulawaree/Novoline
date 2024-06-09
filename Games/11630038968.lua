@@ -345,7 +345,7 @@ runcode(function()
                         end
                         updateBoxAdornment(nearest)
                         if not lplr.Character:GetAttribute("Blocking") then
-                            ToolService.ToggleBlockSword:InvokeServer(true, swordtype)
+                            KnitClient.Services.ToolService.RF.ToggleBlockSword:InvokeServer(true, swordtype)
                         end
                     else
                         updateBoxAdornment(nil)
@@ -1241,7 +1241,7 @@ runcode(function()
                         end
                         if nearestBlockPosition then
                             local roundedPosition = Vector3.new(roundToWhole(nearestBlockPosition.X), roundToWhole(nearestBlockPosition.Y), roundToWhole(nearestBlockPosition.Z))
-                            ToolService.BreakBlock:InvokeServer(roundedPosition)
+                            KnitClient.Services.ToolService.RF.BreakBlock:InvokeServer(roundedPosition)
                         end
                     end
                 end)

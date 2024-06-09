@@ -496,20 +496,24 @@ end)
 runcode(function()
     local Section = Blatant:CreateSection("Flight", true)
     local FlightKeybindCheck = false
+    local initialYPosition = nil
     local FlightToggle = Blatant:CreateToggle({
         Name = "Flight",
         CurrentValue = false,
         Flag = "Flight",
         Callback = function(val)
             local flightEnabled = val
-            local lastTick = tick()
-            local airTimer = 0
+
+            if flightEnabled then
+                local player = Players.LocalPlayer
+                local character = player.Character
+                local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    initialYPosition = humanoidRootPart.Position.Y
+                end
+            end
+
             RunLoops:BindToHeartbeat("Fly", function()
-                local currentTick = tick()
-                local deltaTime = currentTick - lastTick
-                lastTick = currentTick
-                airTimer = airTimer + deltaTime
-                local remainingTime = math.max(1000 - airTimer, 0)
                 local player = Players.LocalPlayer
                 local character = player.Character
                 local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -521,21 +525,17 @@ runcode(function()
                     local flyVelocity = humanoid.MoveDirection * flySpeed
                     local flyUp = UserInputService:IsKeyDown(Enum.KeyCode.Space)
                     local flyDown = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
-                    local velocity = flyVelocity + Vector3.new(0, (flyUp and 50 or 0) + (flyDown and -50 or 0), 0)
 
                     if flightEnabled then
-                        humanoidRootPart.AssemblyLinearVelocity = velocity
+                        if flyUp then
+                            initialYPosition = initialYPosition + 1
+                        elseif flyDown then
+                            initialYPosition = initialYPosition - 1
+                        end
+                        humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, initialYPosition, humanoidRootPart.Position.Z)
+                        humanoidRootPart.AssemblyLinearVelocity = Vector3.new(flyVelocity.X, 0, flyVelocity.Z)
                     else
                         humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    end
-    
-                    if airTimer > 1000 then
-                        local ray = Ray.new(humanoidRootPart.Position, Vector3.new(0, -1000, 0))
-                        local ignoreList = {player, character}
-                        local hitPart, hitPosition = Workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
-                        if hitPart then
-                            airTimer = 0
-                        end
                     end
                 end
             end)
@@ -1259,6 +1259,56 @@ runcode(function()
         Flag = "NukerDistance",
         Callback = function(Value)
             NukerDistance["Value"] = Value
+        end
+    })
+end)
+
+runcode(function()
+    local godModeToggle = Blatant:CreateToggle({
+        Name = "Semi-GodMode",
+        CurrentValue = false,
+        Flag = "GodMode",
+        Callback = function(enabled)
+            if enabled then
+                local lplr = game.Players.LocalPlayer
+                local cam = workspace.CurrentCamera
+                local oldChar = lplr.Character
+                oldChar.Archivable = true
+                local clone = oldChar:Clone()
+                oldChar.PrimaryPart.Anchored = false
+                local humClone = oldChar.Humanoid:Clone()
+                humClone.Parent = oldChar
+                cam.CameraSubject = clone.Humanoid
+                clone.Parent = workspace
+                lplr.Character = clone
+                local minY = -153.3984832763672
+                local function teleportCharacter(hitPosition)
+                    local offset = Vector3.new(0, -3, 0)
+                    local newPosition = hitPosition + offset
+                    if newPosition.Y < minY then
+                        newPosition = Vector3.new(newPosition.X, minY, newPosition.Z)
+                    end
+                    oldChar:SetPrimaryPartCFrame(CFrame.new(newPosition.X, newPosition.Y, newPosition.Z))
+                end
+                RunLoops:BindToRenderStep("GodModeRaycast", function()
+                    local origin = clone.HumanoidRootPart.Position
+                    local direction = Vector3.new(0, -1, 0)
+                    local raycastParams = RaycastParams.new()
+                    raycastParams.FilterDescendantsInstances = {clone, lplr.Character}
+                    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                    local ray = Ray.new(origin, direction * 7)
+                    local part, position = workspace:FindPartOnRayWithIgnoreList(ray, {clone, lplr.Character}, false, false)
+                    if part then
+                        teleportCharacter(position)
+                        oldChar.HumanoidRootPart.Velocity = Vector3.new(oldChar.HumanoidRootPart.Velocity.X, 0, oldChar.HumanoidRootPart.Velocity.Z)
+                    else
+                        local newPosition = origin + Vector3.new(0, 1000, 0)
+                        teleportCharacter(newPosition)
+                    end
+                end)
+            else
+                RunLoops:UnbindFromRenderStep("GodModeRaycast")
+            end
         end
     })
 end)

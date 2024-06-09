@@ -1065,9 +1065,10 @@ runcode(function()
     })
 end)
 
-Players.PlayerAdded:Connect(function(player)
+game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
+        wait(5)
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
@@ -1076,7 +1077,7 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
-for _, player in ipairs(Players:GetPlayers()) do
+for _, player in ipairs(game.Players:GetPlayers()) do
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
         local replicatedStorage = game:GetService("ReplicatedStorage")

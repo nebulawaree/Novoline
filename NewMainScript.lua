@@ -2,6 +2,7 @@ local requestfunc = syn and syn.request or http and http.request or http_request
 if not isfolder("Aristois") then
     makefolder("Aristois")
 end
+shared.ReadFile = true
 
 if not isfolder("Aristois/Games") then
     makefolder("Aristois/Games")
@@ -27,6 +28,11 @@ end
 local function fileExists(filePath)
     local success, _ = pcall(function() return readfile(filePath) end)
     return success
+end
+
+local betterisfile = function(file)
+    local suc, res = pcall(function() return readfile(file) end)
+    return suc and res ~= nil
 end
 
 local function downloadFile(url, filePath)
@@ -60,14 +66,6 @@ local function updateFiles(commitHash)
         end
     end
     writefile("Aristois/commithash.txt", commitHash)
-end
-
-if fileExists("Aristois/assets/cape.png") == false then
-    local req = requestfunc({
-        Url = "https://cdn.discordapp.com/attachments/1009513335303180398/1029389409751150612/unknown.png",
-        Method = "GET"
-    })
-    writefile("Aristois/assets/cape.png", req.Body)
 end
 
 local updateAvailable, latestCommit = updateAvailable()

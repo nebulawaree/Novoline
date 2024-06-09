@@ -1,6 +1,8 @@
+local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 if not isfolder("Aristois") then
     makefolder("Aristois")
 end
+shared.ReadFile = true
 
 if not isfolder("Aristois/Games") then
     makefolder("Aristois/Games")
@@ -28,6 +30,11 @@ local function fileExists(filePath)
     return success
 end
 
+local betterisfile = function(file)
+    local suc, res = pcall(function() return readfile(file) end)
+    return suc and res ~= nil
+end
+
 local function downloadFile(url, filePath)
     local response = game:HttpGet(url, true)
     if response then
@@ -50,7 +57,7 @@ end
 
 local function updateFiles(commitHash)
     local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
-    local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua", "assets"}
+    local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
         if not fileExists(localFilePath) or updateAvailable() then
@@ -59,6 +66,14 @@ local function updateFiles(commitHash)
         end
     end
     writefile("Aristois/commithash.txt", commitHash)
+end
+
+if betterisfile("Aristois/assets/cape.png") == false then
+    local req = requestfunc({
+        Url = "https://github.com/XzynAstralz/Aristois/raw/main/assets/cape.png",
+        Method = "GET"
+    })
+    writefile("Aristois/assets/cape.png", req.Body)
 end
 
 local updateAvailable, latestCommit = updateAvailable()

@@ -17,7 +17,8 @@ local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
-print("waeaeae")
+local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.lua"))()
+
 local Table = {
     ChatStrings1 = {
         ["HYPE73WZNQRT5"] = "Aristois",
@@ -37,7 +38,6 @@ local Table = {
         return boxHandleAdornment
     end
 }
-
 
 local checkedPlayers_mt = {
     __metatable = "Locked"
@@ -1066,7 +1066,8 @@ runcode(function()
 end)
 
 Players.PlayerAdded:Connect(function(player)
-    if CheckPlayerType(player) == "PRIVATE" then
+    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+    if Whitelist[hashedCombined] then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
@@ -1076,7 +1077,8 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
-    if CheckPlayerType(player) == "PRIVATE" then
+    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+    if Whitelist[hashedCombined] then
         local replicatedStorage = game:GetService("ReplicatedStorage")
         local chatStrings = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatStrings then
@@ -1086,14 +1088,16 @@ for _, player in ipairs(Players:GetPlayers()) do
 end
 
 if lplr then
-    local weightlisted = WhitelistModule.checkstate(WhitelistModule.hashedClientIP)
-    if weightlisted then
-        local players, replicatedStorage = game:GetService("Players"), game:GetService("ReplicatedStorage")
+    local whitelisted = WhitelistModule.checkstate(WhitelistModule.hashUserIdAndUsername(lplr.UserId, lplr.Name))
+    if whitelisted then
+        local players = game:GetService("Players")
+        local replicatedStorage = game:GetService("ReplicatedStorage")
         local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
         if onMessageDoneFiltering then
             onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-                local speaker, message = players[messageData.FromSpeaker], messageData.Message
+                local speaker = players[messageData.FromSpeaker]
+                local message = messageData.Message
                 if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                     GuiLibrary:Notify({
                         Title = "Aristois",
@@ -1114,5 +1118,6 @@ if lplr then
         end
     end
 end
+
 WhitelistModule.update_tag_meta()
 GuiLibrary:LoadConfiguration()

@@ -1095,7 +1095,7 @@ runcode(function()
             torso = character:WaitForChild("Torso")
         end
         local cape = Instance.new("Part", torso.Parent)
-        cape.Name = "Cape"
+        cape.Name = "Cape (no image rn)"
         cape.Anchored = false
         cape.CanCollide = false
         cape.TopSurface = 0

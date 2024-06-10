@@ -516,7 +516,7 @@ runcode(function()
                 local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
     
                 if humanoid and humanoidRootPart then
-                    local flySpeed = 10  
+                    local flySpeed = 9
 
                     local flyVelocity = humanoid.MoveDirection * flySpeed
                     local flyUp = UserInputService:IsKeyDown(Enum.KeyCode.Space)

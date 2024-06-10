@@ -497,6 +497,7 @@ runcode(function()
     local Section = Blatant:CreateSection("Flight", true)
     local FlightKeybindCheck = false
     local initialYPosition = nil
+    local heartbeatConnection = nil
     local FlightToggle = Blatant:CreateToggle({
         Name = "Flight",
         CurrentValue = false,
@@ -511,54 +512,54 @@ runcode(function()
                 if humanoidRootPart then
                     initialYPosition = humanoidRootPart.Position.Y
                 end
-            end
+                heartbeatConnection = RunLoops:BindToHeartbeat("Fly", function()
+                    local player = Players.LocalPlayer
+                    local character = player.Character
+                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                    local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+    
+                    if humanoid and humanoidRootPart then
+                        local flySpeed = 10  
 
-            RunLoops:BindToHeartbeat("Fly", function()
+                        local flyVelocity = humanoid.MoveDirection * flySpeed
+                        local flyUp = UserInputService:IsKeyDown(Enum.KeyCode.Space)
+                        local flyDown = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
+
+                        if flightEnabled then
+                            if flyUp then
+                                initialYPosition = initialYPosition + 1
+                            elseif flyDown then
+                                initialYPosition = initialYPosition - 1
+                            end
+                            humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, initialYPosition, humanoidRootPart.Position.Z)
+                            humanoidRootPart.AssemblyLinearVelocity = Vector3.new(flyVelocity.X, 0, flyVelocity.Z)
+                        else
+                            humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        end
+                    end
+                end)
+            else
+                if heartbeatConnection then
+                    RunLoops:UnbindFromHeartbeat("Fly")
+                    heartbeatConnection = nil
+                end
                 local player = Players.LocalPlayer
                 local character = player.Character
-                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
                 local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
-    
-                if humanoid and humanoidRootPart then
-                    local flySpeed = 10  
-
-                    local flyVelocity = humanoid.MoveDirection * flySpeed
-                    local flyUp = UserInputService:IsKeyDown(Enum.KeyCode.Space)
-                    local flyDown = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
-
-                    if flightEnabled then
-                        if flyUp then
-                            initialYPosition = initialYPosition + 1
-                        elseif flyDown then
-                            initialYPosition = initialYPosition - 1
-                        end
-                        humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, initialYPosition, humanoidRootPart.Position.Z)
-                        humanoidRootPart.AssemblyLinearVelocity = Vector3.new(flyVelocity.X, 0, flyVelocity.Z)
-                    else
-                        humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    end
+                if humanoidRootPart then
+                    humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
-            end)
-            if not val then
-                RunLoops:UnbindFromHeartbeat("Fly")
             end
         end
     })
+    
     local ftkeybind = Blatant:CreateKeybind({
         Name = "Flight Keybind",
         CurrentKeybind = "C",
         HoldToInteract = false,
         Flag = "FlightKeybindToggle",
         Callback = function(Keybind)
-            if FlightKeybindCheck == true then
-                FlightKeybindCheck = false
-                FlightToggle:Set(enabled)
-            else
-                if FlightKeybindCheck == false then
-                    FlightKeybindCheck = true
-                    FlightToggle:Set(not enabled)
-                end
-            end
+            FlightToggle:Set(not FlightToggle.CurrentValue)
         end,
     })
 end)

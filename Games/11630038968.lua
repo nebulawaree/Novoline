@@ -1101,7 +1101,7 @@ runcode(function()
         cape.TopSurface = 0
         cape.BottomSurface = 0
         cape.Size = Vector3.new(0.2, 0.2, 0.2)
-        cape.Transparency = 1
+        cape.Transparency = 0
         local decal = Instance.new("Decal", cape)
         decal.Texture = texture
         decal.Face = "Back"

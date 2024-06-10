@@ -1095,7 +1095,7 @@ runcode(function()
             torso = character:WaitForChild("Torso")
         end
         local cape = Instance.new("Part", torso.Parent)
-        cape.Name = "Cape (no image rn)"
+        cape.Name = "Cape"
         cape.Anchored = false
         cape.CanCollide = false
         cape.TopSurface = 0
@@ -1145,6 +1145,7 @@ runcode(function()
             cape:Destroy()
         end
     end
+    
     local Connection
     local CapeToggle = Render:CreateToggle({
         Name = "Cape",
@@ -1313,6 +1314,7 @@ runcode(function()
         end
     })
 end)
+
 game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then

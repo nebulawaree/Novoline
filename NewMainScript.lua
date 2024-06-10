@@ -2,7 +2,6 @@ local requestfunc = syn and syn.request or http and http.request or http_request
 if not isfolder("Aristois") then
     makefolder("Aristois")
 end
-shared.ReadFile = true
 
 if not isfolder("Aristois/Games") then
     makefolder("Aristois/Games")

@@ -585,9 +585,15 @@ runcode(function()
         return hit == nil or hit:IsDescendantOf(player.Character)
     end
 
-    local function calculateHitChance(predictedPosition, actualPosition)
-        local deviation = (predictedPosition - actualPosition).Magnitude
-        return deviation <= 10 and math.random() <= 1
+    local function avoidParts(position)
+        local origin = lplr.Character.HumanoidRootPart.Position
+        local direction = (position - origin).Unit
+        local ray = Ray.new(origin, direction * (position - origin).Magnitude)
+        local hit, position = workspace:FindPartOnRay(ray, lplr.Character)
+        if hit and not hit:IsDescendantOf(nearest.Character) then
+            return position + (hit.Position - position).Unit * 5
+        end
+        return position
     end
 
     local function setup()
@@ -620,14 +626,13 @@ runcode(function()
                         local distance = (targetPosition - lplr.Character.HumanoidRootPart.Position).Magnitude
                         local flightTime = distance / arrowSpeed
                         local predictedPosition = targetPosition + (nearest.Character.HumanoidRootPart.Velocity * flightTime) + (0.5 * Vector3.new(0, 30, 0) * flightTime^2)
+                        predictedPosition = avoidParts(predictedPosition)
                         if canshoot() and not firing then
-                            if calculateHitChance(predictedPosition, targetPosition) then
-                                firing = true
-                                game:GetService("Players").LocalPlayer.Backpack.DefaultBow.__comm__.RF.Fire:InvokeServer(predictedPosition, math.huge)
-                                lastBowFireTime = tick()
-                                task.wait(0.5)
-                                firing = false
-                            end
+                            firing = true
+                            game:GetService("Players").LocalPlayer.Backpack.DefaultBow.__comm__.RF.Fire:InvokeServer(predictedPosition, math.huge)
+                            lastBowFireTime = tick()
+                            task.wait(0.5)
+                            firing = false
                         end
                     end
                 end)

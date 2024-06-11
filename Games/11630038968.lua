@@ -9,7 +9,7 @@ local TweenService = game:GetService("TweenService")
 local Camera = Workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
-local TextChatService = game:GetService("TextService")
+local TextChatService = game:GetService("TextChatService")
 local getcustomasset = getsynasset or getcustomasset
 local customassetcheck = (getsynasset or getcustomasset) and true
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
@@ -336,7 +336,7 @@ runcode(function()
                     local swordtype = GetSword()
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
-                        if FacePlayerEnabled.Enabled then
+                        if nearest and FacePlayerEnabled.Enabled then
                             local playerPosition = lplr.Character.HumanoidRootPart.Position
                             local nearestPosition = nearest.Character.HumanoidRootPart.Position
                             local direction = (playerPosition - nearestPosition).unit
@@ -569,7 +569,7 @@ runcode(function()
     local firing = false
     local BowCooldown = 3
     local arrowSpeed = 120
-
+    local nearest
     local distance = {["Value"] = 100}
 
     local function canshoot()
@@ -621,8 +621,8 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("ProjectileAura", function()
-                    local nearest = getNearestPlayer(distance["Value"])
-                    if nearest ~= nil and nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) then
+                    nearest = getNearestPlayer(distance["Value"])
+                    if nearest ~= nil and nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) and IsAlive(nearest) and IsAlive(lplr) then
                         local targetPosition = nearest.Character.HumanoidRootPart.Position
                         local distance = (targetPosition - lplr.Character.HumanoidRootPart.Position).Magnitude
                         local flightTime = distance / arrowSpeed
@@ -816,27 +816,29 @@ runcode(function()
                             if distanceToNearest <= 25 and IsAlive(nearest) then
                                 if not clonedStatsGui then
                                     clonedStatsGui = StatsGuiTemplate:Clone()
-                                    clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
-                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
-                                    clonedStatsGui.Size = UDim2.new(0, 1000, 0, 100)
-                                    clonedStatsGui.CanvasGroup.Content.Position = UDim2.new(0, 0, 0, 0)
-                                    local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
-                                    local username = clonedStatsGui.CanvasGroup.Content.username
-                                    SetPlayerIcon(Playericon, nearest)
-                                    if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
-                                        local Health = clonedStatsGui.CanvasGroup.Content.Health
-                                        local bar = Health.bar
-                                        local fill = bar.fill
-                                        local Hp = clonedStatsGui.CanvasGroup.Content.Hp
-                                        local maxHealth = nearest.Character.Humanoid.MaxHealth
-                                        local currentHealth = nearest.Character.Humanoid.Health
-                                        UpdateHpText(Hp, currentHealth)
-                                        UpdateHealthBar(fill, currentHealth, maxHealth)
-                                        username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
+                                    if clonedStatsGui then
+                                        clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
+                                        clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
+                                        clonedStatsGui.Size = UDim2.new(0, 1000, 0, 100)
+                                        clonedStatsGui.CanvasGroup.Content.Position = UDim2.new(0, 0, 0, 0)
+                                        local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
+                                        local username = clonedStatsGui.CanvasGroup.Content.username
+                                        SetPlayerIcon(Playericon, nearest)
+                                        if clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
+                                            local Health = clonedStatsGui.CanvasGroup.Content.Health
+                                            local bar = Health.bar
+                                            local fill = bar.fill
+                                            local Hp = clonedStatsGui.CanvasGroup.Content.Hp
+                                            local maxHealth = nearest.Character.Humanoid.MaxHealth
+                                            local currentHealth = nearest.Character.Humanoid.Health
+                                            UpdateHpText(Hp, currentHealth)
+                                            UpdateHealthBar(fill, currentHealth, maxHealth)
+                                            username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
+                                        end
                                     end
                                 else
-                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
                                     if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
+                                        clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
                                         local Health = clonedStatsGui.CanvasGroup.Content.Health
                                         local bar = Health.bar
                                         local fill = bar.fill

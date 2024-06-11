@@ -662,70 +662,6 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("DeviceSpoofer", true)
-    local selectedDevices = {Enum.Platform.Windows}
-    local DeviceSpoofer = Utility:CreateToggle({
-        Name = "Device Spoofer",
-        CurrentValue = false,
-        Flag = "Device",
-        Callback = function(callback)
-            if callback then
-                local originalNamecall
-                originalNamecall = hookmetamethod(game, "__namecall", function(...)
-                    local args = {...}
-                    local self = args[1]
-                    local method = getnamecallmethod()
-
-                    if self == UserInputService or self == GuiService then
-                        if method == "GetPlatform" then
-                            return selectedDevices[1]
-                        end
-                    end
-                    return originalNamecall(...)
-                end)
-                getgenv().originalNamecall = originalNamecall
-            else
-                if getgenv().originalNamecall then
-                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
-                    getgenv().originalNamecall = nil
-                end
-            end
-        end
-    })
-    local Dropdown = Utility:CreateDropdown({
-        Name = "Device Selector",
-        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
-        CurrentOption = "Windows",
-        Flag = "DeviceSelector", 
-        Callback = function(Option)
-            selectedDevices = {}
-            for _, device in ipairs(Option) do
-                table.insert(selectedDevices, Enum.Platform[device])
-            end
-        end,
-    })
-end)
-
-runcode(function()
-    local Section = Utility:CreateSection("AnitAfk", true)
-    local AnitAfk = Utility:CreateToggle({
-        Name = "Anit-AFK",
-        CurrentValue = false,
-        Flag = "AnitAfk",
-        Callback = function(callback)
-            if callback then
-                lplr.Idled:Connect(function()
-                    VirtualUserService:CaptureController()
-                    VirtualUserService:ClickButton2(Vector2.new())
-                end)
-            else
-                lplr.Idled:Disconnect()
-            end
-        end
-    })
-end)
-
-runcode(function()
     local Section = Render:CreateSection("NameTags", true)
     local espfolder = Instance.new("Folder", ScreenGui)
     espfolder.Name = "ESP"
@@ -1114,6 +1050,70 @@ runcode(function()
             else
                 Connection:Disconnect()
                 DestroyCape(lplr.Character)
+            end
+        end
+    })
+end)
+
+runcode(function()
+    local Section = Utility:CreateSection("DeviceSpoofer", true)
+    local selectedDevices = {Enum.Platform.Windows}
+    local DeviceSpoofer = Utility:CreateToggle({
+        Name = "Device Spoofer",
+        CurrentValue = false,
+        Flag = "Device",
+        Callback = function(callback)
+            if callback then
+                local originalNamecall
+                originalNamecall = hookmetamethod(game, "__namecall", function(...)
+                    local args = {...}
+                    local self = args[1]
+                    local method = getnamecallmethod()
+
+                    if self == UserInputService or self == GuiService then
+                        if method == "GetPlatform" then
+                            return selectedDevices[1]
+                        end
+                    end
+                    return originalNamecall(...)
+                end)
+                getgenv().originalNamecall = originalNamecall
+            else
+                if getgenv().originalNamecall then
+                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
+                    getgenv().originalNamecall = nil
+                end
+            end
+        end
+    })
+    local Dropdown = Utility:CreateDropdown({
+        Name = "Device Selector",
+        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
+        CurrentOption = "Windows",
+        Flag = "DeviceSelector", 
+        Callback = function(Option)
+            selectedDevices = {}
+            for _, device in ipairs(Option) do
+                table.insert(selectedDevices, Enum.Platform[device])
+            end
+        end,
+    })
+end)
+
+runcode(function()
+    local Section = Utility:CreateSection("AnitAfk", true)
+    local AnitAfk = Utility:CreateToggle({
+        Name = "Anit-AFK",
+        CurrentValue = false,
+        Flag = "AnitAfk",
+        Callback = function(callback)
+            if callback then
+                lplr.Idled:Connect(function()
+                    VirtualUserService:CaptureController()
+                    VirtualUserService:ClickButton2(Vector2.new())
+                end)
+            else
+                lplr.Idled:Disconnect()
             end
         end
     })

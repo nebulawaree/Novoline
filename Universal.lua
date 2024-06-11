@@ -41,8 +41,6 @@ local Table = {
 }
 
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
-local KnitClient = game:GetService("ReplicatedStorage").Packages.Knit
-
 local Window = GuiLibrary:CreateWindow({
     Name = "Rayfield Example Window",
     LoadingTitle = "Rayfield Interface Suite",
@@ -50,7 +48,7 @@ local Window = GuiLibrary:CreateWindow({
     ConfigurationSaving = {
        Enabled = true,
        FolderName = "Aristois/configs",
-       FileName = tostring(shared.AristoisPlaceId) .. ".lua"
+       FileName = tostring(game.PlaceId) .. ".lua"
     },
     Discord = {
        Enabled = false,
@@ -141,16 +139,13 @@ local function IsAlive(plr)
     return false 
 end
 
-local function getNearestPlayer(maxDist, findNearestHealthPlayer)
+local function getNearestPlayer(maxDist, findNearestHealthPlayer, teamCheck)
     local Players = game:GetService("Players"):GetPlayers()
     local targetData = {
         nearestPlayer = nil,
         dist = math.huge,
         lowestHealth = math.huge
     }
-
-    local nearestBoxingDummy = nil
-    local nearestDist = math.huge
 
     local function updateTargetData(entity, mag, health)
         if findNearestHealthPlayer and health < targetData.lowestHealth then
@@ -167,82 +162,27 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
+                local health = player.Character:FindFirstChild("Humanoid").Health
+                
                 if mag < maxDist then
-                    local health = player.Character:FindFirstChild("Humanoid").Health
-                    updateTargetData(player, mag, health)
+                    if not teamCheck or player.Team ~= lplr.Team then
+                        updateTargetData(player, mag, health)
+                    end
                 end
             end
         end
-    end
-
-    for _, entity in ipairs(workspace:GetChildren()) do
-        if entity.Name == "BoxingDummy" and entity:IsA("Model") then
-            local rootPart = entity:FindFirstChild("HumanoidRootPart")
-            if rootPart then
-                local dist = (rootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
-                if dist < nearestDist and dist < maxDist then
-                    nearestDist = dist
-                    nearestBoxingDummy = entity
-                end
-            end
-        end
-    end
-
-    if nearestBoxingDummy then
-        local mockPlayer = {
-            Name = "BoxingDummy",
-            Character = nearestBoxingDummy,
-            Distance = nearestDist,
-            Health = 0
-        }
-        updateTargetData(mockPlayer, nearestDist, 0)
     end
 
     return targetData.nearestPlayer
 end
 
-local function runcode(func) func() end
-
 local function SpeedMultiplier()
     local baseMultiplier = 1
     local multiplier = baseMultiplier
-    if lplr.Character:GetAttribute("Blocking") then
-        multiplier = multiplier * 1.5
-    end
-
     return multiplier
 end
 
-local foundSwords = {}
-local function findClosestMatch(name)
-    local backpack = lplr.Backpack
-    local chr = lplr.Character
-    for _, item in ipairs(chr:GetChildren()) do
-        if item.Name:find(name) then
-            return item
-        end
-    end
-    for _, item in ipairs(backpack:GetChildren()) do
-        if item.Name:find(name) then
-            return item
-        end
-    end
-    return nil
-end
-
-local function GetSword()
-    if not foundSwords["Sword"] then
-        local swordMatch = findClosestMatch("Sword")
-        if swordMatch then
-            foundSwords["Sword"] = swordMatch.Name
-        end
-    end
-    return foundSwords["Sword"]
-end
-
-local remotes = {
-    AttackRemote = KnitClient.Services.ToolService.RF.AttackPlayerWithSword
-}
+local function runcode(func) func() end
 
 local nearest
 local Distance = {["Value"] = 32}
@@ -262,7 +202,6 @@ runcode(function()
         end
         return tools
     end
-
     local AutoClicker = Combat:CreateToggle({
         Name = "AutoClicker",
         CurrentValue = false,
@@ -304,8 +243,10 @@ runcode(function()
     local Section = Blatant:CreateSection("Killaura", true)
     local FacePlayerEnabled = {Enabled = false}
     local Boxes = {Enabled = false}
+    local TeamCheck = {Enabled = false}
     local boxHandleAdornment = Table.Box()
     local Distance = {Value = 32}
+    
     local function updateBoxAdornment(nearest)
         if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") then
             if boxHandleAdornment.Parent ~= nearest.Character then
@@ -322,7 +263,6 @@ runcode(function()
             boxHandleAdornment.Parent = nil
         end
     end
-
     local Killaura = Blatant:CreateToggle({
         Name = "Killaura",
         CurrentValue = false,
@@ -331,21 +271,12 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
                     task.wait(0.01)
-                    nearest = getNearestPlayer(Distance["Value"])
-                    local swordtype = GetSword()
+                    nearest = getNearestPlayer(Distance["Value"], false, TeamCheck.Enabled)
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
-                        remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
-                        if nearest and FacePlayerEnabled.Enabled then
-                            local playerPosition = lplr.Character.HumanoidRootPart.Position
-                            local nearestPosition = nearest.Character.HumanoidRootPart.Position
-                            local direction = (playerPosition - nearestPosition).unit
-                            local lookAtPosition = playerPosition + direction
-                            lplr.Character:SetPrimaryPartCFrame(CFrame.new(playerPosition, Vector3.new(lookAtPosition.X, playerPosition.Y, lookAtPosition.Z)))
+                        if FacePlayerEnabled.Enabled then
+                            lplr.Character:SetPrimaryPartCFrame(CFrame.new(lplr.Character.HumanoidRootPart.Position, Vector3.new(nearest.Character.HumanoidRootPart.Position.X, lplr.Character.HumanoidRootPart.Position.Y, nearest.Character.HumanoidRootPart.Position.Z)))
                         end
                         updateBoxAdornment(nearest)
-                        if not lplr.Character:GetAttribute("Blocking") then
-                            KnitClient.Services.ToolService.RF.ToggleBlockSword:InvokeServer(true, swordtype)
-                        end
                     else
                         updateBoxAdornment(nil)
                     end
@@ -367,7 +298,6 @@ runcode(function()
             Distance["Value"] = Value
         end
     })
-
     local FacePlayer = Blatant:CreateToggle({
         Name = "FacePlayer",
         CurrentValue = false,
@@ -376,7 +306,6 @@ runcode(function()
             FacePlayerEnabled.Enabled = val
         end
     })
-
     local BoxesToggle = Blatant:CreateToggle({
         Name = "Boxes",
         CurrentValue = false,
@@ -385,17 +314,27 @@ runcode(function()
             Boxes.Enabled = val
         end
     })
+    local TeamCheckToggle = Blatant:CreateToggle({
+        Name = "Team Check",
+        CurrentValue = false,
+        Flag = "TeamCheck",
+        Callback = function(val)
+            TeamCheck.Enabled = val
+        end
+    })
 end)
 
-local SpeedSlider = {["Value"] = 27}
+local SpeedSlider = {["Value"] = 22}
 runcode(function()
     local Section = Blatant:CreateSection("Speed", true)
     local lastMoveTime = tick()
-    local AutoJump = false
+    local AutoJump = {Enabled = false}
+    local AlwaysJump = {Enabled = false}
     local AutoPot = false
     local HeatSeeker = {Enabled = false}
     local IdleThreshold = {["Value"] = 0.97}
     local SpeedDuration = {["Value"] = 0.62}
+
     local SpeedToggle = Blatant:CreateToggle({
         Name = "Speed",
         CurrentValue = false,
@@ -413,7 +352,7 @@ runcode(function()
                             if moveDirection.magnitude < 0.01 then
                                 lastMoveTime = tick()
                                 newVelocity = Vector3.new(0, 0, 0)
-                            elseif tick() - lastMoveTime >  SpeedDuration["Value"] then
+                            elseif tick() - lastMoveTime > SpeedDuration["Value"] then
                                 newVelocity = moveDirection * (1.1 * speedMultiplier - currentSpeed)
                             else
                                 newVelocity = moveDirection * (speedIncrease * speedMultiplier - currentSpeed)
@@ -426,12 +365,17 @@ runcode(function()
                             newVelocity = moveDirection * (speedIncrease * speedMultiplier - currentSpeed)
                         end
                         lplr.Character:TranslateBy(newVelocity * dt)
-                        if nearest and AutoJump then
+                        if nearest and AutoJump.Enabled then
                             local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
                             if (lplr.Character.Humanoid.FloorMaterial ~= Enum.Material.Air) and lplr.Character.Humanoid.MoveDirection ~= Vector3.zero then
                                 if distanceToNearest <= 18 then
                                     lplr.Character.HumanoidRootPart.Velocity = Vector3.new(lplr.Character.HumanoidRootPart.Velocity.X, 15, lplr.Character.HumanoidRootPart.Velocity.Z)
                                 end
+                            end
+                        end
+                        if AlwaysJump.Enabled then
+                            if lplr.Character.Humanoid.FloorMaterial ~= Enum.Material.Air then
+                                lplr.Character.HumanoidRootPart.Velocity = Vector3.new(lplr.Character.HumanoidRootPart.Velocity.X, 15, lplr.Character.HumanoidRootPart.Velocity.Z)
                             end
                         end
                     end
@@ -446,7 +390,7 @@ runcode(function()
         Range = {1, 30},
         Increment = 1,
         Suffix = "Speed.",
-        CurrentValue = 27,
+        CurrentValue = 30,
         Flag = "DistanceSlider",
         Callback = function(Value)
             SpeedSlider["Value"] = Value
@@ -471,6 +415,7 @@ runcode(function()
             SpeedDuration["Value"] = Value
         end
     })
+
     local IdleThresholdSlider = Blatant:CreateSlider({
         Name = "IdleThreshold (HeatSeeker)",
         Range = {0.01, 0.97},
@@ -484,10 +429,18 @@ runcode(function()
     })
     local AutoJumpToggle = Blatant:CreateToggle({
         Name = "AutoJump",
-        CurrentValue = false,
+        CurrentValue = AutoJump.Enabled,
         Flag = "AutoJump",
         Callback = function(val)
-            AutoJump = val
+            AutoJump.Enabled = val
+        end
+    })
+    local AlwaysJumpToggle = Blatant:CreateToggle({
+        Name = "AlwaysJump",
+        CurrentValue = AlwaysJump.Enabled,
+        Flag = "AlwaysJump",
+        Callback = function(val)
+            AlwaysJump.Enabled = val
         end
     })
 end)
@@ -515,7 +468,7 @@ runcode(function()
                 local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
     
                 if humanoid and humanoidRootPart then
-                    local flySpeed = 9
+                    local flySpeed = 10  
 
                     local flyVelocity = humanoid.MoveDirection * flySpeed
                     local flyUp = UserInputService:IsKeyDown(Enum.KeyCode.Space)
@@ -563,218 +516,108 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("ProjectileAura", true)
-    local lastBowFireTime = 0
-    local firing = false
-    local BowCooldown = 3
-    local arrowSpeed = 120
-    local nearest
-    local distance = {["Value"] = 100}
+    local Section = Utility:CreateSection("DeviceSpoofer", true)
+    local selectedDevices = {Enum.Platform.Windows}
 
-    local function canshoot()
-        local currentTime = tick()
-        return currentTime - lastBowFireTime >= BowCooldown
-    end
-
-    local function isVisible(player)
-        local origin = lplr.Character.HumanoidRootPart.Position
-        local target = player.Character.HumanoidRootPart.Position
-        local direction = (target - origin).Unit
-        local ray = Ray.new(origin, direction * (target - origin).Magnitude)
-        local hit, position = workspace:FindPartOnRay(ray, lplr.Character)
-        return hit == nil or hit:IsDescendantOf(player.Character)
-    end
-
-    local function avoidParts(position)
-        local origin = lplr.Character.HumanoidRootPart.Position
-        local direction = (position - origin).Unit
-        local ray = Ray.new(origin, direction * (position - origin).Magnitude)
-        local hit, position = workspace:FindPartOnRay(ray, lplr.Character)
-        if hit and not hit:IsDescendantOf(nearest.Character) then
-            return position + (hit.Position - position).Unit * 5
-        end
-        return position
-    end
-
-    local function setup()
-        if lplr.Character then
-            lplr.Character:WaitForChild("Humanoid").Died:Connect(function()
-                firing = false
-            end)
-        end
-    end
-
-    setup()
-
-    lplr.CharacterAdded:Connect(function(character)
-        character:WaitForChild("Humanoid").Died:Connect(function()
-            firing = false
-        end)
-        setup()
-    end)
-    
-    local ProjectileAura = Blatant:CreateToggle({
-        Name = "ProjectileAura",
+    local DeviceSpoofer = Utility:CreateToggle({
+        Name = "Device Spoofer",
         CurrentValue = false,
-        Flag = "ProjectileAura",
+        Flag = "Device",
         Callback = function(callback)
             if callback then
-                RunLoops:BindToHeartbeat("ProjectileAura", function()
-                    nearest = getNearestPlayer(distance["Value"])
-                    if nearest ~= nil and nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) and IsAlive(nearest) and IsAlive(lplr) then
-                        local targetPosition = nearest.Character.HumanoidRootPart.Position
-                        local distance = (targetPosition - lplr.Character.HumanoidRootPart.Position).Magnitude
-                        local flightTime = distance / arrowSpeed
-                        local predictedPosition = targetPosition + (nearest.Character.HumanoidRootPart.Velocity * flightTime) + (0.5 * Vector3.new(0, 30, 0) * flightTime^2)
-                        predictedPosition = avoidParts(predictedPosition)
-                        if canshoot() and not firing then
-                            firing = true
-                            game:GetService("Players").LocalPlayer.Backpack.DefaultBow.__comm__.RF.Fire:InvokeServer(predictedPosition, math.huge)
-                            lastBowFireTime = tick()
-                            task.wait(0.5)
-                            firing = false
+                local originalNamecall
+                originalNamecall = hookmetamethod(game, "__namecall", function(...)
+                    local args = {...}
+                    local self = args[1]
+                    local method = getnamecallmethod()
+
+                    if self == UserInputService or self == GuiService then
+                        if method == "GetPlatform" then
+                            return selectedDevices[1]
                         end
                     end
+                    return originalNamecall(...)
                 end)
+                getgenv().originalNamecall = originalNamecall
             else
-                RunLoops:UnbindFromHeartbeat("ProjectileAura")
+                if getgenv().originalNamecall then
+                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
+                    getgenv().originalNamecall = nil
+                end
             end
         end
     })
-    local distance = Blatant:CreateSlider({
-        Name = "distance",
-        Range = {1, 100},
-        Increment = 1,
-        Suffix = "Shootdistance",
-        CurrentValue = 100,
-        Flag = "distance",
-        Callback = function(Value)
-            distance["Value"] = Value
-        end
+    local Dropdown = Utility:CreateDropdown({
+        Name = "Device Selector",
+        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
+        CurrentOption = "Windows",
+        Flag = "DeviceSelector", 
+        Callback = function(Option)
+            selectedDevices = {}
+            for _, device in ipairs(Option) do
+                table.insert(selectedDevices, Enum.Platform[device])
+            end
+        end,
     })
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("AutoWin", true)
-    local minY = -153.3984832763672
-    local maxY = -12.753118515014648
-    local speed = {["Value"] = 27}
-    local function getNearestPlayer(radius)
-        local closestPlayer = nil
-        local closestDistance = radius
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= lplr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                local playerY = player.Character.HumanoidRootPart.Position.Y
-                if playerY > minY and playerY < maxY then
-                    local distance = (player.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
-                    if distance < closestDistance then
-                        closestDistance = distance
-                        closestPlayer = player
-                    end
-                end
-            end
-        end
-        return closestPlayer
-    end
-
-    local function tweenToPosition(targetPosition)
-        local character = lplr.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local humanoidRootPart = character.HumanoidRootPart
-
-            local direction = (targetPosition - humanoidRootPart.Position).Unit
-            local newPosition = targetPosition - direction * 2
-
-            local tweenInfo = TweenInfo.new((newPosition - humanoidRootPart.Position).Magnitude / speed["Value"], Enum.EasingStyle.Linear)
-            local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(newPosition)})
-            tween:Play()
-
-            if targetPosition.Y > humanoidRootPart.Position.Y then
-                game.Workspace.Gravity = 0
-                character:FindFirstChildOfClass("Humanoid").RootPart.Velocity = Vector3.new(0, 0, 0)
-            else
-                game.Workspace.Gravity = 10
-                character:FindFirstChildOfClass("Humanoid").RootPart.Velocity = Vector3.new(0, 0, 0)
-            end
-        end
-    end
-        
-    local function randomString()
-        local char = lplr.Character
-        local length = math.random(10, 20)
-        local array = {}
-        for i = 1, length do
-            array[i] = string.char(math.random(32, 126))
-        end
-        return table.concat(array)
-    end
-        
-    local initialCollideStates = {}
-    local AutoWinToggle = Blatant:CreateToggle({
-        Name = "AutoWin",
+    local Section = Blatant:CreateSection("HitBoxs", true)
+    local OriginalProperties = {} 
+    local BoxSize = {["Value"] = 10}
+    local HitBoxs = Blatant:CreateToggle({
+        Name = "HitBoxs",
         CurrentValue = false,
-        Flag = "AutoWin",
-        Callback = function(enabled)
-            if enabled then
-                RunLoops:BindToHeartbeat("UpdateTweenToNearestPlayer", function()
-                    local nearest = getNearestPlayer(300)
-                    if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") and IsAlive(lplr) then
-                        local targetPosition = nearest.Character.HumanoidRootPart.Position
-                        if targetPosition.Y > minY and targetPosition.Y < maxY then
-                            tweenToPosition(targetPosition)
-                        end
-                    end
-                end)
-                if next(initialCollideStates) == nil then
-                    initialCollideStates = {}
-                    for _, part in pairs(workspace:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            initialCollideStates[part] = part.CanCollide
-                        end
-                    end
-                end
-                RunLoops:BindToHeartbeat("DisableCollision", function()
-                    if lplr.Character then
-                        local character = lplr.Character
-                        local floatName = randomString()
-                        for _, part in pairs(character:GetDescendants()) do
-                            if part:IsA("BasePart") and part.CanCollide == true and part.Name ~= floatName then
-                                part.CanCollide = false
-                            end
-                        end
-                        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-                        if humanoidRootPart then
-                            local ray = Ray.new(humanoidRootPart.Position, Vector3.new(0, -5, 0))
-                            local part, position = workspace:FindPartOnRay(ray)
-                            if part then
-                                part.CanCollide = false
+        Flag = "HitBoxExpander",
+        Callback = function(callback)
+            if callback then
+                RunLoops:BindToHeartbeat("HitBoxExpander", function()
+                    for i,v in ipairs(Players:GetPlayers()) do
+                        if v ~= lplr then
+                            local character = v.Character
+                            if character and IsAlive(v) then
+                                if not OriginalProperties[v] then
+                                    OriginalProperties[v] = {
+                                        Transparency = character.HumanoidRootPart.Transparency,
+                                        BrickColor = character.HumanoidRootPart.BrickColor,
+                                        Material = character.HumanoidRootPart.Material,
+                                        CanCollide = character.HumanoidRootPart.CanCollide
+                                    }
+                                end
+                                character.HumanoidRootPart.Size = Vector3.new(BoxSize["Value"], BoxSize["Value"], BoxSize["Value"])
+                                character.HumanoidRootPart.Transparency = 0.7
+                                character.HumanoidRootPart.BrickColor = BrickColor.new("Really blue")
+                                character.HumanoidRootPart.Material = Enum.Material.Neon
+                                character.HumanoidRootPart.CanCollide = true
                             end
                         end
                     end
+                    task.wait(0.1)
                 end)
             else
-                game.Workspace.Gravity = 100
-                RunLoops:UnbindFromHeartbeat("UpdateTweenToNearestPlayer")
-                RunLoops:UnbindFromHeartbeat("DisableCollision")
-                for part, state in pairs(initialCollideStates) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = state
+                RunLoops:UnbindFromHeartbeat("HitBoxExpander")
+                for player, props in pairs(OriginalProperties) do
+                    if player and player.Character then
+                        player.Character.HumanoidRootPart.Transparency = props.Transparency
+                        player.Character.HumanoidRootPart.BrickColor = props.BrickColor
+                        player.Character.HumanoidRootPart.Material = props.Material
+                        player.Character.HumanoidRootPart.CanCollide = props.CanCollide
                     end
                 end
-                initialCollideStates = {}
+                OriginalProperties = {}
             end
         end
     })
 
-    local speed = Blatant:CreateSlider({
-        Name = "speed",
-        Range = {1, 27},
+    local HitBoxSize = Blatant:CreateSlider({
+        Name = "HitBoxSize",
+        Range = {1, 30},
         Increment = 1,
-        Suffix = "TweenSpeed",
-        CurrentValue = 27,
-        Flag = "speed",
+        Suffix = "Size",
+        CurrentValue = 10,
+        Flag = "HitBoxSize",
         Callback = function(Value)
-            speed["Value"] = Value
+            BoxSize["Value"] = Value
         end
     })
 end)
@@ -815,29 +658,27 @@ runcode(function()
                             if distanceToNearest <= 25 and IsAlive(nearest) then
                                 if not clonedStatsGui then
                                     clonedStatsGui = StatsGuiTemplate:Clone()
-                                    if clonedStatsGui then
-                                        clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
-                                        clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
-                                        clonedStatsGui.Size = UDim2.new(0, 1000, 0, 100)
-                                        clonedStatsGui.CanvasGroup.Content.Position = UDim2.new(0, 0, 0, 0)
-                                        local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
-                                        local username = clonedStatsGui.CanvasGroup.Content.username
-                                        SetPlayerIcon(Playericon, nearest)
-                                        if clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
-                                            local Health = clonedStatsGui.CanvasGroup.Content.Health
-                                            local bar = Health.bar
-                                            local fill = bar.fill
-                                            local Hp = clonedStatsGui.CanvasGroup.Content.Hp
-                                            local maxHealth = nearest.Character.Humanoid.MaxHealth
-                                            local currentHealth = nearest.Character.Humanoid.Health
-                                            UpdateHpText(Hp, currentHealth)
-                                            UpdateHealthBar(fill, currentHealth, maxHealth)
-                                            username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
-                                        end
+                                    clonedStatsGui.StudsOffset = Vector3.new(0.4, 0, 0)
+                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
+                                    clonedStatsGui.Size = UDim2.new(0, 1000, 0, 100)
+                                    clonedStatsGui.CanvasGroup.Content.Position = UDim2.new(0, 0, 0, 0)
+                                    local Playericon = clonedStatsGui.CanvasGroup.Content.Health.Playericon
+                                    local username = clonedStatsGui.CanvasGroup.Content.username
+                                    SetPlayerIcon(Playericon, nearest)
+                                    if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
+                                        local Health = clonedStatsGui.CanvasGroup.Content.Health
+                                        local bar = Health.bar
+                                        local fill = bar.fill
+                                        local Hp = clonedStatsGui.CanvasGroup.Content.Hp
+                                        local maxHealth = nearest.Character.Humanoid.MaxHealth
+                                        local currentHealth = nearest.Character.Humanoid.Health
+                                        UpdateHpText(Hp, currentHealth)
+                                        UpdateHealthBar(fill, currentHealth, maxHealth)
+                                        username.Text = DisplayNames.Enabled and nearest.DisplayName or nearest.Name
                                     end
                                 else
+                                    clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
                                     if clonedStatsGui and clonedStatsGui.Parent and nearest.Character:FindFirstChild("Humanoid") then
-                                        clonedStatsGui.Parent = nearest.Character.HumanoidRootPart
                                         local Health = clonedStatsGui.CanvasGroup.Content.Health
                                         local bar = Health.bar
                                         local fill = bar.fill
@@ -888,6 +729,91 @@ runcode(function()
             DisplayNames.Enabled = val
         end
     })
+end)
+
+runcode(function()
+    local Section = Render:CreateSection("Cape", true)
+    local function CreateCape(character, texture)
+        local humanoid = character:WaitForChild("Humanoid")
+        local torso = nil
+        if humanoid.RigType == Enum.HumanoidRigType.R15 then
+            torso = character:WaitForChild("UpperTorso")
+        else
+            torso = character:WaitForChild("Torso")
+        end
+        local cape = Instance.new("Part", torso.Parent)
+        cape.Name = "Cape"
+        cape.Anchored = false
+        cape.CanCollide = false
+        cape.TopSurface = 0
+        cape.BottomSurface = 0
+        cape.Size = Vector3.new(0.2, 0.2, 0.2)
+        cape.Transparency = 1
+        local decal = Instance.new("Decal", cape)
+        decal.Texture = texture
+        decal.Face = "Back"
+        local mesh = Instance.new("BlockMesh", cape)
+        mesh.Scale = Vector3.new(9, 17.5, 0.5)
+        local motor = Instance.new("Motor", cape)
+        motor.Part0 = cape
+        motor.Part1 = torso
+        motor.MaxVelocity = 0.01
+        motor.C0 = CFrame.new(0, 2, 0) * CFrame.Angles(0, math.rad(90), 0)
+        motor.C1 = CFrame.new(0, 1, 0.45) * CFrame.Angles(0, math.rad(90), 0)
+        local wave = false
+        repeat
+            task.wait(1 / 44)
+            decal.Transparency = torso.Transparency
+            local angle = 0.1
+            local oldMagnitude = torso.Velocity.Magnitude
+            local maxVelocity = 0.002
+            if wave then
+                angle = angle + ((torso.Velocity.Magnitude / 10) * 0.05) + 0.05
+                wave = false
+            else
+                wave = true
+            end
+            angle = angle + math.min(torso.Velocity.Magnitude / 11, 0.5)
+            motor.MaxVelocity = math.min((torso.Velocity.Magnitude / 111), 0.04)
+            motor.DesiredAngle = -angle
+            if motor.CurrentAngle < -0.2 and motor.DesiredAngle > -0.2 then
+                motor.MaxVelocity = 0.04
+            end
+            repeat task.wait() until motor.CurrentAngle == motor.DesiredAngle or math.abs(torso.Velocity.Magnitude - oldMagnitude) >= (torso.Velocity.Magnitude / 10) + 1
+            if torso.Velocity.Magnitude < 0.1 then
+                task.wait(0.1)
+            end
+        until not cape or cape.Parent ~= torso.Parent
+    end
+
+    local function DestroyCape(character)
+        local cape = character:FindFirstChild("Cape")
+        if cape then
+            cape:Destroy()
+        end
+    end
+
+    local Connection
+    local CapeToggle = Render:CreateToggle({
+        Name = "Cape",
+        CurrentValue = false,
+        Flag = "Cape",
+        Callback = function(enabled)
+            if enabled then
+                CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
+                Connection = lplr.CharacterAdded:Connect(function(v)
+                    task.wait()
+                    CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
+                end)
+            else
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil 
+                end
+                DestroyCape(lplr.Character)
+            end
+        end
+    })    
 end)
 
 runcode(function()
@@ -1027,7 +953,7 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("NameTags", function(dt)
                     for _, player in ipairs(game.Players:GetPlayers()) do 
-                        if player.Character then
+                        if player ~= lplr and player.Character and IsAlive(player) then
                             if not nametags[player] then
                                 createNametag(player)
                             else
@@ -1061,7 +987,7 @@ runcode(function()
                 end
             end
         end
-    })  
+    })
     local DisplayNames = Render:CreateToggle({
         Name = "DisplayNames",
         CurrentValue = false,
@@ -1087,186 +1013,6 @@ runcode(function()
         Callback = function(val)
             esphealth = val
             updateAllNametags()
-        end
-    })
-end)
-
-runcode(function()
-    local Section = Render:CreateSection("Cape", true)
-    local function CreateCape(character, texture)
-        local humanoid = character:WaitForChild("Humanoid")
-        local torso = nil
-        if humanoid.RigType == Enum.HumanoidRigType.R15 then
-            torso = character:WaitForChild("UpperTorso")
-        else
-            torso = character:WaitForChild("Torso")
-        end
-        local cape = Instance.new("Part", torso.Parent)
-        cape.Name = "Cape"
-        cape.Anchored = false
-        cape.CanCollide = false
-        cape.TopSurface = 0
-        cape.BottomSurface = 0
-        cape.Size = Vector3.new(0.2, 0.2, 0.2)
-        cape.Transparency = 0
-        local decal = Instance.new("Decal", cape)
-        decal.Texture = texture
-        decal.Face = "Back"
-        local mesh = Instance.new("BlockMesh", cape)
-        mesh.Scale = Vector3.new(9, 17.5, 0.5)
-        local motor = Instance.new("Motor", cape)
-        motor.Part0 = cape
-        motor.Part1 = torso
-        motor.MaxVelocity = 0.01
-        motor.C0 = CFrame.new(0, 2, 0) * CFrame.Angles(0, math.rad(90), 0)
-        motor.C1 = CFrame.new(0, 1, 0.45) * CFrame.Angles(0, math.rad(90), 0)
-        local wave = false
-        repeat
-            task.wait(1 / 44)
-            decal.Transparency = torso.Transparency
-            local angle = 0.1
-            local oldMagnitude = torso.Velocity.Magnitude
-            local maxVelocity = 0.002
-            if wave then
-                angle = angle + ((torso.Velocity.Magnitude / 10) * 0.05) + 0.05
-                wave = false
-            else
-                wave = true
-            end
-            angle = angle + math.min(torso.Velocity.Magnitude / 11, 0.5)
-            motor.MaxVelocity = math.min((torso.Velocity.Magnitude / 111), 0.04)
-            motor.DesiredAngle = -angle
-            if motor.CurrentAngle < -0.2 and motor.DesiredAngle > -0.2 then
-                motor.MaxVelocity = 0.04
-            end
-            repeat task.wait() until motor.CurrentAngle == motor.DesiredAngle or math.abs(torso.Velocity.Magnitude - oldMagnitude) >= (torso.Velocity.Magnitude / 10) + 1
-            if torso.Velocity.Magnitude < 0.1 then
-                task.wait(0.1)
-            end
-        until not cape or cape.Parent ~= torso.Parent
-    end
-
-    local function DestroyCape(character)
-        local cape = character:FindFirstChild("Cape")
-        if cape then
-            cape:Destroy()
-        end
-    end
-    
-    local Connection
-    local CapeToggle = Render:CreateToggle({
-        Name = "Cape",
-        CurrentValue = false,
-        Flag = "Cape",
-        Callback = function(enabled)
-            if enabled then
-                CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
-                Connection = lplr.CharacterAdded:Connect(function(v)
-                    task.wait()
-                    CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
-                end)
-            else
-                Connection:Disconnect()
-                DestroyCape(lplr.Character)
-            end
-        end
-    })
-end)
-
-runcode(function()
-    local Section = Utility:CreateSection("DeviceSpoofer", true)
-    local selectedDevices = {Enum.Platform.Windows}
-
-    local DeviceSpoofer = Utility:CreateToggle({
-        Name = "Device Spoofer",
-        CurrentValue = false,
-        Flag = "Device",
-        Callback = function(callback)
-            if callback then
-                local originalNamecall
-                originalNamecall = hookmetamethod(game, "__namecall", function(...)
-                    local args = {...}
-                    local self = args[1]
-                    local method = getnamecallmethod()
-
-                    if self == UserInputService or self == GuiService then
-                        if method == "GetPlatform" then
-                            return selectedDevices[1]
-                        end
-                    end
-                    return originalNamecall(...)
-                end)
-                getgenv().originalNamecall = originalNamecall
-            else
-                if getgenv().originalNamecall then
-                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
-                    getgenv().originalNamecall = nil
-                end
-            end
-        end
-    })
-    local Dropdown = Utility:CreateDropdown({
-        Name = "Device Selector",
-        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
-        CurrentOption = "Windows",
-        Flag = "DeviceSelector", 
-        Callback = function(Option)
-            selectedDevices = {}
-            for _, device in ipairs(Option) do
-                table.insert(selectedDevices, Enum.Platform[device])
-            end
-        end,
-    })
-end)
-
-runcode(function()
-    local NukerEnabled = false
-    local breakInterval = 0.1
-    local NukerDistance = {["Value"] = 15}
-    local Section = Word:CreateSection("Nuker", true)
-    local function roundToWhole(number)
-        return math.floor(number + 0.5)
-    end
-
-    local Nuker = Word:CreateToggle({
-        Name = "Nuker",
-        CurrentValue = false,
-        Flag = "Nuker",
-        Callback = function(callback)
-            if callback then
-                RunLoops:BindToHeartbeat("Nuker", function()
-                    task.wait(0.1)
-                    if IsAlive(lplr) then
-                        local nearestBlockPosition = nil
-                        for _, block in ipairs(Workspace.Map:GetChildren()) do
-                            if block.Name == "Block" then
-                                local blockPosition = block.Position
-                                local distance = (lplr.Character.PrimaryPart.Position - blockPosition).magnitude
-                                if distance <= NukerDistance["Value"] then
-                                    nearestBlockPosition = blockPosition
-                                end
-                            end
-                        end
-                        if nearestBlockPosition then
-                            local roundedPosition = Vector3.new(roundToWhole(nearestBlockPosition.X), roundToWhole(nearestBlockPosition.Y), roundToWhole(nearestBlockPosition.Z))
-                            KnitClient.Services.ToolService.RF.BreakBlock:InvokeServer(roundedPosition)
-                        end
-                    end
-                end)
-            else
-                RunLoops:UnbindFromHeartbeat("Nuker")
-            end
-        end
-    })
-    local NukerDistanceSlider = Word:CreateSlider({
-        Name = "Nuker Distance",
-        Range = {1, 15},
-        Increment = 1,
-        Suffix = "blocks",
-        CurrentValue = 15,
-        Flag = "NukerDistance",
-        Callback = function(Value)
-            NukerDistance["Value"] = Value
         end
     })
 end)
@@ -1339,7 +1085,8 @@ if lplr then
             local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-                    local speaker, message = Players[messageData.FromSpeaker], messageData.Message
+                    local speaker = Players:GetPlayerByUserId(messageData.FromSpeaker)
+                    local message = messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({

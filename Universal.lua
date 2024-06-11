@@ -1020,48 +1020,92 @@ end)
 game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
-        wait(5)
-        if defaultChatSystemChatEvents then
-            defaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+        task.wait(5)
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
+            if newchannel then 
+                if player ~= lplr then
+                    newchannel:SendAsync(Table.ChatStrings2.Aristois) 
+                end
+            end
+        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+            if player ~= lplr then
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            end
         end
     end
 end)
 
-for _, player in ipairs(Players:GetPlayers()) do
+for _, player in ipairs(game.Players:GetPlayers()) do
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
-        if defaultChatSystemChatEvents then
-            defaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
+            if newchannel then 
+                if player ~= lplr then
+                    newchannel:SendAsync(Table.ChatStrings2.Aristois) 
+                end
+            end
+        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+            if player ~= lplr then
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+            end
         end
     end
 end
 
 if lplr then
-    local whitelisted = WhitelistModule.checkstate(WhitelistModule.hashUserIdAndUsername(lplr.UserId, lplr.Name))
+    local whitelisted = WhitelistModule.checkstate(lplr)
     if whitelisted then
-        local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
-        if onMessageDoneFiltering then
-            onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-                local speaker = Players[messageData.FromSpeaker]
-                local message = messageData.Message
-                if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
-                    print(messageData.FromSpeaker)
-                    GuiLibrary:Notify({
-                        Title = "Aristois",
-                        Content = messageData.FromSpeaker .. " is using Aristois!",
-                        Duration = 60,
-                        Image = 4483362458,
-                        Actions = {
-                            Ignore = {
-                                Name = "Okay!",
-                                Callback = function()
-                                    print("The user tapped Okay!")
-                                end
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            TextChatService.MessageReceived:Connect(function(tab : TextChatMessage)
+                if tab.TextSource then
+                    local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
+                    local message = tab.Text
+                    if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
+                        GuiLibrary:Notify({
+                            Title = "Aristois",
+                            Content = speaker.Name .. " is using Aristois!",
+                            Duration = 60,
+                            Image = 4483362458,
+                            Actions = {
+                                Ignore = {
+                                    Name = "Okay!",
+                                    Callback = function()
+                                        print("The user tapped Okay!")
+                                    end
+                                },
                             },
-                        },
-                    })
-                end 
+                        })
+                    end
+                end
             end)
+        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+            local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents')
+            local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
+            if onMessageDoneFiltering then
+                onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
+                    local speaker = Players:GetPlayerByUserId(messageData.FromSpeaker)
+                    local message = messageData.Message
+                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                        print(messageData.FromSpeaker)
+                        GuiLibrary:Notify({
+                            Title = "Aristois",
+                            Content = messageData.FromSpeaker .. " is using Aristois!",
+                            Duration = 60,
+                            Image = 4483362458,
+                            Actions = {
+                                Ignore = {
+                                    Name = "Okay!",
+                                    Callback = function()
+                                        print("The user tapped Okay!")
+                                    end
+                                },
+                            },
+                        })
+                    end 
+                end)
+            end
         end
     end
 end

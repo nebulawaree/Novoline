@@ -1270,57 +1270,6 @@ runcode(function()
     })
 end)
 
-runcode(function()
-    local godModeToggle = Blatant:CreateToggle({
-        Name = "Semi-GodMode",
-        CurrentValue = false,
-        Flag = "GodMode",
-        Callback = function(enabled)
-            if enabled then
-                local lplr = game.Players.LocalPlayer
-                local cam = workspace.CurrentCamera
-                local oldChar = lplr.Character
-                oldChar.Archivable = true
-                local clone = oldChar:Clone()
-                oldChar.PrimaryPart.Anchored = false
-                local humClone = oldChar.Humanoid:Clone()
-                humClone.Parent = oldChar
-                cam.CameraSubject = clone.Humanoid
-                clone.Parent = workspace
-                lplr.Character = clone
-                local minY = -153.3984832763672
-                local function teleportCharacter(hitPosition)
-                    local offset = Vector3.new(0, -3, 0)
-                    local newPosition = hitPosition + offset
-                    if newPosition.Y < minY then
-                        newPosition = Vector3.new(newPosition.X, minY, newPosition.Z)
-                    end
-                    oldChar:SetPrimaryPartCFrame(CFrame.new(newPosition.X, newPosition.Y, newPosition.Z))
-                end
-                RunLoops:BindToRenderStep("GodModeRaycast", function()
-                    local origin = clone.HumanoidRootPart.Position
-                    local direction = Vector3.new(0, -1, 0)
-                    local raycastParams = RaycastParams.new()
-                    raycastParams.FilterType = Enum.RaycastFilterType.Whitelist
-                    raycastParams.IgnoreWater = true
-                    local ray = Ray.new(origin, direction * 8)
-                    local part, position = workspace:FindPartOnRayWithIgnoreList(ray, {clone, lplr.Character}, false, true)
-                    if part and part:IsA("BasePart") and part.CanCollide then
-                        teleportCharacter(position)
-                        oldChar.HumanoidRootPart.Velocity = Vector3.new(oldChar.HumanoidRootPart.Velocity.X, 0, oldChar.HumanoidRootPart.Velocity.Z)
-                    else
-                        oldChar.HumanoidRootPart.Velocity = Vector3.new(oldChar.HumanoidRootPart.Velocity.X, 0, oldChar.HumanoidRootPart.Velocity.Z)
-                        local newPosition = origin + Vector3.new(0, -3, 0)
-                        teleportCharacter(newPosition)
-                    end
-                end)
-            else
-                RunLoops:UnbindFromRenderStep("GodModeRaycast")
-            end
-        end
-    })
-end)
-
 game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then

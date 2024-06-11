@@ -396,6 +396,7 @@ runcode(function()
     local HeatSeeker = {Enabled = false}
     local IdleThreshold = {["Value"] = 0.97}
     local SpeedDuration = {["Value"] = 0.62}
+    
     local SpeedToggle = Blatant:CreateToggle({
         Name = "Speed",
         CurrentValue = false,
@@ -413,14 +414,15 @@ runcode(function()
                             if moveDirection.magnitude < 0.01 then
                                 lastMoveTime = tick()
                                 newVelocity = Vector3.new(0, 0, 0)
-                            elseif tick() - lastMoveTime >  SpeedDuration["Value"] then
-                                newVelocity = moveDirection * (1.1 * speedMultiplier - currentSpeed)
+                            elseif tick() - lastMoveTime > SpeedDuration["Value"] then
+                                if tick() - lastMoveTime > SpeedDuration["Value"] + IdleThreshold["Value"] then
+                                    lastMoveTime = tick()
+                                    newVelocity = Vector3.new(0, 0, 0)
+                                else
+                                    newVelocity = moveDirection * (1.1 * speedMultiplier - currentSpeed)
+                                end
                             else
                                 newVelocity = moveDirection * (speedIncrease * speedMultiplier - currentSpeed)
-                            end
-                            if tick() - lastMoveTime > IdleThreshold["Value"] then
-                                lastMoveTime = tick()
-                                newVelocity = Vector3.new(0, 0, 0)
                             end
                         else
                             newVelocity = moveDirection * (speedIncrease * speedMultiplier - currentSpeed)
@@ -441,6 +443,7 @@ runcode(function()
             end
         end
     })
+
     local DistanceSlider = Blatant:CreateSlider({
         Name = "Speed", 
         Range = {1, 30},
@@ -452,6 +455,7 @@ runcode(function()
             SpeedSlider["Value"] = Value
         end
     })
+
     local HeatSeekerToggle = Blatant:CreateToggle({
         Name = "HeatSeeker",
         CurrentValue = HeatSeeker.Enabled,
@@ -460,6 +464,7 @@ runcode(function()
             HeatSeeker.Enabled = val
         end
     })
+
     local SpeedDurationSlider = Blatant:CreateSlider({
         Name = "SpeedDuration (HeatSeeker)",
         Range = {0.01, 0.62},
@@ -471,6 +476,7 @@ runcode(function()
             SpeedDuration["Value"] = Value
         end
     })
+
     local IdleThresholdSlider = Blatant:CreateSlider({
         Name = "IdleThreshold (HeatSeeker)",
         Range = {0.01, 0.97},
@@ -482,6 +488,7 @@ runcode(function()
             IdleThreshold["Value"] = Value
         end
     })
+
     local AutoJumpToggle = Blatant:CreateToggle({
         Name = "AutoJump",
         CurrentValue = false,

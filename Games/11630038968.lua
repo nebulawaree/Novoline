@@ -167,7 +167,6 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
-
                 if mag < maxDist then
                     local health = player.Character:FindFirstChild("Humanoid").Health
                     updateTargetData(player, mag, health)
@@ -1340,8 +1339,7 @@ if lplr then
             local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-                    local speaker = Players:GetPlayerByUserId(messageData.FromSpeaker)
-                    local message = messageData.Message
+                    local speaker, message = Players[messageData.FromSpeaker], messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({

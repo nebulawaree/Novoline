@@ -1085,8 +1085,7 @@ if lplr then
             local onMessageDoneFiltering = defaultChatSystemChatEvents and defaultChatSystemChatEvents:FindFirstChild("OnMessageDoneFiltering")
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-                    local speaker = Players:GetPlayerByUserId(messageData.FromSpeaker)
-                    local message = messageData.Message
+                    local speaker, message = Players[messageData.FromSpeaker], messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({

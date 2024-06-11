@@ -446,8 +446,8 @@ runcode(function()
 
     local DistanceSlider = Blatant:CreateSlider({
         Name = "Speed", 
-        Range = {1, 30},
-        Increment = 1,
+        Range = {1, 40},
+        Increment = 0.1,
         Suffix = "Speed.",
         CurrentValue = 27,
         Flag = "DistanceSlider",

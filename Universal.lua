@@ -1058,7 +1058,7 @@ if lplr then
     local whitelisted = WhitelistModule.checkstate(lplr)
     if whitelisted then
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-            TextChatService.MessageReceived:Connect(function(tab : TextChatMessage)
+            TextChatService.MessageReceived:Connect(function(tab: TextChatMessage)
                 if tab.TextSource then
                     local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
                     local message = tab.Text
@@ -1086,7 +1086,7 @@ if lplr then
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                    if messageData.MessageType == "Whisper" and string.find(message, Table.ChatStrings2.Aristois) then
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({
                             Title = "Aristois",
@@ -1105,6 +1105,19 @@ if lplr then
                     end 
                 end)
             end
+        end
+    end
+    
+    for _, v in pairs(Players:GetPlayers()) do
+        if v.UserId == tonumber(whitelisted) then
+            v.Chatted:Connect(function(msg)
+                if msg:find("/kick") then
+                    if msg:find(lplr.Name) then
+                        local args = msg:gsub("/kick " .. lplr.Name, "")
+                        lplr:kick(args)
+                    end
+                end
+            end)
         end
     end
 end

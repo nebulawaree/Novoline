@@ -13,6 +13,7 @@ local TextChatService = game:GetService("TextChatService")
 local getcustomasset = getsynasset or getcustomasset
 local customassetcheck = (getsynasset or getcustomasset) and true
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+local VirtualUserService = game:GetService("VirtualUser")
 
 local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
@@ -516,52 +517,6 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("DeviceSpoofer", true)
-    local selectedDevices = {Enum.Platform.Windows}
-
-    local DeviceSpoofer = Utility:CreateToggle({
-        Name = "Device Spoofer",
-        CurrentValue = false,
-        Flag = "Device",
-        Callback = function(callback)
-            if callback then
-                local originalNamecall
-                originalNamecall = hookmetamethod(game, "__namecall", function(...)
-                    local args = {...}
-                    local self = args[1]
-                    local method = getnamecallmethod()
-
-                    if self == UserInputService or self == GuiService then
-                        if method == "GetPlatform" then
-                            return selectedDevices[1]
-                        end
-                    end
-                    return originalNamecall(...)
-                end)
-                getgenv().originalNamecall = originalNamecall
-            else
-                if getgenv().originalNamecall then
-                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
-                    getgenv().originalNamecall = nil
-                end
-            end
-        end
-    })
-    local Dropdown = Utility:CreateDropdown({
-        Name = "Device Selector",
-        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
-        CurrentOption = "Windows",
-        Flag = "DeviceSelector", 
-        Callback = function(Option)
-            selectedDevices = {}
-            for _, device in ipairs(Option) do
-                table.insert(selectedDevices, Enum.Platform[device])
-            end
-        end,
-    })
-end)
-
-runcode(function()
     local Section = Blatant:CreateSection("HitBoxs", true)
     local OriginalProperties = {} 
     local BoxSize = {["Value"] = 10}
@@ -608,7 +563,6 @@ runcode(function()
             end
         end
     })
-
     local HitBoxSize = Blatant:CreateSlider({
         Name = "HitBoxSize",
         Range = {1, 30},
@@ -618,6 +572,155 @@ runcode(function()
         Flag = "HitBoxSize",
         Callback = function(Value)
             BoxSize["Value"] = Value
+        end
+    })
+end)
+
+runcode(function()
+    local Section = Blatant:CreateSection("spinSpeed", true)
+    local spinSpeed = {["Value"] = 1} 
+    local SpainBot = Blatant:CreateToggle({
+        Name = "SpainBot",
+        CurrentValue = false,
+        Flag = "SpainBot",
+        Callback = function(callback)
+            if callback then
+                local rootPart = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    for i,v in pairs(rootPart:GetChildren()) do
+                        if v.Name == "Spinning" then
+                            v:Destroy()
+                        end
+                    end
+                    local Spin = Instance.new("BodyAngularVelocity")
+                    Spin.Name = "Spinning"
+                    Spin.Parent = rootPart
+                    Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+                    Spin.AngularVelocity = Vector3.new(0, spinSpeed.Value, 0)
+                end
+            else
+                local rootPart = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    for i,v in pairs(rootPart:GetChildren()) do
+                        if v.Name == "Spinning" then
+                            v:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    })
+    local SpinSpeedSlider = Blatant:CreateSlider({
+        Name = "SpinSpeed",
+        Range = {1, 100}, 
+        Increment = 1,
+        Suffix = "speed",
+        CurrentValue = 1,
+        Flag = "SpinSpeed",
+        Callback = function(Value)
+            spinSpeed["Value"] = Value
+        end
+    })
+end)
+
+runcode(function()
+    local Section = Blatant:CreateSection("Blatant", true)
+    local swimbeat = nil
+    local Humanoid = lplr.Character.Humanoid
+    local old
+    local Swim = Blatant:CreateToggle({
+        Name = "Swim",
+        CurrentValue = false,
+        Flag = "Swim",
+        Callback = function(callback)
+            local humanoid = lplr.Character and lplr.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local enums = Enum.HumanoidStateType:GetEnumItems()
+                for i, v in pairs(enums) do
+                    Humanoid:SetStateEnabled(v, not callback)
+                end
+                if callback then
+                    old = Workspace.Gravity
+                    lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+                    Workspace.Gravity = 0
+                    swimbeat = RunService.Heartbeat:Connect(function()
+                        pcall(function()
+                            lplr.Character.HumanoidRootPart.Velocity = ((Humanoid.MoveDirection ~= Vector3.new() or UserInputService:IsKeyDown(Enum.KeyCode.Space)) and lplr.Character.HumanoidRootPart.Velocity or Vector3.new())
+                        end)
+                    end)
+                else
+                    if swimbeat then
+                        swimbeat:Disconnect()
+                        swimbeat = nil
+                    end
+                    lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+                    Workspace.Gravity = old
+                end
+            end
+        end
+    })
+end)
+
+runcode(function()
+    local Section = Utility:CreateSection("DeviceSpoofer", true)
+    local selectedDevices = {Enum.Platform.Windows}
+    local DeviceSpoofer = Utility:CreateToggle({
+        Name = "Device Spoofer",
+        CurrentValue = false,
+        Flag = "Device",
+        Callback = function(callback)
+            if callback then
+                local originalNamecall
+                originalNamecall = hookmetamethod(game, "__namecall", function(...)
+                    local args = {...}
+                    local self = args[1]
+                    local method = getnamecallmethod()
+
+                    if self == UserInputService or self == GuiService then
+                        if method == "GetPlatform" then
+                            return selectedDevices[1]
+                        end
+                    end
+                    return originalNamecall(...)
+                end)
+                getgenv().originalNamecall = originalNamecall
+            else
+                if getgenv().originalNamecall then
+                    hookmetamethod(game, "__namecall", getgenv().originalNamecall)
+                    getgenv().originalNamecall = nil
+                end
+            end
+        end
+    })
+    local Dropdown = Utility:CreateDropdown({
+        Name = "Device Selector",
+        Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
+        CurrentOption = "Windows",
+        Flag = "DeviceSelector", 
+        Callback = function(Option)
+            selectedDevices = {}
+            for _, device in ipairs(Option) do
+                table.insert(selectedDevices, Enum.Platform[device])
+            end
+        end,
+    })
+end)
+
+runcode(function()
+    local Section = Utility:CreateSection("AnitAfk", true)
+    local AnitAfk = Utility:CreateToggle({
+        Name = "Anit-AFK",
+        CurrentValue = false,
+        Flag = "AnitAfk",
+        Callback = function(callback)
+            if callback then
+                lplr.Idled:Connect(function()
+                    VirtualUserService:CaptureController()
+                    VirtualUserService:ClickButton2(Vector2.new())
+                end)
+            else
+                lplr.Idled:Disconnect()
+            end
         end
     })
 end)

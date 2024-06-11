@@ -748,6 +748,7 @@ runcode(function()
         Callback = function(enabled)
             if enabled then
                 RunLoops:BindToHeartbeat("UpdateTweenToNearestPlayer", function()
+                    task.wait(0.1)
                     local nearest = getNearestPlayer(300)
                     if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") and IsAlive(lplr) then
                         local targetPosition = nearest.Character.HumanoidRootPart.Position

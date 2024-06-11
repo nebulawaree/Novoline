@@ -1309,6 +1309,7 @@ local commands = {
     end,
 }
 
+
 game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
@@ -1379,6 +1380,7 @@ if lplr then
                     local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
                     local message = tab.Text
                     if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
+                        WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0)) 
                         GuiLibrary:Notify({
                             Title = "Aristois",
                             Content = speaker.Name .. " is using Aristois!",
@@ -1403,6 +1405,7 @@ if lplr then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                        WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0)) 
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({
                             Title = "Aristois",

@@ -577,7 +577,7 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("spinSpeed", true)
+    local Section = Blatant:CreateSection("SpainBot", true)
     local spinSpeed = {["Value"] = 1} 
     local SpainBot = Blatant:CreateToggle({
         Name = "SpainBot",
@@ -618,13 +618,13 @@ runcode(function()
         CurrentValue = 1,
         Flag = "SpinSpeed",
         Callback = function(Value)
-            spinSpeed["Value"] = Value
+            spinSpeed.Value = Value
         end
     })
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("Blatant", true)
+    local Section = Blatant:CreateSection("Swim", true)
     local swimbeat = nil
     local Humanoid = lplr.Character.Humanoid
     local old

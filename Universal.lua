@@ -1118,7 +1118,7 @@ if lplr then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
-                        WhitelistModule.AddExtraTag(speaker, "CustomTag", Color3.fromRGB(255, 0, 0)) -- Adding custom tag to the speaker
+                        WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0)) 
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({
                             Title = "Aristois",
@@ -1140,5 +1140,6 @@ if lplr then
         end
     end
 end
+
 WhitelistModule.UpdateTags()
 GuiLibrary:LoadConfiguration()

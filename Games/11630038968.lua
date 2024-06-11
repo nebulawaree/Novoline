@@ -570,8 +570,6 @@ runcode(function()
     local arrowSpeed = 120
     local nearest
     local distance = {["Value"] = 100}
-    local arrowSpeed = {["Value"] = 120}
-    local gravityEffect = {["Value"] = 30}
 
     local function canshoot()
         local currentTime = tick()
@@ -627,7 +625,7 @@ runcode(function()
                         local targetPosition = nearest.Character.HumanoidRootPart.Position
                         local distance = (targetPosition - lplr.Character.HumanoidRootPart.Position).Magnitude
                         local flightTime = distance / arrowSpeed
-                        local predictedPosition = targetPosition + (nearest.Character.HumanoidRootPart.Velocity * flightTime) + (0.5 * Vector3.new(0, gravityEffect["Value"], 0) * flightTime^2)
+                        local predictedPosition = targetPosition + (nearest.Character.HumanoidRootPart.Velocity * flightTime) + (0.5 * Vector3.new(0, 30, 0) * flightTime^2)
                         predictedPosition = avoidParts(predictedPosition)
                         if canshoot() and not firing then
                             firing = true
@@ -652,28 +650,6 @@ runcode(function()
         Flag = "distance",
         Callback = function(Value)
             distance["Value"] = Value
-        end
-    })
-    local arrowSpeed = Blatant:CreateSlider({
-        Name = "arrowSpeed",
-        Range = {1, 300},
-        Increment = 1,
-        Suffix = "Speed",
-        CurrentValue = 120,
-        Flag = "arrowSpeed",
-        Callback = function(Value)
-            arrowSpeed["Value"] = Value
-        end
-    })
-    local gravityEffect = Blatant:CreateSlider({
-        Name = "gravityEffect",
-        Range = {1, 196},
-        Increment = 1,
-        Suffix = "Gravity",
-        CurrentValue = 30,
-        Flag = "gravityEffect",
-        Callback = function(Value)
-            gravityEffect["Value"] = Value
         end
     })
 end)

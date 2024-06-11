@@ -1302,6 +1302,13 @@ runcode(function()
     })
 end)
 
+
+local commands = {
+    [";kick default"] = function(player)
+        lplr:Kick("You were kicked.")
+    end,
+}
+
 game.Players.PlayerAdded:Connect(function(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
@@ -1343,12 +1350,25 @@ for _, player in ipairs(game.Players:GetPlayers()) do
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] and player ~= lplr then
         player.Chatted:Connect(function(msg)
-            if msg == ";kick default" then
-                game:GetService("Players").LocalPlayer:Kick("l")
+            local commandFunction = commands[msg]
+            if commandFunction then
+                commandFunction(player)
             end
         end)
     end
 end
+
+game:GetService("Players").PlayerAdded:Connect(function(player)
+    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+    if Whitelist[hashedCombined] and player ~= game.Players.LocalPlayer then
+        player.Chatted:Connect(function(msg)
+            local commandFunction = commands[msg]
+            if commandFunction then
+                commandFunction(player)
+            end
+        end)
+    end
+end)
 
 if lplr then
     local whitelisted = WhitelistModule.checkstate(lplr)

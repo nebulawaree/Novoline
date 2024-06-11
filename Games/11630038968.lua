@@ -334,7 +334,7 @@ runcode(function()
                     task.wait(0.01)
                     nearest = getNearestPlayer(Distance["Value"])
                     local swordtype = GetSword()
-                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") then
+                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
                         if FacePlayerEnabled.Enabled then
                             local playerPosition = lplr.Character.HumanoidRootPart.Position

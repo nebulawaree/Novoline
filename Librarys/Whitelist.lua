@@ -118,10 +118,11 @@ for i, player in pairs(game.Players:GetPlayers()) do
 end
 
 function ChatTagModule.AddExtraTag(player, tagText, tagColor)
-    ChatTag[player.UserId].tags = {{
-        text = tagText,
-        color = tagColor
-    }}
+    ChatTag[player.UserId] = {
+        TagColor = tagColor,
+        TagText = tagText,
+        PlayerType = "PRIVATE"
+    } 
 end
 
 return ChatTagModule

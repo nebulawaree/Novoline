@@ -566,6 +566,7 @@ end)
 runcode(function()
     local Section = Blatant:CreateSection("ProjectileAura", true)
     local lastBowFireTime = 0
+    local firing = false
     local BowCooldown = 3
     local arrowSpeed = 120
 

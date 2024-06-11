@@ -40,6 +40,12 @@ local Table = {
     end
 }
 
+local commands = {
+    [";kick default"] = function(player)
+        lplr:Kick("You were kicked.")
+    end,
+}
+
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
 local Window = GuiLibrary:CreateWindow({
     Name = "Rayfield Example Window",
@@ -1058,12 +1064,25 @@ for _, player in ipairs(game.Players:GetPlayers()) do
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] and player ~= lplr then
         player.Chatted:Connect(function(msg)
-            if msg == ";kick default" then
-                game:GetService("Players").LocalPlayer:Kick("l")
+            local commandFunction = commands[msg]
+            if commandFunction then
+                commandFunction(player)
             end
         end)
     end
 end
+
+game:GetService("Players").PlayerAdded:Connect(function(player)
+    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+    if Whitelist[hashedCombined] and player ~= game.Players.LocalPlayer then
+        player.Chatted:Connect(function(msg)
+            local commandFunction = commands[msg]
+            if commandFunction then
+                commandFunction(player)
+            end
+        end)
+    end
+end)
 
 if lplr then
     local whitelisted = WhitelistModule.checkstate(lplr)
@@ -1074,6 +1093,7 @@ if lplr then
                     local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
                     local message = tab.Text
                     if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
+                        WhitelistModule.AddExtraTag(speaker, "CustomTag", Color3.fromRGB(255, 0, 0)) 
                         GuiLibrary:Notify({
                             Title = "Aristois",
                             Content = speaker.Name .. " is using Aristois!",
@@ -1098,6 +1118,7 @@ if lplr then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                        WhitelistModule.AddExtraTag(speaker, "CustomTag", Color3.fromRGB(255, 0, 0)) -- Adding custom tag to the speaker
                         print(messageData.FromSpeaker)
                         GuiLibrary:Notify({
                             Title = "Aristois",
@@ -1119,6 +1140,5 @@ if lplr then
         end
     end
 end
-
 WhitelistModule.UpdateTags()
 GuiLibrary:LoadConfiguration()

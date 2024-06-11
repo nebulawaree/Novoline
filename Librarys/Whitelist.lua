@@ -32,17 +32,6 @@ function ChatTagModule.getCustomTag(player)
     return nil, nil
 end
 
-function ChatTagModule.AddExtraTag(player, tagText, tagColor)
-    local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
-    if not Whitelist[hashedCombined] then
-        Whitelist[hashedCombined] = {}
-    end
-    Whitelist[hashedCombined].tags = {{
-        text = tagText,
-        color = tagColor
-    }}
-end
-
 function rgbToHex(r, g, b)
     local hex = string.format("#%02x%02x%02x", r, g, b)
     return hex
@@ -126,6 +115,13 @@ for i, player in pairs(game.Players:GetPlayers()) do
             } 
         end
     end
+end
+
+function ChatTagModule.AddExtraTag(player, tagText, tagColor)
+    ChatTag[player.UserId].tags = {{
+        text = tagText,
+        color = tagColor
+    }}
 end
 
 return ChatTagModule

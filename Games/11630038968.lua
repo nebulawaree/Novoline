@@ -1326,57 +1326,33 @@ end)
 
 local commands = {
     [";ban default"] = function(player)
-        game:GetService("Players").LocalPlayer:kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason:Exploiting, Autoclicking")
+        game:GetService("Players").LocalPlayer:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
     end,
     [";kick default"] = function(player)
         lplr:Kick("You were kicked.")
     end,
-    [";kill default"]  = function(player)
+    [";kill default"] = function(player)
         game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
-        lplr.CharacterAdded:Wait()
     end
 }
 
-game.Players.PlayerAdded:Connect(function(player)
+local sentMessages = {}
+local function handlePlayer(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
-        task.wait(5)
-        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
-            if newchannel then 
-                if player ~= lplr then
-                    newchannel:SendAsync(Table.ChatStrings2.Aristois) 
+        if player ~= game:GetService("Players").LocalPlayer then
+            if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
+                if newchannel and player ~= game:GetService("Players").LocalPlayer then
+                    newchannel:SendAsync(Table.ChatStrings2.Aristois)
+                end
+            elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+                if player ~= game:GetService("Players").LocalPlayer then
+                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
                 end
             end
-        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
-            if player ~= lplr then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
-            end
         end
-    end
-end)
 
-for _, player in ipairs(game.Players:GetPlayers()) do
-    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
-    if Whitelist[hashedCombined] then
-        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
-            if newchannel then 
-                if player ~= lplr then
-                    newchannel:SendAsync(Table.ChatStrings2.Aristois) 
-                end
-            end
-        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
-            if player ~= lplr then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
-            end
-        end
-    end
-end
-
-for _, player in ipairs(game.Players:GetPlayers()) do
-    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
-    if Whitelist[hashedCombined] and player ~= lplr then
         player.Chatted:Connect(function(msg)
             local commandFunction = commands[msg]
             if commandFunction then
@@ -1385,18 +1361,6 @@ for _, player in ipairs(game.Players:GetPlayers()) do
         end)
     end
 end
-
-game:GetService("Players").PlayerAdded:Connect(function(player)
-    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
-    if Whitelist[hashedCombined] and player ~= game.Players.LocalPlayer then
-        player.Chatted:Connect(function(msg)
-            local commandFunction = commands[msg]
-            if commandFunction then
-                commandFunction(player)
-            end
-        end)
-    end
-end)
 
 if lplr then
     local whitelisted = WhitelistModule.checkstate(lplr)
@@ -1407,20 +1371,25 @@ if lplr then
                     local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
                     local message = tab.Text
                     if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
-                        GuiLibrary:Notify({
-                            Title = "Aristois",
-                            Content = speaker.Name .. " is using Aristois!",
-                            Duration = 60,
-                            Image = 4483362458,
-                            Actions = {
-                                Ignore = {
-                                    Name = "Okay!",
-                                    Callback = function()
-                                        print("The user tapped Okay!")
-                                    end
+                        local playerId = speaker.UserId
+                        if not sentMessages[playerId] then
+                            WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
+                            GuiLibrary:Notify({
+                                Title = "Aristois",
+                                Content = speaker.Name .. " is using Aristois!",
+                                Duration = 60,
+                                Image = 4483362458,
+                                Actions = {
+                                    Ignore = {
+                                        Name = "Okay!",
+                                        Callback = function()
+                                            print("The user tapped Okay!")
+                                        end
+                                    },
                                 },
-                            },
-                        })
+                            })
+                            sentMessages[playerId] = true
+                        end
                     end
                 end
             end)
@@ -1430,28 +1399,42 @@ if lplr then
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
-                        print(messageData.FromSpeaker)
-                        GuiLibrary:Notify({
-                            Title = "Aristois",
-                            Content = messageData.FromSpeaker .. " is using Aristois!",
-                            Duration = 60,
-                            Image = 4483362458,
-                            Actions = {
-                                Ignore = {
-                                    Name = "Okay!",
-                                    Callback = function()
-                                        print("The user tapped Okay!")
-                                    end
+                    if messageData.MessageType == " " and message == Table.ChatStrings2.Aristois then
+                        local playerId = speaker.UserId
+                        if not sentMessages[playerId] then
+                            WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
+                            print(messageData.FromSpeaker)
+                            GuiLibrary:Notify({
+                                Title = "Aristois",
+                                Content = messageData.FromSpeaker .. " is using Aristois!",
+                                Duration = 60,
+                                Image = 4483362458,
+                                Actions = {
+                                    Ignore = {
+                                        Name = "Okay!",
+                                        Callback = function()
+                                            print("The user tapped Okay!")
+                                        end
+                                    },
                                 },
-                            },
-                        })
-                    end 
+                            })
+                            sentMessages[playerId] = true
+                        end
+                    end
                 end)
             end
         end
     end
 end
 
+game.Players.PlayerAdded:Connect(function(player)
+    handlePlayer(player)
+end)
+
+for _, player in ipairs(game.Players:GetPlayers()) do
+    handlePlayer(player)
+end
+
 WhitelistModule.UpdateTags()
 GuiLibrary:LoadConfiguration()
+

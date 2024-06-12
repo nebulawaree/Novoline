@@ -1,18 +1,11 @@
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
-if not isfolder("Aristois") then
-    makefolder("Aristois")
-end
+shared.ReadFile = true
 
-if not isfolder("Aristois/Games") then
-    makefolder("Aristois/Games")
-end
-
-if not isfolder("Aristois/Librarys") then
-    makefolder("Aristois/Librarys")
-end
-
-if not isfolder("Aristois/assets") then
-    makefolder("Aristois/assets")
+local folders = {"Aristois", "Aristois/Games", "Aristois/Librarys", "Aristois/assets"}
+for _, folder in ipairs(folders) do
+    if not isfolder(folder) then
+        makefolder(folder)
+    end
 end
 
 local function fetchLatestCommit()
@@ -22,11 +15,6 @@ local function fetchLatestCommit()
         return commits[1].sha
     end
     return nil
-end
-
-local function fileExists(filePath)
-    local success, _ = pcall(function() return readfile(filePath) end)
-    return success
 end
 
 local betterisfile = function(file)
@@ -59,7 +47,7 @@ local function updateFiles(commitHash)
     local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
-        if not fileExists(localFilePath) or updateAvailable() then
+        if not betterisfile(localFilePath) or updateAvailable() then
             local fileUrl = baseUrl .. filePath
             downloadFile(fileUrl, localFilePath)
         end
@@ -67,12 +55,20 @@ local function updateFiles(commitHash)
     writefile("Aristois/commithash.txt", commitHash)
 end
 
-if betterisfile("Aristois/assets/cape.png") == false then
+if not betterisfile("Aristois/assets/cape.png") then
     local req = requestfunc({
         Url = "https://github.com/XzynAstralz/Aristois/raw/main/assets/cape.png",
         Method = "GET"
     })
     writefile("Aristois/assets/cape.png", req.Body)
+end
+
+local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
+for _, filePath in ipairs(filesToUpdate) do
+    if not betterisfile("Aristois/" .. filePath) then
+        local fileUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/main/" .. filePath
+        downloadFile(fileUrl, "Aristois/" .. filePath)
+    end
 end
 
 local updateAvailable, latestCommit = updateAvailable()

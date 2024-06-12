@@ -19,7 +19,7 @@ local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
-local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))()
+local Whitelist = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
 
 local Table = {
     ChatStrings1 = {

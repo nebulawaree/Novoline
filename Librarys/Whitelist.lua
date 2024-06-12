@@ -1,5 +1,7 @@
+local HttpService = game:GetService("HttpService")
+
 local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/sha.lua", true))()
-local Whitelist = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.lua"))()
+local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
 
 local storedshahashes = {}
 
@@ -27,9 +29,10 @@ end
 function ChatTagModule.getCustomTag(player)
     local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] and Whitelist[hashedCombined].tags and Whitelist[hashedCombined].tags[1] then
-        return Whitelist[hashedCombined].tags[1].text, Whitelist[hashedCombined].tags[1].color
+        local tag = Whitelist[hashedCombined].tags[1]
+        return tag.text, Color3.fromRGB(unpack(tag.color)), Whitelist[hashedCombined].PlayerType
     end
-    return nil, nil
+    return nil, nil, nil
 end
 
 function rgbToHex(r, g, b)
@@ -44,12 +47,12 @@ function ChatTagModule.UpdateTags()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local TextChatService = game:GetService("TextChatService")
 
-    local tagText, tagColor = ChatTagModule.getCustomTag(player)
+    local tagText, tagColor, playerType = ChatTagModule.getCustomTag(player)
     if tagText and tagColor then
         ChatTag[player.UserId] = {
             TagColor = tagColor,
             TagText = tagText,
-            PlayerType = "PRIVATE"
+            PlayerType = playerType or "PRIVATE"
         }
     end
 
@@ -106,12 +109,12 @@ end
 
 for i, player in pairs(game.Players:GetPlayers()) do
     if ChatTagModule.checkstate(player) then
-        local tagText, tagColor = ChatTagModule.getCustomTag(player)
+        local tagText, tagColor, playerType = ChatTagModule.getCustomTag(player)
         if tagText and tagColor then
             ChatTag[player.UserId] = {
                 TagColor = tagColor,
                 TagText = tagText,
-                PlayerType = "PRIVATE"
+                PlayerType = playerType or "PRIVATE"
             } 
         end
     end

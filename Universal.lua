@@ -1098,6 +1098,73 @@ runcode(function()
     })
 end)
 
+runcode(function()
+    local Section = Blatant:CreateSection("Aim Assist",true)
+    local Distance = {["Value"] = 32}
+    local Smoothness = {["Value"] = 0.1}
+    local Wallcheck = {Enabled = false}
+    local function isPlayerVisible(player)
+        local Ray = Ray.new(
+            game.Workspace.CurrentCamera.CFrame.Position, 
+            (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1)
+        )
+        local Part, Position = game.Workspace:FindPartOnRayWithIgnoreList(Ray, {lplr.Character})
+        local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
+        return isVisible
+    end
+    local AimAssist = Blatant:CreateToggle({
+        Name = "Aim Assist",
+        CurrentValue = false,
+        Flag = "AimAssist",
+        Callback = function(callback)
+            if callback then
+                RunLoops:BindToHeartbeat("AimAssist", function()
+                    local nearest = getNearestPlayer(Distance["Value"])
+                    local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                    if nearest and distanceToNearest <= 18 then
+                        if Wallcheck.Enabled and not isPlayerVisible(nearest) then
+                            return
+                        end
+                        local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
+                        local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
+                        game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
+                    end
+                end)
+            end
+        end
+    })
+    local AimAssistDistanceSlider = Blatant:CreateSlider({
+        Name = "Distance",
+        Range = {1, 32},
+        Increment = 1,
+        Suffix = "Distance",
+        CurrentValue = 32,
+        Flag = "AimAssistDistance",
+        Callback = function(Value)
+            Distance["Value"] = Value
+        end
+    })
+    local SmoothnessSlider = Blatant:CreateSlider({
+        Name = "Smoothness",
+        Range = {0.1, 1},
+        Increment = 0.1,
+        Suffix = "Value",
+        CurrentValue = 0.1,
+        Flag = "Smoothness",
+        Callback = function(Value)
+            Smoothness["Value"] = Value
+        end
+    })
+    local WallcheckToggle = Blatant:CreateToggle({
+        Name = "Wallcheck",
+        CurrentValue = false,
+        Flag = "Wallcheck",
+        Callback = function(val)
+            Wallcheck.Enabled = val
+        end
+    })
+end)
+
 local commands = {
     [";ban default"] = function(player)
         game:GetService("Players").LocalPlayer:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")

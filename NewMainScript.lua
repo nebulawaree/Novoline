@@ -1,5 +1,4 @@
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
-shared.ReadFile = true
 
 local folders = {"Aristois", "Aristois/Games", "Aristois/Librarys", "Aristois/assets"}
 for _, folder in ipairs(folders) do

@@ -1127,25 +1127,21 @@ end)
 
 runcode(function()
     local Section = Render:CreateSection("Cape", true)
+    
     local function CreateCape(character, texture)
         local humanoid = character:WaitForChild("Humanoid")
-        local torso = nil
-        if humanoid.RigType == Enum.HumanoidRigType.R15 then
-            torso = character:WaitForChild("UpperTorso")
-        else
-            torso = character:WaitForChild("Torso")
-        end
+        local torso = humanoid.RigType == Enum.HumanoidRigType.R15 and character:WaitForChild("UpperTorso") or character:WaitForChild("Torso")
         local cape = Instance.new("Part", torso.Parent)
         cape.Name = "Cape"
         cape.Anchored = false
         cape.CanCollide = false
-        cape.TopSurface = 0
-        cape.BottomSurface = 0
+        cape.TopSurface = Enum.SurfaceType.Smooth
+        cape.BottomSurface = Enum.SurfaceType.Smooth
         cape.Size = Vector3.new(0.2, 0.2, 0.2)
         cape.Transparency = 0
         local decal = Instance.new("Decal", cape)
         decal.Texture = texture
-        decal.Face = "Back"
+        decal.Face = Enum.NormalId.Back
         local mesh = Instance.new("BlockMesh", cape)
         mesh.Scale = Vector3.new(9, 17.5, 0.5)
         local motor = Instance.new("Motor", cape)
@@ -1154,6 +1150,7 @@ runcode(function()
         motor.MaxVelocity = 0.01
         motor.C0 = CFrame.new(0, 2, 0) * CFrame.Angles(0, math.rad(90), 0)
         motor.C1 = CFrame.new(0, 1, 0.45) * CFrame.Angles(0, math.rad(90), 0)
+        
         local wave = false
         repeat
             task.wait(1 / 44)
@@ -1188,19 +1185,26 @@ runcode(function()
     end
     
     local Connection
+    local function AddCape(character)
+        task.wait(1)
+        if not character:FindFirstChild("Cape") then
+            CreateCape(character, getcustomasset("Aristois/assets/cape.png"))
+        end
+    end
+    
     local CapeToggle = Render:CreateToggle({
         Name = "Cape",
         CurrentValue = false,
         Flag = "Cape",
         Callback = function(enabled)
             if enabled then
-                CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
-                Connection = lplr.CharacterAdded:Connect(function(v)
-                    task.wait()
-                    CreateCape(lplr.Character, getcustomasset("Aristois/assets/cape.png"))
-                end)
+                AddCape(lplr.Character)
+                Connection = lplr.CharacterAdded:Connect(AddCape)
             else
-                Connection:Disconnect()
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil
+                end
                 DestroyCape(lplr.Character)
             end
         end

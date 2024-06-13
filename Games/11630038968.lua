@@ -331,7 +331,6 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
-                    task.wait(0.01)
                     nearest = getNearestPlayer(Distance["Value"])
                     local swordtype = GetSword()
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then

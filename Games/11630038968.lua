@@ -1396,15 +1396,13 @@ end)
 
 local commands = {
     [";ban default"] = function(player)
-        player:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
+        game:GetService("Players").LocalPlayer:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
     end,
     [";kick default"] = function(player)
-        player:Kick("You were kicked.")
+        lplr:Kick("You were kicked.")
     end,
     [";kill default"] = function(player)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.Health = 0
-        end
+        game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
     end
 }
 

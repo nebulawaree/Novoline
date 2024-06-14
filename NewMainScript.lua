@@ -1,4 +1,5 @@
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
+getgenv().noupdate = false
 
 local folders = {"Aristois", "Aristois/Games", "Aristois/Librarys", "Aristois/assets"}
 for _, folder in ipairs(folders) do
@@ -21,9 +22,11 @@ local betterisfile = function(file)
     return suc and res ~= nil
 end
 
-local function downloadFile(url, filePath)
-    local response = game:HttpGet(url, true)
-    if response then
+local function downloadFileAsync(url, filePath)
+    local success, response = pcall(function()
+        return game:HttpGetAsync(url)
+    end)
+    if success then
         writefile(filePath, response)
     end
 end
@@ -44,11 +47,22 @@ end
 local function updateFiles(commitHash)
     local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
     local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua"}
+    local threads = {}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
-        if not betterisfile(localFilePath) or updateAvailable() then
+        if not betterisfile(localFilePath) then
             local fileUrl = baseUrl .. filePath
-            downloadFile(fileUrl, localFilePath)
+            table.insert(threads, coroutine.create(function()
+                downloadFileAsync(fileUrl, localFilePath)
+            end))
+        end
+    end
+    for _, thread in ipairs(threads) do
+        coroutine.resume(thread)
+    end
+    for _, thread in ipairs(threads) do
+        while coroutine.status(thread) ~= "dead" do
+            wait()
         end
     end
     writefile("Aristois/commithash.txt", commitHash)
@@ -66,13 +80,15 @@ local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", 
 for _, filePath in ipairs(filesToUpdate) do
     if not betterisfile("Aristois/" .. filePath) then
         local fileUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/main/" .. filePath
-        downloadFile(fileUrl, "Aristois/" .. filePath)
+        downloadFileAsync(fileUrl, "Aristois/" .. filePath)
     end
 end
 
 local updateAvailable, latestCommit = updateAvailable()
-if updateAvailable then
-    updateFiles(latestCommit)
+if getgenv().noupdate == nil or getgenv().noupdate == false then
+    if updateAvailable then
+        updateFiles(latestCommit)
+    end
 end
 
 return loadstring(readfile("Aristois/MainScript.lua"))()

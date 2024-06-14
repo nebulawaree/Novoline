@@ -164,7 +164,7 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
     end
 
     for _, player in ipairs(Players) do
-        if player ~= lplr and player.Character and IsAlive(player) then
+        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
@@ -234,7 +234,7 @@ end
 local function GetSword()
     if not foundSwords["Sword"] then
         local swordMatch = findClosestMatch("Sword")
-        if findClosestMatch("Sword") then
+        if swordMatch then
             foundSwords["Sword"] = swordMatch.Name
         end
     end
@@ -574,10 +574,9 @@ runcode(function()
     local lastBowFireTime = 0
     local firing = false
     local BowCooldown = 3
-    local arrowSpeed = 120
+    local arrowSpeed = {["Value"] = 120}
     local nearest
     local distance = {["Value"] = 100}
-    local arrowSpeed = {["Value"] = 120}
     local gravityEffect = {["Value"] = 30}
 
     local function canshoot()
@@ -621,7 +620,15 @@ runcode(function()
         end)
         setup()
     end)
-    
+
+    local function predictPosition(nearest)
+        local targetPosition = nearest.Character.HumanoidRootPart.Position
+        local distance = (targetPosition - lplr.Character.HumanoidRootPart.Position).Magnitude
+        local flightTime = distance / arrowSpeed["Value"]
+        local predictedPosition = targetPosition + (nearest.Character.HumanoidRootPart.Velocity * flightTime) + (0.5 * Vector3.new(0, gravityEffect["Value"], 0) * flightTime^2)
+        return avoidParts(predictedPosition)
+    end
+
     local ProjectileAura = Blatant:CreateToggle({
         Name = "ProjectileAura",
         CurrentValue = false,
@@ -630,17 +637,13 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("ProjectileAura", function()
                     nearest = getNearestPlayer(distance["Value"])
-                    if nearest ~= nil and nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) and IsAlive(nearest) and IsAlive(lplr) then
-                        local targetPosition = nearest.Character.HumanoidRootPart.Position
-                        local distance = (targetPosition - lplr.Character.HumanoidRootPart.Position).Magnitude
-                        local flightTime = distance / arrowSpeed["Value"]
-                        local predictedPosition = targetPosition + (nearest.Character.HumanoidRootPart.Velocity * flightTime) + (0.5 * Vector3.new(0, gravityEffect["Value"], 0) * flightTime^2)
-                        predictedPosition = avoidParts(predictedPosition)
+                    if nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) and IsAlive(nearest) and IsAlive(lplr) then
+                        local predictedPosition = predictPosition(nearest)
                         if canshoot() and not firing then
                             firing = true
                             game:GetService("Players").LocalPlayer.Backpack.DefaultBow.__comm__.RF.Fire:InvokeServer(predictedPosition, math.huge)
                             lastBowFireTime = tick()
-                            task.wait(0.5)
+                            task.wait(0.25) 
                             firing = false
                         end
                     end
@@ -650,6 +653,7 @@ runcode(function()
             end
         end
     })
+    
     local distance = Blatant:CreateSlider({
         Name = "distance",
         Range = {1, 100},
@@ -661,6 +665,7 @@ runcode(function()
             distance["Value"] = Value
         end
     })
+
     local arrowSpeed = Blatant:CreateSlider({
         Name = "arrowSpeed",
         Range = {1, 300},
@@ -672,6 +677,7 @@ runcode(function()
             arrowSpeed["Value"] = Value
         end
     })
+
     local gravityEffect = Blatant:CreateSlider({
         Name = "gravityEffect",
         Range = {1, 196},
@@ -681,6 +687,88 @@ runcode(function()
         Flag = "gravityEffect",
         Callback = function(Value)
             gravityEffect["Value"] = Value
+        end
+    })
+end)
+
+runcode(function()
+    local Section = Blatant:CreateSection("Aim Assist",true)
+    local Distance = {["Value"] = 32}
+    local Smoothness = {["Value"] = 0.1}
+    local TeamCheck = {Enabled = false}
+    local Wallcheck = {Enabled = false}
+
+    local function isPlayerVisible(player)
+        local Ray = Ray.new(
+            game.Workspace.CurrentCamera.CFrame.Position, 
+            (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1)
+        )
+        local Part, Position = game.Workspace:FindPartOnRayWithIgnoreList(Ray, {lplr.Character})
+        local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
+        return isVisible
+    end
+
+    local AimAssist = Blatant:CreateToggle({
+        Name = "Aim Assist",
+        CurrentValue = false,
+        Flag = "AimAssist",
+        Callback = function(callback)
+            if callback then
+                RunLoops:BindToHeartbeat("AimAssist", function()
+                    local nearest = getNearestPlayer(Distance["Value"], false ,TeamCheck.Enabled)
+                    if nearest then
+                        local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                        if distanceToNearest <= 18 then
+                            if Wallcheck.Enabled and not isPlayerVisible(nearest) then
+                                return
+                            end
+                            local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
+                            local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
+                            game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
+                        end
+                    end
+                end)
+            else
+                RunLoops:UnbindFromHeartbeat("AimAssist")
+            end
+        end
+    })
+    local AimAssistDistanceSlider = Blatant:CreateSlider({
+        Name = "Distance",
+        Range = {1, 32},
+        Increment = 1,
+        Suffix = "Distance",
+        CurrentValue = 32,
+        Flag = "AimAssistDistance",
+        Callback = function(Value)
+            Distance["Value"] = Value
+        end
+    })
+    local SmoothnessSlider = Blatant:CreateSlider({
+        Name = "Smoothness",
+        Range = {0.1, 1},
+        Increment = 0.1,
+        Suffix = "Value",
+        CurrentValue = 0.1,
+        Flag = "Smoothness",
+        Callback = function(Value)
+            Smoothness["Value"] = Value
+        end
+    })
+    local WallcheckToggle = Blatant:CreateToggle({
+        Name = "Wallcheck",
+        CurrentValue = false,
+        Flag = "Wallcheck",
+        Callback = function(val)
+            Wallcheck.Enabled = val
+        end
+    })
+    local TeamCheckToggle = Blatant:CreateToggle({
+        Name = "Team Check",
+        CurrentValue = false,
+        Flag = "TeamCheck",
+        Callback = function(val)
+            TeamCheck.Enabled = val
         end
     })
 end)
@@ -785,7 +873,7 @@ runcode(function()
                     end
                 end)
             else
-                game.Workspace.Gravity = 100
+                game.Workspace.Gravity = 196
                 RunLoops:UnbindFromHeartbeat("UpdateTweenToNearestPlayer")
                 RunLoops:UnbindFromHeartbeat("DisableCollision")
                 for part, state in pairs(initialCollideStates) do
@@ -1327,82 +1415,31 @@ runcode(function()
     })
 end)
 
-runcode(function()
-    local Section = Blatant:CreateSection("Aim Assist",true)
-    local Distance = {["Value"] = 32}
-    local Smoothness = {["Value"] = 0.1}
-    local Wallcheck = {Enabled = false}
-    local function isPlayerVisible(player)
-        local Ray = Ray.new(
-            game.Workspace.CurrentCamera.CFrame.Position, 
-            (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1)
-        )
-        local Part, Position = game.Workspace:FindPartOnRayWithIgnoreList(Ray, {lplr.Character})
-        local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
-        return isVisible
-    end
-    local AimAssist = Blatant:CreateToggle({
-        Name = "Aim Assist",
-        CurrentValue = false,
-        Flag = "AimAssist",
-        Callback = function(callback)
-            if callback then
-                RunLoops:BindToHeartbeat("AimAssist", function()
-                    local nearest = getNearestPlayer(Distance["Value"])
-                    local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                    if nearest and distanceToNearest <= 18 then
-                        if Wallcheck.Enabled and not isPlayerVisible(nearest) then
-                            return
-                        end
-                        local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                        local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
-                        game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
-                    end
-                end)
-            end
-        end
-    })
-    local AimAssistDistanceSlider = Blatant:CreateSlider({
-        Name = "Distance",
-        Range = {1, 32},
-        Increment = 1,
-        Suffix = "Distance",
-        CurrentValue = 32,
-        Flag = "AimAssistDistance",
-        Callback = function(Value)
-            Distance["Value"] = Value
-        end
-    })
-    local SmoothnessSlider = Blatant:CreateSlider({
-        Name = "Smoothness",
-        Range = {0.1, 1},
-        Increment = 0.1,
-        Suffix = "Value",
-        CurrentValue = 0.1,
-        Flag = "Smoothness",
-        Callback = function(Value)
-            Smoothness["Value"] = Value
-        end
-    })
-    local WallcheckToggle = Blatant:CreateToggle({
-        Name = "Wallcheck",
-        CurrentValue = false,
-        Flag = "Wallcheck",
-        Callback = function(val)
-            Wallcheck.Enabled = val
-        end
-    })
-end)
-
 local commands = {
     [";ban default"] = function(player)
         game:GetService("Players").LocalPlayer:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
     end,
     [";kick default"] = function(player)
-        lplr:Kick("You were kicked.")
+        game:GetService("Players").LocalPlayer:Kick("You were kicked.")
     end,
     [";kill default"] = function(player)
         game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+    end,
+    [";freeze default"] = function(player)
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = true
+    end,
+    [";unfreeze default"] = function(player)
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = false
+    end,
+    [";loopkill default"] = function(player)
+        _G.loopKill = true
+        while _G.loopKill do
+            wait(1)
+            game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+        end
+    end,
+    [";unloopkill default"] = function(player)
+        _G.loopKill = false
     end
 }
 
@@ -1423,12 +1460,17 @@ local function handlePlayer(player)
             end
         end
 
-        player.Chatted:Connect(function(msg)
-            local commandFunction = commands[msg]
-            if commandFunction then
-                commandFunction(player)
-            end
-        end)
+        if player ~= game:GetService("Players").LocalPlayer then
+            player.Chatted:Connect(function(msg)
+                local lowerMsg = string.lower(msg)
+                for command in pairs(commands) do
+                    if string.find(lowerMsg, command) then
+                        commands[command](player)
+                        break
+                    end
+                end
+            end)
+        end
     end
 end
 

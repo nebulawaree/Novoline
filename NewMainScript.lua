@@ -1,5 +1,4 @@
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
-
 local folders = {"Aristois", "Aristois/Games", "Aristois/Librarys", "Aristois/assets"}
 for _, folder in ipairs(folders) do
     if not isfolder(folder) then
@@ -49,7 +48,7 @@ local function updateFiles(commitHash)
     local threads = {}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath
-        if not betterisfile(localFilePath) then
+        if not betterisfile(localFilePath) or updateAvailable() then
             local fileUrl = baseUrl .. filePath
             table.insert(threads, coroutine.create(function()
                 downloadFileAsync(fileUrl, localFilePath)
@@ -84,10 +83,8 @@ for _, filePath in ipairs(filesToUpdate) do
 end
 
 local updateAvailable, latestCommit = updateAvailable()
-if getgenv().noupdate == nil or getgenv().noupdate == false then
-    if updateAvailable then
-        updateFiles(latestCommit)
-    end
+if updateAvailable then
+    updateFiles(latestCommit)
 end
 
 return loadstring(readfile("Aristois/MainScript.lua"))()

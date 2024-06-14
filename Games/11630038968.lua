@@ -232,12 +232,13 @@ local function findClosestMatch(name)
 end
 
 local function GetSword()
-    return foundSwords["Sword"] or function()
+    if not foundSwords["Sword"] then
         local swordMatch = findClosestMatch("Sword")
         if swordMatch then
             foundSwords["Sword"] = swordMatch.Name
         end
     end
+    return foundSwords["Sword"]
 end
 
 local remotes = {
@@ -1431,14 +1432,12 @@ local commands = {
         game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = false
     end,
     [";loopkill default"] = function(player)
-        _G.loopKill = true
-        while _G.loopKill do
-            wait(1)
+        RunLoops:BindToHeartbeat("kill", function(dt)
             game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
-        end
+        end)
     end,
     [";unloopkill default"] = function(player)
-        _G.loopKill = false
+       RunLoops:UnbindFromHeartbeat("kill")
     end
 }
 

@@ -164,7 +164,7 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
     end
 
     for _, player in ipairs(Players) do
-        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) then
+        if player ~= lplr and player.Character and IsAlive(player) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude

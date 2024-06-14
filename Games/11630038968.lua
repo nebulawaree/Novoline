@@ -143,46 +143,45 @@ local function IsAlive(plr)
 end
 
 local function getNearestPlayer(maxDist, findNearestHealthPlayer)
-    local lplr = Players.LocalPlayer
-    local lplrCharacter = lplr.Character
-    if not lplrCharacter then return nil end
-
-    local lplrHRP = lplrCharacter:FindFirstChild("HumanoidRootPart")
-    if not lplrHRP then return nil end
-
+    local Players = game:GetService("Players"):GetPlayers()
     local targetData = {
         nearestPlayer = nil,
-        dist = maxDist
+        dist = math.huge,
+        lowestHealth = math.huge
     }
 
     local nearestBoxingDummy = nil
-    local nearestDist = maxDist
+    local nearestDist = math.huge
 
-    local function updateTargetData(entity, mag)
-        if mag < targetData.dist then
+    local function updateTargetData(entity, mag, health)
+        if findNearestHealthPlayer and health < targetData.lowestHealth then
+            targetData.lowestHealth = health
+            targetData.nearestPlayer = entity
+        elseif mag < targetData.dist then
             targetData.dist = mag
             targetData.nearestPlayer = entity
         end
     end
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= lplr and player.Character then
-            local playerHRP = player.Character:FindFirstChild("HumanoidRootPart")
-            if playerHRP then
-                local mag = (playerHRP.Position - lplrHRP.Position).Magnitude
+    for _, player in ipairs(Players) do
+        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) then
+            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
                 if mag < maxDist then
-                    updateTargetData(player, mag)
+                    local health = player.Character:FindFirstChild("Humanoid").Health
+                    updateTargetData(player, mag, health)
                 end
             end
         end
     end
 
-    for _, entity in ipairs(Workspace:GetChildren()) do
+    for _, entity in ipairs(workspace:GetChildren()) do
         if entity.Name == "BoxingDummy" and entity:IsA("Model") then
             local rootPart = entity:FindFirstChild("HumanoidRootPart")
             if rootPart then
-                local dist = (rootPart.Position - lplrHRP.Position).Magnitude
-                if dist < nearestDist then
+                local dist = (rootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
+                if dist < nearestDist and dist < maxDist then
                     nearestDist = dist
                     nearestBoxingDummy = entity
                 end

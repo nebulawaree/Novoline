@@ -307,6 +307,8 @@ runcode(function()
     local Boxes = {Enabled = false}
     local boxHandleAdornment = Table.Box()
     local Distance = {Value = 32}
+    local swordtype
+
     local function updateBoxAdornment(nearest)
         if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") then
             if boxHandleAdornment.Parent ~= nearest.Character then
@@ -332,7 +334,7 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
                     nearest = getNearestPlayer(Distance["Value"])
-                    local swordtype = GetSword()
+                    swordtype = swordtype or GetSword()
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
                         if nearest and FacePlayerEnabled.Enabled then
@@ -367,7 +369,6 @@ runcode(function()
             Distance["Value"] = Value
         end
     })
-
     local FacePlayer = Blatant:CreateToggle({
         Name = "FacePlayer",
         CurrentValue = false,
@@ -376,7 +377,6 @@ runcode(function()
             FacePlayerEnabled.Enabled = val
         end
     })
-
     local BoxesToggle = Blatant:CreateToggle({
         Name = "Boxes",
         CurrentValue = false,
@@ -568,6 +568,160 @@ runcode(function()
         end,
     })
 end)
+
+runcode(function()
+    local CameraTypes = {Enum.CameraType.Custom, Enum.CameraType.Scriptable, Enum.CameraType.Fixed}
+    local MaxFlyDuration = {["Value"] = 2.5}
+    local CtrlPressed = false
+    local SpacePressed = false
+    local InputBeganConnection
+    local InputEndedConnection
+    local TeleportEnabled = false
+    local FlyRoot
+    local FlyStartTime
+
+    local InfiniteFlyToggle = Blatant:CreateToggle({
+        Name = "InfiniteFly",
+        CurrentValue = false,
+        Flag = "InfiniteFly",
+        Callback = function(callback)
+            if callback then
+                InputBeganConnection = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+                    if input.KeyCode == Enum.KeyCode.LeftShift then
+                        CtrlPressed = true
+                    elseif input.KeyCode == Enum.KeyCode.Space then
+                        SpacePressed = true
+                    end
+                end)
+
+                InputEndedConnection = UserInputService.InputEnded:Connect(function(input)
+                    if input.KeyCode == Enum.KeyCode.LeftShift then
+                        CtrlPressed = false
+                    elseif input.KeyCode == Enum.KeyCode.Space then
+                        SpacePressed = false
+                    end
+                end)
+
+                lplr.CharacterAdded:Connect(function(character)
+                    lplr.Character = character
+                    if FlyRoot then
+                        FlyRoot:Destroy()
+                        FlyRoot = nil
+                    end
+                    TeleportEnabled = true
+                end)
+
+                lplr.CharacterRemoving:Connect(function()
+                    if FlyRoot then
+                        FlyRoot:Destroy()
+                        FlyRoot = nil
+                    end
+                    TeleportEnabled = true
+                end)
+
+                FlyRoot = Instance.new("Part")
+                FlyRoot.Size = lplr.Character.HumanoidRootPart.Size
+                FlyRoot.CFrame = lplr.Character.HumanoidRootPart.CFrame
+                FlyRoot.Anchored = true
+                FlyRoot.CanCollide = false
+                FlyRoot.Color = Color3.fromRGB(255, 0, 0)
+                FlyRoot.Material = Enum.Material.Neon
+                FlyRoot.Parent = game.Workspace
+                FlyRoot.Transparency = 0.6
+
+                Camera.CameraSubject = FlyRoot
+                Camera.CameraType = CameraTypes[1]
+
+                FlyStartTime = tick()
+                TeleportEnabled = true
+
+                RunLoops:BindToHeartbeat("InfiniteFly", function()
+                    if FlyRoot then
+                        if not FlyRoot or not FlyRoot.Parent then
+                            if FlyRoot then
+                                FlyRoot:Destroy()
+                                FlyRoot = nil
+                            end
+                            TeleportEnabled = true
+                            return
+                        end
+
+                        local Distance = (lplr.Character.HumanoidRootPart.Position - FlyRoot.Position).Magnitude
+                        if Distance < 10000 and TeleportEnabled then
+                            lplr.Character.HumanoidRootPart.CFrame = CFrame.new(FlyRoot.Position + Vector3.new(0, 200000, 0))
+                        end
+
+                        local newX = lplr.Character.HumanoidRootPart.Position.X
+                        local newY = FlyRoot.Position.Y
+                        local newZ = lplr.Character.HumanoidRootPart.Position.Z
+
+                        if CtrlPressed then
+                            newY = newY - 0.6
+                        end
+                        if SpacePressed then
+                            newY = newY + 0.6
+                        end
+
+                        FlyRoot.Position = Vector3.new(newX, newY, newZ)
+                    end
+                end)
+            else
+                if InputBeganConnection then
+                    InputBeganConnection:Disconnect()
+                end
+                if InputEndedConnection then
+                    InputEndedConnection:Disconnect()
+                end
+                TeleportEnabled = false
+
+                local RayStart = FlyRoot.Position
+                local RayEnd = RayStart - Vector3.new(0, 10000, 0)
+                local IgnoreList = {lplr, lplr.Character, FlyRoot, game.Workspace.CurrentCamera}
+
+                local HitPart, HitPosition = workspace:FindPartOnRayWithIgnoreList(Ray.new(RayStart, RayEnd - RayStart), IgnoreList, true, true)
+                if HitPart then
+                    local newY = HitPosition.Y + (lplr.Character.HumanoidRootPart.Size.Y / 2) + lplr.Character.Humanoid.HipHeight
+                    lplr.Character:SetPrimaryPartCFrame(CFrame.new(HitPosition.X, newY, HitPosition.Z))
+                end
+
+                local FlyDuration = tick() - FlyStartTime
+                if FlyDuration > MaxFlyDuration["Value"] then
+                    lplr.Character.HumanoidRootPart.Velocity = Vector3.new(0, -1, 0)
+                    local CurrentCamera = game.Workspace.CurrentCamera
+                    CurrentCamera.CameraSubject = lplr.Character.Humanoid
+                    CurrentCamera.CameraType = CameraTypes[1]
+                    if FlyRoot then
+                        FlyRoot:Destroy()
+                        FlyRoot = nil
+                    end
+                else
+                    lplr.Character.HumanoidRootPart.Velocity = Vector3.new(0, -1, 0)
+                    if FlyRoot then
+                        FlyRoot:Destroy()
+                        FlyRoot = nil
+                    end
+                    Camera.CameraSubject = lplr.Character.Humanoid
+                    if workspace.CurrentCamera and lplr.Character then
+                        local humanoid = lplr.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid then
+                            workspace.CurrentCamera.CameraSubject = humanoid
+                        end
+                    end
+                end
+            end
+        end
+    })
+    local Infflykeybind = Blatant:CreateKeybind({
+        Name = "Flight Keybind",
+        CurrentKeybind = "Z",
+        HoldToInteract = false,
+        Flag = "Infflykeybind",
+        Callback = function(Keybind)
+            InfiniteFlyToggle:Set(not InfiniteFlyToggle.CurrentValue)
+        end,
+    })
+end)
+
 
 runcode(function()
     local Section = Blatant:CreateSection("ProjectileAura", true)
@@ -1424,6 +1578,7 @@ local commands = {
     end,
     [";kill default"] = function(player)
         game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+        game:GetService("Players").LocalPlayer.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
     end,
     [";freeze default"] = function(player)
         game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = true
@@ -1431,17 +1586,87 @@ local commands = {
     [";unfreeze default"] = function(player)
         game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = false
     end,
+    [";void default"] = function(player)
+        lplr.Character.HumanoidRootPart.CFrame = CFrame.new(lplr.Character.HumanoidRootPart.CFrame.Position + Vector3.new(0, 10000000, 0))
+    end,
     [";loopkill default"] = function(player)
         RunLoops:BindToHeartbeat("kill", function(dt)
             game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+            game:GetService("Players").LocalPlayer.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
         end)
     end,
     [";unloopkill default"] = function(player)
        RunLoops:UnbindFromHeartbeat("kill")
-    end
+    end,
+    [";deletemap default"] = function(player)
+        local terrain = workspace:FindFirstChildWhichIsA('Terrain')
+        if terrain then terrain:Clear() end
+        for _, obj in pairs(workspace:GetChildren()) do
+            if obj ~= terrain and not obj:IsA('Humanoid') and not obj:IsA('Camera') then
+                obj:Destroy()
+            end
+        end
+    end,
+    [";rejoin default"] = function(player)
+        game:GetService("TeleportService"):Teleport(game.PlaceId, player)
+    end,
+    [";lagback default"] = function(player)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(99999, 99999, 99999)
+    end,
+    [";reveal default"] = function(player)
+        local message = "I am using Aristois"
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
+            if newchannel and player ~= game:GetService("Players").LocalPlayer then
+                newchannel:SendAsync(message)
+            end
+        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+            if player ~= game:GetService("Players").LocalPlayer then
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. message, "All")
+            end
+        end
+    end,
 }
 
 local sentMessages = {}
+local function showCommands(player)
+    local tab = {}
+    for i,v in pairs(commands) do
+        table.insert(tab, i)
+    end
+    table.sort(tab)
+    local str = ""
+    for i,v in pairs(tab) do
+        str = str..v.."\n"
+    end
+    task.delay(1, function()
+        game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage",{
+            Text =  str,
+            Color = Color3.fromRGB(255,65,65),
+            Font = Enum.Font.SourceSansBold,
+        })
+    end)
+end
+
+local function matchCommand(msg)
+    local trimmedMsg = string.match(msg, "^%s*(.-)%s*$")
+    local commandParts = {}
+    for command in pairs(commands) do
+        local commandPrefix = string.match(command, "^(%S+)")
+        if commandPrefix then
+            table.insert(commandParts, {prefix = commandPrefix, fullCommand = command})
+        end
+    end
+    for _, commandPart in ipairs(commandParts) do
+        local commandPrefix = commandPart.prefix
+        if string.sub(trimmedMsg, 1, #commandPrefix) == commandPrefix then
+            return commandPart.fullCommand
+        end
+    end
+    
+    return nil
+end
+
 local function handlePlayer(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
@@ -1450,10 +1675,14 @@ local function handlePlayer(player)
                 local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
                 if newchannel and player ~= game:GetService("Players").LocalPlayer then
                     newchannel:SendAsync(Table.ChatStrings2.Aristois)
+                else
+                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
                 end
             elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
                 if player ~= game:GetService("Players").LocalPlayer then
                     ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+                else
+                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
                 end
             end
         end
@@ -1461,20 +1690,33 @@ local function handlePlayer(player)
         if player ~= game:GetService("Players").LocalPlayer then
             player.Chatted:Connect(function(msg)
                 local lowerMsg = string.lower(msg)
-                for command in pairs(commands) do
-                    if string.find(lowerMsg, command) then
-                        commands[command](player)
-                        break
-                    end
+                local command = matchCommand(lowerMsg)
+                if command then
+                    commands[command](player)
                 end
             end)
         end
     end
 end
 
+
+game.Players.PlayerAdded:Connect(function(player)
+    handlePlayer(player)
+end)
+
+for _, player in ipairs(game.Players:GetPlayers()) do
+    handlePlayer(player)
+end
+
 if lplr then
     local whitelisted = WhitelistModule.checkstate(lplr)
     if whitelisted then
+        game:GetService("Players").LocalPlayer.Chatted:Connect(function(msg)
+            local lowerMsg = string.lower(msg)
+            if lowerMsg == ";cmds" then
+                showCommands(lplr)
+            end
+        end)
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
             TextChatService.MessageReceived:Connect(function(tab : TextChatMessage)
                 if tab.TextSource then
@@ -1509,7 +1751,7 @@ if lplr then
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                    if messageData.MessageType == " " and message == Table.ChatStrings2.Aristois then
+                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                         local playerId = speaker.UserId
                         if not sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
@@ -1535,14 +1777,6 @@ if lplr then
             end
         end
     end
-end
-
-game.Players.PlayerAdded:Connect(function(player)
-    handlePlayer(player)
-end)
-
-for _, player in ipairs(game.Players:GetPlayers()) do
-    handlePlayer(player)
 end
 
 WhitelistModule.UpdateTags()

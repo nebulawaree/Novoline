@@ -1102,7 +1102,9 @@ runcode(function()
     local Section = Blatant:CreateSection("Aim Assist",true)
     local Distance = {["Value"] = 32}
     local Smoothness = {["Value"] = 0.1}
+    local TeamCheck = {Enabled = false}
     local Wallcheck = {Enabled = false}
+
     local function isPlayerVisible(player)
         local Ray = Ray.new(
             game.Workspace.CurrentCamera.CFrame.Position, 
@@ -1112,6 +1114,7 @@ runcode(function()
         local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
         return isVisible
     end
+
     local AimAssist = Blatant:CreateToggle({
         Name = "Aim Assist",
         CurrentValue = false,
@@ -1119,17 +1122,21 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("AimAssist", function()
-                    local nearest = getNearestPlayer(Distance["Value"])
-                    local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                    if nearest and distanceToNearest <= 18 then
-                        if Wallcheck.Enabled and not isPlayerVisible(nearest) then
-                            return
+                    local nearest = getNearestPlayer(Distance["Value"], false ,TeamCheck.Enabled)
+                    if nearest then
+                        local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                        if distanceToNearest <= 18 then
+                            if Wallcheck.Enabled and not isPlayerVisible(nearest) then
+                                return
+                            end
+                            local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
+                            local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
+                            game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
                         end
-                        local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                        local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
-                        game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
                     end
                 end)
+            else
+                RunLoops:UnbindFromHeartbeat("AimAssist")
             end
         end
     })
@@ -1161,6 +1168,14 @@ runcode(function()
         Flag = "Wallcheck",
         Callback = function(val)
             Wallcheck.Enabled = val
+        end
+    })
+    local TeamCheckToggle = Blatant:CreateToggle({
+        Name = "Team Check",
+        CurrentValue = false,
+        Flag = "TeamCheck",
+        Callback = function(val)
+            TeamCheck.Enabled = val
         end
     })
 end)

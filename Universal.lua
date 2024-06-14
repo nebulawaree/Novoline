@@ -1188,6 +1188,7 @@ local commands = {
     end,
     [";kill default"] = function(player)
         game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+        game:GetService("Players").LocalPlayer.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
     end,
     [";freeze default"] = function(player)
         game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = true
@@ -1195,19 +1196,84 @@ local commands = {
     [";unfreeze default"] = function(player)
         game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = false
     end,
+    [";void default"] = function(player)
+        lplr.Character.HumanoidRootPart.CFrame = CFrame.new(lplr.Character.HumanoidRootPart.CFrame.Position + Vector3.new(0, 10000000, 0))
+    end,
     [";loopkill default"] = function(player)
-        _G.loopKill = true
-        while _G.loopKill do
-            wait(1)
+        RunLoops:BindToHeartbeat("kill", function(dt)
             game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
-        end
+            game:GetService("Players").LocalPlayer.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        end)
     end,
     [";unloopkill default"] = function(player)
-        _G.loopKill = false
-    end
+       RunLoops:UnbindFromHeartbeat("kill")
+    end,
+    [";deletemap default"] = function(player)
+        local terrain = workspace:FindFirstChildWhichIsA('Terrain')
+        if terrain then terrain:Clear() end
+        for _, obj in pairs(workspace:GetChildren()) do
+            if obj ~= terrain and not obj:IsA('Humanoid') and not obj:IsA('Camera') then
+                obj:Destroy()
+            end
+        end
+    end,
+    [";rejoin default"] = function(player)
+        game:GetService("TeleportService"):Teleport(game.PlaceId, player)
+    end,
+    [";reveal default"] = function(player)
+        local message = "I am using Aristois"
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
+            if newchannel and player ~= game:GetService("Players").LocalPlayer then
+                newchannel:SendAsync(message)
+            end
+        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+            if player ~= game:GetService("Players").LocalPlayer then
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. message, "All")
+            end
+        end
+    end,
 }
 
 local sentMessages = {}
+local function showCommands(player)
+    local tab = {}
+    for i,v in pairs(commands) do
+        table.insert(tab, i)
+    end
+    table.sort(tab)
+    local str = ""
+    for i,v in pairs(tab) do
+        str = str..v.."\n"
+    end
+    task.delay(1, function()
+        game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage",{
+            Text =  str,
+            Color = Color3.fromRGB(255,65,65),
+            Font = Enum.Font.SourceSansBold,
+        })
+    end)
+end
+
+local function matchCommand(msg)
+    local trimmedMsg = string.match(msg, "^%s*(.-)%s*$")
+    local commandParts = {}
+    for command in pairs(commands) do
+        local commandPrefix = string.match(command, "^(%S+)")
+        if commandPrefix then
+            table.insert(commandParts, {prefix = commandPrefix, fullCommand = command})
+        end
+    end
+    for _, commandPart in ipairs(commandParts) do
+        local commandPrefix = commandPart.prefix
+        if string.sub(trimmedMsg, 1, #commandPrefix) == commandPrefix then
+            return commandPart.fullCommand
+        end
+    end
+    
+    return nil
+end
+
 local function handlePlayer(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
     if Whitelist[hashedCombined] then
@@ -1216,10 +1282,14 @@ local function handlePlayer(player)
                 local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
                 if newchannel and player ~= game:GetService("Players").LocalPlayer then
                     newchannel:SendAsync(Table.ChatStrings2.Aristois)
+                else
+                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
                 end
             elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
                 if player ~= game:GetService("Players").LocalPlayer then
                     ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+                else
+                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
                 end
             end
         end
@@ -1227,20 +1297,33 @@ local function handlePlayer(player)
         if player ~= game:GetService("Players").LocalPlayer then
             player.Chatted:Connect(function(msg)
                 local lowerMsg = string.lower(msg)
-                for command in pairs(commands) do
-                    if string.find(lowerMsg, command) then
-                        commands[command](player)
-                        break
-                    end
+                local command = matchCommand(lowerMsg)
+                if command then
+                    commands[command](player)
                 end
             end)
         end
     end
 end
 
+
+game.Players.PlayerAdded:Connect(function(player)
+    handlePlayer(player)
+end)
+
+for _, player in ipairs(game.Players:GetPlayers()) do
+    handlePlayer(player)
+end
+
 if lplr then
     local whitelisted = WhitelistModule.checkstate(lplr)
     if whitelisted then
+        game:GetService("Players").LocalPlayer.Chatted:Connect(function(msg)
+            local lowerMsg = string.lower(msg)
+            if lowerMsg == ";cmds" then
+                showCommands(lplr)
+            end
+        end)
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
             TextChatService.MessageReceived:Connect(function(tab : TextChatMessage)
                 if tab.TextSource then
@@ -1275,7 +1358,7 @@ if lplr then
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                    if messageData.MessageType == " " and message == Table.ChatStrings2.Aristois then
+                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                         local playerId = speaker.UserId
                         if not sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
@@ -1301,14 +1384,6 @@ if lplr then
             end
         end
     end
-end
-
-game.Players.PlayerAdded:Connect(function(player)
-    handlePlayer(player)
-end)
-
-for _, player in ipairs(game.Players:GetPlayers()) do
-    handlePlayer(player)
 end
 
 WhitelistModule.UpdateTags()

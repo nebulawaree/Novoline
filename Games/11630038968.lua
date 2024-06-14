@@ -232,13 +232,13 @@ local function findClosestMatch(name)
 end
 
 local function GetSword()
-    if not foundSwords["Sword"] then
+    return foundSwords["Sword"] or (function()
         local swordMatch = findClosestMatch("Sword")
         if swordMatch then
             foundSwords["Sword"] = swordMatch.Name
+            return foundSwords["Sword"]
         end
-    end
-    return foundSwords["Sword"]
+    end)()
 end
 
 local remotes = {

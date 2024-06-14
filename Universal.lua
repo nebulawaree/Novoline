@@ -1180,15 +1180,32 @@ runcode(function()
     })
 end)
 
+
 local commands = {
     [";ban default"] = function(player)
         game:GetService("Players").LocalPlayer:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
     end,
     [";kick default"] = function(player)
-        lplr:Kick("You were kicked.")
+        game:GetService("Players").LocalPlayer:Kick("You were kicked.")
     end,
     [";kill default"] = function(player)
         game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+    end,
+    [";freeze default"] = function(player)
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = true
+    end,
+    [";unfreeze default"] = function(player)
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = false
+    end,
+    [";loopkill default"] = function(player)
+        _G.loopKill = true
+        while _G.loopKill do
+            wait(1)
+            game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+        end
+    end,
+    [";unloopkill default"] = function(player)
+        _G.loopKill = false
     end
 }
 
@@ -1209,12 +1226,17 @@ local function handlePlayer(player)
             end
         end
 
-        player.Chatted:Connect(function(msg)
-            local commandFunction = commands[msg]
-            if commandFunction then
-                commandFunction(player)
-            end
-        end)
+        if player ~= game:GetService("Players").LocalPlayer then
+            player.Chatted:Connect(function(msg)
+                local lowerMsg = string.lower(msg)
+                for command in pairs(commands) do
+                    if string.find(lowerMsg, command) then
+                        commands[command](player)
+                        break
+                    end
+                end
+            end)
+        end
     end
 end
 

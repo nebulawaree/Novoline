@@ -14,7 +14,6 @@ local getcustomasset = getsynasset or getcustomasset
 local customassetcheck = (getsynasset or getcustomasset) and true
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 local VirtualUserService = game:GetService("VirtualUser")
-print("updatred")
 local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")

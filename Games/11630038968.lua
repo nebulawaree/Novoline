@@ -56,7 +56,7 @@ local Window = GuiLibrary:CreateWindow({
     Discord = {
        Enabled = true,
        Invite = "pDuXtHgsBt",
-       RememberJoins = false
+       RememberJoins = true
     },
     KeySystem = false,
     KeySettings = {

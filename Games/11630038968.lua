@@ -54,8 +54,8 @@ local Window = GuiLibrary:CreateWindow({
        FileName = tostring(shared.AristoisPlaceId) .. ".lua"
     },
     Discord = {
-       Enabled = false,
-       Invite = "noinvitelink",
+       Enabled = true,
+       Invite = "pDuXtHgsBt",
        RememberJoins = true
     },
     KeySystem = false,

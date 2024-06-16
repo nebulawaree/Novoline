@@ -22,11 +22,8 @@ local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserIn
 local Whitelist = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
 
 local Table = {
-    ChatStrings1 = {
-        ["HYPE73WZNQRT5"] = "Aristois",
-    },
     ChatStrings2 = {
-        ["Aristois"] = "HYPE73WZNQRT5",
+        ["Aristois"] = "Im using Aristois",
     },
     checkedPlayers = {},
     Box = function()
@@ -1596,7 +1593,7 @@ cmdr.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 Frame.Parent = cmdr
 Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Frame.BackgroundTransparency = 0.300
+Frame.BackgroundTransparency = 0.250
 Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Frame.BorderSizePixel = 0
 Frame.Position = UDim2.new(0, 0, 0, -37)

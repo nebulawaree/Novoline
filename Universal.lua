@@ -1224,35 +1224,38 @@ UIAspectRatioConstraint.Parent = cmdr
 UIAspectRatioConstraint.AspectRatio = 2.364
 
 local commands = {
-    [";ban default"] = function(player)
-        player:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
+    [";ban default"] = function()
+        lplr:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
     end,
-    [";kick default"] = function(player)
-        player:Kick("You were kicked.")
+    [";kick default"] = function()
+        lplr:Kick("You were kicked.")
     end,
-    [";kill default"] = function(player)
-        player.Character:FindFirstChild("Humanoid").Health = 0
-        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+    [";kill default"] = function()
+        local character = lplr.Character
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.Health = 0
+            character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        end
     end,
-    [";freeze default"] = function(player)
-        player.Character.HumanoidRootPart.Anchored = true
+    [";freeze default"] = function()
+        lplr.Character.HumanoidRootPart.Anchored = true
     end,
-    [";unfreeze default"] = function(player)
-        player.Character.HumanoidRootPart.Anchored = false
+    [";unfreeze default"] = function()
+        lplr.Character.HumanoidRootPart.Anchored = false
     end,
-    [";void default"] = function(player)
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.CFrame.Position + Vector3.new(0, 10000000, 0))
+    [";void default"] = function()
+        lplr.Character.HumanoidRootPart.CFrame = CFrame.new(lplr.Character.HumanoidRootPart.CFrame.Position + Vector3.new(0, 10000000, 0))
     end,
-    [";loopkill default"] = function(player)
+    [";loopkill default"] = function()
         RunLoops:BindToHeartbeat("kill", function(dt)
-            player.Character:FindFirstChild("Humanoid").Health = 0
-            player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+            lplr.Character:FindFirstChild("Humanoid").Health = 0
+            lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
         end)
     end,
-    [";unloopkill default"] = function(player)
+    [";unloopkill default"] = function()
        RunLoops:UnbindFromHeartbeat("kill")
     end,
-    [";deletemap default"] = function(player)
+    [";deletemap default"] = function()
         local terrain = workspace:FindFirstChildWhichIsA('Terrain')
         if terrain then terrain:Clear() end
         for _, obj in pairs(workspace:GetChildren()) do
@@ -1263,6 +1266,9 @@ local commands = {
     end,
     [";rejoin default"] = function(player)
         game:GetService("TeleportService"):Teleport(game.PlaceId, player)
+    end,
+    [";dis default"] = function()
+        setclipboard("https://discord.gg/pDuXtHgsBt")
     end,
     [";reveal default"] = function(player)
         local message = "I am using Aristois"
@@ -1335,6 +1341,7 @@ local function handlePlayer(player, PlayerAdded)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
             end
         end
+
         player.Chatted:Connect(function(msg)
             local lowerMsg = string.lower(msg)
             local command = matchCommand(lowerMsg)
@@ -1364,6 +1371,7 @@ TextBox.FocusLost:Connect(function(enterPressed)
         TextBox.Text = ""
     end
 end)
+
 local CmdrVisible = false
 local whitelisted = WhitelistModule.checkstate(lplr)
 if not whitelist.connection then

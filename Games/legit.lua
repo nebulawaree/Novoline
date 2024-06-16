@@ -321,7 +321,8 @@ runcode(function()
             boxHandleAdornment.Parent = nil
         end
     end
-
+    local lastClickTime = tick()
+    local CPSSliderAmount = {["Value"] = 10}
     local Killaura = Blatant:CreateToggle({
         Name = "Killaura",
         CurrentValue = false,
@@ -331,11 +332,15 @@ runcode(function()
                 RunLoops:BindToHeartbeat("Killaura", function()
                     nearest = getNearestPlayer(Distance["Value"])
                     local swordtype = GetSword()
+                    local interval = 0.1 / CPSSliderAmount["Value"]
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
                         if swordtype and IsAlive(lplr) and lplr.Character:FindFirstChild(swordtype.Name) then
                             if lplr.Character:FindFirstChildWhichIsA("Tool") == swordtype then
                                 updateBoxAdornment(nearest)
-                                swordtype:Activate()
+                                if tick() - lastClickTime >= interval then
+                                    lastClickTime = tick()
+                                    swordtype:Activate()
+                                end
                             end
                         else
                             swordtype.Parent = lplr.Backpack
@@ -351,7 +356,6 @@ runcode(function()
             end
         end
     })
-    
     local KillauraDistance = Blatant:CreateSlider({
         Name = "Distance",
         Range = {1, 32},
@@ -363,7 +367,6 @@ runcode(function()
             Distance["Value"] = Value
         end
     })
-
     local FacePlayer = Blatant:CreateToggle({
         Name = "FacePlayer",
         CurrentValue = false,
@@ -372,7 +375,6 @@ runcode(function()
             FacePlayerEnabled.Enabled = val
         end
     })
-
     local BoxesToggle = Blatant:CreateToggle({
         Name = "Boxes",
         CurrentValue = false,
@@ -381,13 +383,26 @@ runcode(function()
             Boxes.Enabled = val
         end
     })
+    local CPSSlider = Combat:CreateSlider({
+        Name = "CPS",
+        Range = {1, 60},
+        Increment = 1,
+        Suffix = "CPSX",
+        CurrentValue = 10,
+        Flag = "CPS",
+        Callback = function(Value)
+            CPSSliderAmount["Value"] = Value
+        end
+    })
 end)
 
 runcode(function()
     local Section = Blatant:CreateSection("Aim Assist",true)
     local Distance = {["Value"] = 32}
     local Smoothness = {["Value"] = 0.1}
+    local TeamCheck = {Enabled = false}
     local Wallcheck = {Enabled = false}
+
     local function isPlayerVisible(player)
         local Ray = Ray.new(
             game.Workspace.CurrentCamera.CFrame.Position, 
@@ -405,18 +420,21 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("AimAssist", function()
-                    local nearest = getNearestPlayer(Distance["Value"])
-                    local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                    if nearest and distanceToNearest <= 18 and IsAlive(lplr) and IsAlive(nearest) then
-                        if Wallcheck.Enabled and not isPlayerVisible(nearest) then
-                            return
+                    local nearest = getNearestPlayer(Distance["Value"], false)
+                    if nearest then
+                        local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                        if distanceToNearest <= 18 then
+                            if Wallcheck.Enabled and not isPlayerVisible(nearest) then
+                                return
+                            end
+                            local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
+                            local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
+                            game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
                         end
-                        local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                        direction = Vector3.new(direction.X, direction.Y, direction.Z)
-                        local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + direction)
-                        game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"])  
                     end
                 end)
+            else
+                RunLoops:UnbindFromHeartbeat("AimAssist")
             end
         end
     })
@@ -448,6 +466,14 @@ runcode(function()
         Flag = "Wallcheck",
         Callback = function(val)
             Wallcheck.Enabled = val
+        end
+    })
+    local TeamCheckToggle = Blatant:CreateToggle({
+        Name = "Team Check",
+        CurrentValue = false,
+        Flag = "TeamCheck",
+        Callback = function(val)
+            TeamCheck.Enabled = val
         end
     })
 end)

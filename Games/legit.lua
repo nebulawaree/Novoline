@@ -218,6 +218,61 @@ end
 local nearest
 local Distance = {["Value"] = 32}
 runcode(function()
+    local Section = Combat:CreateSection("AutoClicker",true)
+    local CPSSliderAmount = {["Value"] = 10}
+    local function FindTools()
+        local tools = {}
+        if lplr then
+            if lplr.Character then
+                for _, item in ipairs(lplr.Character:GetChildren()) do
+                    if item:IsA("Tool") then
+                        table.insert(tools, item)
+                    end
+                end
+            end
+        end
+        return tools
+    end
+
+    local AutoClicker = Combat:CreateToggle({
+        Name = "AutoClicker",
+        CurrentValue = false,
+        Flag = "AutoClicker",
+        Callback = function(callback)
+            if callback then
+                local interval = 0.1 / CPSSliderAmount["Value"]
+                local lastClickTime = tick()
+                RunLoops:BindToHeartbeat("AutoClicker", function()
+                    local tools = FindTools() 
+                    for _, tool in ipairs(tools) do
+                        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                            if tick() - lastClickTime >= interval then
+                                lastClickTime = tick()
+                                tool:Activate()
+                            end
+                        end
+                    end
+                end)
+            else
+                RunLoops:UnbindFromHeartbeat("AutoClicker")
+            end
+        end
+    })
+    local CPSSlider = Combat:CreateSlider({
+        Name = "CPS",
+        Range = {1, 60},
+        Increment = 1,
+        Suffix = "CPS",
+        CurrentValue = 10,
+        Flag = "CPS",
+        Callback = function(Value)
+            CPSSliderAmount["Value"] = Value
+        end
+    })
+end)
+
+
+runcode(function()
     local Section = Blatant:CreateSection("Killaura", true)
     local FacePlayerEnabled = {Enabled = false}
     local Boxes = {Enabled = false}

@@ -35,13 +35,20 @@ function ChatTagModule.getCustomTag(player)
     return nil, nil, nil
 end
 
+function ChatTagModule.Isattack(player)
+    local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
+    if Whitelist[hashedCombined] then
+        return Whitelist[hashedCombined].attackable
+    end
+    return true
+end
+
 function rgbToHex(r, g, b)
     local hex = string.format("#%02x%02x%02x", r, g, b)
     return hex
 end
 
 local ChatTag = {}
-
 function ChatTagModule.UpdateTags()
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")

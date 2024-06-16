@@ -14,7 +14,7 @@ local customassetcheck = (getsynasset or getcustomasset) and true
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 local VirtualUserService = game:GetService("VirtualUser")
 local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
-local WhitelistModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Aristois/main/Librarys/Whitelist.lua"))()
+local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
 local Whitelist = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
@@ -152,9 +152,8 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer, teamCheck)
             targetData.nearestPlayer = entity
         end
     end
-
     for _, player in ipairs(Players) do
-        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) then
+        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) and WhitelistModule.Isattack(player) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
@@ -1267,7 +1266,7 @@ local commands = {
     [";rejoin default"] = function(player)
         game:GetService("TeleportService"):Teleport(game.PlaceId, player)
     end,
-    [";dis default"] = function()
+    [";server default"] = function()
         setclipboard("https://discord.gg/pDuXtHgsBt")
     end,
     [";reveal default"] = function(player)

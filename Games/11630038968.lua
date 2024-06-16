@@ -117,7 +117,30 @@ local Render = Window:CreateTab("Render")
 local Utility = Window:CreateTab("Utility")
 local Word = Window:CreateTab("Word")
 
-
+local function IsAlive(plr)
+    if not plr then
+        return false
+    end
+    
+    if typeof(plr) == "Instance" and plr:IsA("Player") then
+        return plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0
+    end
+    
+    if typeof(plr) == "table" then
+        for _, player in ipairs(plr) do
+            if typeof(player) == "Instance" and player:IsA("Player") then
+                if not (player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0) then
+                    return false
+                end
+            else
+                return false 
+            end
+        end
+        return true
+    end
+    
+    return false 
+end
 
 local function getNearestPlayer(maxDist, findNearestHealthPlayer)
     local Players = game:GetService("Players"):GetPlayers()
@@ -1646,36 +1669,51 @@ end
 
 local function handlePlayer(player)
     local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+
     if Whitelist[hashedCombined] then
         if player ~= game:GetService("Players").LocalPlayer then
             if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
                 local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
                 if newchannel and player ~= game:GetService("Players").LocalPlayer then
+                    for _, otherPlayer in pairs(game:GetService("Players"):GetPlayers()) do
+                        local otherHashedCombined = WhitelistModule.hashUserIdAndUsername(otherPlayer.UserId, otherPlayer.Name)
+                        if otherPlayer ~= player and Whitelist[otherHashedCombined] then
+                            return
+                        end
+                    end
                     newchannel:SendAsync(Table.ChatStrings2.Aristois)
                 else
                     ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
                 end
             elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
                 if player ~= game:GetService("Players").LocalPlayer then
+                    for _, otherPlayer in pairs(game:GetService("Players"):GetPlayers()) do
+                        local otherHashedCombined = WhitelistModule.hashUserIdAndUsername(otherPlayer.UserId, otherPlayer.Name)
+                        if otherPlayer ~= player and Whitelist[otherHashedCombined] then
+                            return
+                        end
+                    end
                     ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
                 else
                     ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
                 end
             end
         end
-
+        
         if player ~= game:GetService("Players").LocalPlayer then
             player.Chatted:Connect(function(msg)
                 local lowerMsg = string.lower(msg)
                 local command = matchCommand(lowerMsg)
                 if command then
-                    commands[command](player)
+                    local playerHashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+                    if not Whitelist[playerHashedCombined] then
+                        commands[command](player)
+                    end
                 end
             end)
         end
     end
 end
-
 
 game.Players.PlayerAdded:Connect(function(player)
     handlePlayer(player)

@@ -118,28 +118,24 @@ local Utility = Window:CreateTab("Utility")
 local Word = Window:CreateTab("Word")
 
 local function IsAlive(plr)
-    if not plr then
-        return false
+    local function checkPlayer(player)
+        local character = player.Character
+        local humanoid = character and character:FindFirstChild("Humanoid")
+        return humanoid and humanoid.Health > 0
     end
-    
+
     if typeof(plr) == "Instance" and plr:IsA("Player") then
-        return plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0
-    end
-    
-    if typeof(plr) == "table" then
+        return checkPlayer(plr)
+    elseif typeof(plr) == "table" then
         for _, player in ipairs(plr) do
-            if typeof(player) == "Instance" and player:IsA("Player") then
-                if not (player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0) then
-                    return false
-                end
-            else
-                return false 
+            if not (typeof(player) == "Instance" and player:IsA("Player") and checkPlayer(player)) then
+                return false
             end
         end
         return true
     end
-    
-    return false 
+
+    return false
 end
 
 local function getNearestPlayer(maxDist, findNearestHealthPlayer)

@@ -322,7 +322,7 @@ runcode(function()
         end
     end
     local lastClickTime = tick()
-    local CPSSliderAmount = {["Value"] = 10}
+    local XCPSSliderAmount = {["Value"] = 10}
     local Killaura = Blatant:CreateToggle({
         Name = "Killaura",
         CurrentValue = false,
@@ -332,7 +332,7 @@ runcode(function()
                 RunLoops:BindToHeartbeat("Killaura", function()
                     nearest = getNearestPlayer(Distance["Value"])
                     local swordtype = GetSword()
-                    local interval = 0.1 / CPSSliderAmount["Value"]
+                    local interval = 0.1 / XCPSSliderAmount["Value"]
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
                         if swordtype and IsAlive(lplr) and lplr.Character:FindFirstChild(swordtype.Name) then
                             if lplr.Character:FindFirstChildWhichIsA("Tool") == swordtype then
@@ -383,7 +383,7 @@ runcode(function()
             Boxes.Enabled = val
         end
     })
-    local CPSSlider = Combat:CreateSlider({
+    local CPSSlider = Blatant:CreateSlider({
         Name = "CPS",
         Range = {1, 60},
         Increment = 1,
@@ -391,7 +391,7 @@ runcode(function()
         CurrentValue = 10,
         Flag = "CPS",
         Callback = function(Value)
-            CPSSliderAmount["Value"] = Value
+            XCPSSliderAmount["Value"] = Value
         end
     })
 end)

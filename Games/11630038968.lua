@@ -52,7 +52,7 @@ local Window = GuiLibrary:CreateWindow({
     },
     Discord = {
        Enabled = false,
-       Invite = "pDuXtHgsBt",
+       Invite = "",
        RememberJoins = true
     },
     KeySystem = false,
@@ -161,7 +161,7 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
     end
 
     for _, player in ipairs(Players) do
-        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) then
+        if player ~= lplr and player.Character and player.Character:FindFirstChild("Humanoid") and IsAlive(player) and IsAlive(lplr) and WhitelistModule.Isattack(player) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude

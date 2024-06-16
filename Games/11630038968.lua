@@ -1781,7 +1781,7 @@ if not whitelist.connection then
         end
 
         UserInputService.InputBegan:Connect(function(input, isProcessed)
-            if not isProcessed and input.KeyCode == Enum.KeyCode.Backquote then
+            if not isProcessed and input.KeyCode == Enum.KeyCode.Delete then
                 toggleCmdrVisibility()
             end
         end)

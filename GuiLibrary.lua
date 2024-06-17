@@ -797,7 +797,7 @@ function Hide()
 	Main.Visible = false
 	Debounce = false
 end
-function Unhide()
+local function Unhide()
 	Debounce = true
 	Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 	Main.Visible = true
@@ -860,6 +860,7 @@ function Unhide()
 	Minimised = false
 	Debounce = false
 end
+RayfieldLibrary.Unhide = Unhide
 function CloseSearch()
 	Debounce = true
 	TweenService:Create(SearchBar, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 1,Size = UDim2.new(0, 460,0, 35)}):Play()
@@ -1620,7 +1621,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		-- Section
 		function Tab:CreateSection(SectionName,Display)
-
 			local SectionValue = {
 				Holder = Rayfield.Holding,
 				Open = true
@@ -1646,7 +1646,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Section.Title.Text = NewSection
 			end
 			if Display then
-				Section._UIPadding_.PaddingBottom = UDim.new(0,0)
+				Section._UIPadding_:Destroy()
 				Section.Holder.Visible = false
 				Section.BackgroundTransparency = 1
 				SectionValue.Holder.Parent = Rayfield.Holding
@@ -1698,20 +1698,20 @@ function RayfieldLibrary:CreateWindow(Settings)
 										child.Visible = true
 									end
 								end
-								elseif element:FindFirstChild('ColorPickerIs') then
+							elseif element:FindFirstChild('ColorPickerIs') then
 								TweenService:Create(element, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
 								TweenService:Create(element.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 								TweenService:Create(element.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
 								if element.ColorPickerIs.Value then
-							       element.ColorSlider.Visible = true
-							       element.HexInput.Visible = true
-							       element.RGB.Visible = true
-						       end
-						    element.CPBackground.Visible = true
-						    element.Lock.Visible = true
-							element.Interact.Visible = true
-							element.Title.Visible = true
-						
+									element.ColorSlider.Visible = true
+									element.HexInput.Visible = true
+									element.RGB.Visible = true
+								end
+								element.CPBackground.Visible = true
+								element.Lock.Visible = true
+								element.Interact.Visible = true
+								element.Title.Visible = true
+
 							end
 							element.Visible = true
 						end
@@ -3640,7 +3640,6 @@ Rayfield.XzynsWindow.Hide.MouseButton1Click:Connect(function()
 	task.wait()
 	Unhide() 
 end)
-
 
 for _, TopbarButton in ipairs(Topbar:GetChildren()) do
 	if TopbarButton.ClassName == "ImageButton" then

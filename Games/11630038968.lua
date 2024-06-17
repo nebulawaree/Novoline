@@ -927,7 +927,6 @@ runcode(function()
     local maxY = -12.753118515014648
     local speed = {["Value"] = 27}
     
-    -- Store the original gravity
     local originalGravity = game.Workspace.Gravity
     
     local function getNearestPlayer(radius)

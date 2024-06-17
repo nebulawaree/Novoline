@@ -20,6 +20,7 @@ local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))(
 local boxHandleAdornment = Instance.new("BoxHandleAdornment")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
 local Whitelist = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
+local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 
 local Table = {
     ChatStrings2 = {
@@ -1719,7 +1720,7 @@ local commands = {
                 Accept = {
                     Name = 'Accept',
                     Callback = function()
-                        request({
+                        requestfunc({
                             Url = 'http://127.0.0.1:6463/rpc?v=1',
                             Method = 'POST',
                             Headers = {

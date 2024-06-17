@@ -68,6 +68,20 @@ local Window = GuiLibrary:CreateWindow({
     }
  })
 
+Window:Prompt({
+    Title = 'Guide',
+    SubTitle = 'How to see sections',
+    Content = 'To see the other sections like ‘Blatant,’ click on the icon on the top right of the gui.',
+    Actions = {
+        Accept = {
+            Name = 'Accept',
+            Callback = function()
+                print("Done")
+            end,
+        }
+    }
+})
+
  do
     function RunLoops:BindToRenderStep(name, func)
         if RunLoops.RenderStepTable[name] == nil then

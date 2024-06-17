@@ -38,17 +38,17 @@ local Table = {
 
 local RunLoops = {RenderStepTable = {}, StepTable = {}, HeartTable = {}}
 local Window = GuiLibrary:CreateWindow({
-    Name = "Rayfield Example Window",
-    LoadingTitle = "Rayfield Interface Suite",
-    LoadingSubtitle = "by Sirius",
+    Name = "Aristois",
+    LoadingTitle = "Aristois Interface",
+    LoadingSubtitle = "by Xzyn and Wynnech",
     ConfigurationSaving = {
        Enabled = true,
        FolderName = "Aristois/configs",
-       FileName = tostring(game.PlaceId) .. ".lua"
+       FileName = tostring(shared.AristoisPlaceId) .. ".lua"
     },
     Discord = {
        Enabled = false,
-       Invite = "noinvitelink",
+       Invite = "",
        RememberJoins = true
     },
     KeySystem = false,

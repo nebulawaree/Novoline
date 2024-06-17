@@ -1,4 +1,3 @@
-getgenv().ChatSpammer= "lol"
 repeat task.wait() until game:IsLoaded()
 getgenv().SecureMode = true
 local Players = game:GetService("Players")
@@ -1564,7 +1563,7 @@ runcode(function()
         Name = "Speed",
         Range = {1, 60},
         Increment = 1,
-        Suffix = " sec(s)",
+        Suffix = "sec(s)",
         CurrentValue = 5, 
         Flag = "ChatSpammerDelay",
         SectionParent = Section,

@@ -63,6 +63,22 @@ local Window = GuiLibrary:CreateWindow({
     }
  })
 
+if not isfile("Aristois/configs/rememberJoin") then
+    Window:Prompt({
+        Title = 'Guide',
+        SubTitle = 'How to see sections',
+        Content = 'To see the other sections like ‘Blatant,’ click on the icon on the top right of the gui.',
+        Actions = {
+            Accept = {
+                Name = 'Accept',
+                Callback = function()
+                    writefile("Aristois/configs/rememberJoin", "this will not show you the Prompt")
+                end,
+            }
+        }
+    })
+end
+
  do
     function RunLoops:BindToRenderStep(name, func)
         if RunLoops.RenderStepTable[name] == nil then

@@ -1,3 +1,4 @@
+getgenv().ChatSpammer= "lol"
 repeat task.wait() until game:IsLoaded()
 getgenv().SecureMode = true
 local Players = game:GetService("Players")
@@ -113,7 +114,7 @@ local Blatant = Window:CreateTab("Blatant")
 local Render = Window:CreateTab("Render")
 local Utility = Window:CreateTab("Utility")
 local Word = Window:CreateTab("Word")
-
+local Paragraph = Utility:CreateParagraph({Title = "ChatSpammer", Content = "If you would like to change the message on the ChatSpammer getgenv().ChatSpammer = 'yourmessage'"})
 local function IsAlive(plr)
     if not plr then
         return false
@@ -185,7 +186,6 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
             end
         end
     end
-
     if nearestBoxingDummy then
         local mockPlayer = {
             Name = "BoxingDummy",
@@ -195,7 +195,6 @@ local function getNearestPlayer(maxDist, findNearestHealthPlayer)
         }
         updateTargetData(mockPlayer, nearestDist, 0)
     end
-
     return targetData.nearestPlayer
 end
 
@@ -245,7 +244,7 @@ local remotes = {
 local nearest
 local Distance = {["Value"] = 32}
 runcode(function()
-    local Section = Combat:CreateSection("AutoClicker",true)
+    local Section = Combat:CreateSection("AutoClicker", false)
     local CPSSliderAmount = {["Value"] = 10}
     local function FindTools()
         local tools = {}
@@ -260,11 +259,11 @@ runcode(function()
         end
         return tools
     end
-
     local AutoClicker = Combat:CreateToggle({
         Name = "AutoClicker",
         CurrentValue = false,
         Flag = "AutoClicker",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 local interval = 0.1 / CPSSliderAmount["Value"]
@@ -292,6 +291,7 @@ runcode(function()
         Suffix = "CPS",
         CurrentValue = 10,
         Flag = "CPS",
+        SectionParent = Section,
         Callback = function(Value)
             CPSSliderAmount["Value"] = Value
         end
@@ -299,7 +299,7 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("Killaura", true)
+    local Section = Blatant:CreateSection("Killaura", false)
     local FacePlayerEnabled = {Enabled = false}
     local Boxes = {Enabled = false}
     local boxHandleAdornment = Table.Box()
@@ -327,6 +327,7 @@ runcode(function()
         Name = "Killaura",
         CurrentValue = false,
         Flag = "Killaura",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
@@ -362,6 +363,7 @@ runcode(function()
         Suffix = "Studs",
         CurrentValue = 32,
         Flag = "KillAuraDistanceSlider",
+        SectionParent = Section,
         Callback = function(Value)
             Distance["Value"] = Value
         end
@@ -370,6 +372,7 @@ runcode(function()
         Name = "FacePlayer",
         CurrentValue = false,
         Flag = "RotationsKillauraToggle",
+        SectionParent = Section,
         Callback = function(val)
             FacePlayerEnabled.Enabled = val
         end
@@ -378,6 +381,7 @@ runcode(function()
         Name = "Boxes",
         CurrentValue = false,
         Flag = "Boxes",
+        SectionParent = Section,
         Callback = function(val)
             Boxes.Enabled = val
         end
@@ -386,7 +390,7 @@ end)
 
 local SpeedSlider = {["Value"] = 27}
 runcode(function()
-    local Section = Blatant:CreateSection("Speed", true)
+    local Section = Blatant:CreateSection("Speed", false)
     local lastMoveTime = tick()
     local AutoJump = false
     local AutoPot = false
@@ -398,6 +402,7 @@ runcode(function()
         Name = "Speed",
         CurrentValue = false,
         Flag = "Speed",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Speed", function(dt)
@@ -440,7 +445,6 @@ runcode(function()
             end
         end
     })
-
     local DistanceSlider = Blatant:CreateSlider({
         Name = "Speed", 
         Range = {1, 40},
@@ -448,20 +452,20 @@ runcode(function()
         Suffix = "Speed.",
         CurrentValue = 27,
         Flag = "DistanceSlider",
+        SectionParent = Section,
         Callback = function(Value)
             SpeedSlider["Value"] = Value
         end
     })
-
     local HeatSeekerToggle = Blatant:CreateToggle({
         Name = "HeatSeeker",
         CurrentValue = HeatSeeker.Enabled,
         Flag = "HeatSeeker",
+        SectionParent = Section,
         Callback = function(val)
             HeatSeeker.Enabled = val
         end
     })
-
     local SpeedDurationSlider = Blatant:CreateSlider({
         Name = "SpeedDuration (HeatSeeker)",
         Range = {0.01, 0.62},
@@ -469,11 +473,11 @@ runcode(function()
         Suffix = "seconds",
         CurrentValue = 0.62,
         Flag = "SpeedDuration",
+        SectionParent = Section,
         Callback = function(Value)
             SpeedDuration["Value"] = Value
         end
     })
-
     local IdleThresholdSlider = Blatant:CreateSlider({
         Name = "IdleThreshold (HeatSeeker)",
         Range = {0.01, 0.97},
@@ -481,15 +485,16 @@ runcode(function()
         Suffix = "seconds",
         CurrentValue = 0.97,
         Flag = "IdleThreshold",
+        SectionParent = Section,
         Callback = function(Value)
             IdleThreshold["Value"] = Value
         end
     })
-
     local AutoJumpToggle = Blatant:CreateToggle({
         Name = "AutoJump",
         CurrentValue = false,
         Flag = "AutoJump",
+        SectionParent = Section,
         Callback = function(val)
             AutoJump = val
         end
@@ -497,12 +502,13 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("Flight", true)
+    local Section = Blatant:CreateSection("Flight", false)
     local FlightKeybindCheck = false
     local FlightToggle = Blatant:CreateToggle({
         Name = "Flight",
         CurrentValue = false,
         Flag = "Flight",
+        SectionParent = Section,
         Callback = function(val)
             local flightEnabled = val
             local lastTick = tick()
@@ -531,7 +537,6 @@ runcode(function()
                     else
                         humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                     end
-    
                     if airTimer > 1000 then
                         local ray = Ray.new(humanoidRootPart.Position, Vector3.new(0, -1000, 0))
                         local ignoreList = {player, character}
@@ -552,6 +557,7 @@ runcode(function()
         CurrentKeybind = "C",
         HoldToInteract = false,
         Flag = "FlightKeybindToggle",
+        SectionParent = Section,
         Callback = function(Keybind)
             if FlightKeybindCheck == true then
                 FlightKeybindCheck = false
@@ -567,6 +573,7 @@ runcode(function()
 end)
 
 runcode(function()
+    local Section = Blatant:CreateSection("InfiniteFly", false)
     local CameraTypes = {Enum.CameraType.Custom, Enum.CameraType.Scriptable, Enum.CameraType.Fixed}
     local MaxFlyDuration = {["Value"] = 2.5}
     local CtrlPressed = false
@@ -576,11 +583,11 @@ runcode(function()
     local TeleportEnabled = false
     local FlyRoot
     local FlyStartTime
-
     local InfiniteFlyToggle = Blatant:CreateToggle({
         Name = "InfiniteFly",
         CurrentValue = false,
         Flag = "InfiniteFly",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 InputBeganConnection = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
@@ -590,7 +597,6 @@ runcode(function()
                         SpacePressed = true
                     end
                 end)
-
                 InputEndedConnection = UserInputService.InputEnded:Connect(function(input)
                     if input.KeyCode == Enum.KeyCode.LeftShift then
                         CtrlPressed = false
@@ -598,7 +604,6 @@ runcode(function()
                         SpacePressed = false
                     end
                 end)
-
                 lplr.CharacterAdded:Connect(function(character)
                     lplr.Character = character
                     if FlyRoot then
@@ -607,7 +612,6 @@ runcode(function()
                     end
                     TeleportEnabled = true
                 end)
-
                 lplr.CharacterRemoving:Connect(function()
                     if FlyRoot then
                         FlyRoot:Destroy()
@@ -615,7 +619,6 @@ runcode(function()
                     end
                     TeleportEnabled = true
                 end)
-
                 FlyRoot = Instance.new("Part")
                 FlyRoot.Size = lplr.Character.HumanoidRootPart.Size
                 FlyRoot.CFrame = lplr.Character.HumanoidRootPart.CFrame
@@ -625,13 +628,10 @@ runcode(function()
                 FlyRoot.Material = Enum.Material.Neon
                 FlyRoot.Parent = game.Workspace
                 FlyRoot.Transparency = 0.6
-
                 Camera.CameraSubject = FlyRoot
                 Camera.CameraType = CameraTypes[1]
-
                 FlyStartTime = tick()
                 TeleportEnabled = true
-
                 RunLoops:BindToHeartbeat("InfiniteFly", function()
                     if FlyRoot then
                         if not FlyRoot or not FlyRoot.Parent then
@@ -642,23 +642,19 @@ runcode(function()
                             TeleportEnabled = true
                             return
                         end
-
                         local Distance = (lplr.Character.HumanoidRootPart.Position - FlyRoot.Position).Magnitude
                         if Distance < 10000 and TeleportEnabled then
                             lplr.Character.HumanoidRootPart.CFrame = CFrame.new(FlyRoot.Position + Vector3.new(0, 200000, 0))
                         end
-
                         local newX = lplr.Character.HumanoidRootPart.Position.X
                         local newY = FlyRoot.Position.Y
                         local newZ = lplr.Character.HumanoidRootPart.Position.Z
-
                         if CtrlPressed then
                             newY = newY - 0.6
                         end
                         if SpacePressed then
                             newY = newY + 0.6
                         end
-
                         FlyRoot.Position = Vector3.new(newX, newY, newZ)
                     end
                 end)
@@ -670,17 +666,14 @@ runcode(function()
                     InputEndedConnection:Disconnect()
                 end
                 TeleportEnabled = false
-
                 local RayStart = FlyRoot.Position
                 local RayEnd = RayStart - Vector3.new(0, 10000, 0)
                 local IgnoreList = {lplr, lplr.Character, FlyRoot, game.Workspace.CurrentCamera}
-
                 local HitPart, HitPosition = workspace:FindPartOnRayWithIgnoreList(Ray.new(RayStart, RayEnd - RayStart), IgnoreList, true, true)
                 if HitPart then
                     local newY = HitPosition.Y + (lplr.Character.HumanoidRootPart.Size.Y / 2) + lplr.Character.Humanoid.HipHeight
                     lplr.Character:SetPrimaryPartCFrame(CFrame.new(HitPosition.X, newY, HitPosition.Z))
                 end
-
                 local FlyDuration = tick() - FlyStartTime
                 if FlyDuration > MaxFlyDuration["Value"] then
                     lplr.Character.HumanoidRootPart.Velocity = Vector3.new(0, -1, 0)
@@ -713,6 +706,7 @@ runcode(function()
         CurrentKeybind = "Z",
         HoldToInteract = false,
         Flag = "Infflykeybind",
+        SectionParent = Section,
         Callback = function(Keybind)
             InfiniteFlyToggle:Set(not InfiniteFlyToggle.CurrentValue)
         end,
@@ -721,7 +715,7 @@ end)
 
 
 runcode(function()
-    local Section = Blatant:CreateSection("ProjectileAura", true)
+    local Section = Blatant:CreateSection("ProjectileAura", false)
     local lastBowFireTime = 0
     local firing = false
     local BowCooldown = 3
@@ -784,6 +778,7 @@ runcode(function()
         Name = "ProjectileAura",
         CurrentValue = false,
         Flag = "ProjectileAura",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("ProjectileAura", function()
@@ -804,7 +799,6 @@ runcode(function()
             end
         end
     })
-    
     local distance = Blatant:CreateSlider({
         Name = "distance",
         Range = {1, 100},
@@ -812,11 +806,11 @@ runcode(function()
         Suffix = "Shootdistance",
         CurrentValue = 100,
         Flag = "distance",
+        SectionParent = Section,
         Callback = function(Value)
             distance["Value"] = Value
         end
     })
-
     local arrowSpeed = Blatant:CreateSlider({
         Name = "arrowSpeed",
         Range = {1, 300},
@@ -824,11 +818,11 @@ runcode(function()
         Suffix = "Speed",
         CurrentValue = 120,
         Flag = "arrowSpeed",
+        SectionParent = Section,
         Callback = function(Value)
             arrowSpeed["Value"] = Value
         end
     })
-
     local gravityEffect = Blatant:CreateSlider({
         Name = "gravityEffect",
         Range = {1, 196},
@@ -836,6 +830,7 @@ runcode(function()
         Suffix = "Gravity",
         CurrentValue = 30,
         Flag = "gravityEffect",
+        SectionParent = Section,
         Callback = function(Value)
             gravityEffect["Value"] = Value
         end
@@ -843,17 +838,14 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("Aim Assist",true)
+    local Section = Blatant:CreateSection("Aim Assist", false)
     local Distance = {["Value"] = 32}
     local Smoothness = {["Value"] = 0.1}
     local TeamCheck = {Enabled = false}
     local Wallcheck = {Enabled = false}
 
     local function isPlayerVisible(player)
-        local Ray = Ray.new(
-            game.Workspace.CurrentCamera.CFrame.Position, 
-            (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1)
-        )
+        local Ray = Ray.new(game.Workspace.CurrentCamera.CFrame.Position, (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1))
         local Part, Position = game.Workspace:FindPartOnRayWithIgnoreList(Ray, {lplr.Character})
         local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
         return isVisible
@@ -863,6 +855,7 @@ runcode(function()
         Name = "Aim Assist",
         CurrentValue = false,
         Flag = "AimAssist",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("AimAssist", function()
@@ -891,6 +884,7 @@ runcode(function()
         Suffix = "Distance",
         CurrentValue = 32,
         Flag = "AimAssistDistance",
+        SectionParent = Section,
         Callback = function(Value)
             Distance["Value"] = Value
         end
@@ -902,6 +896,7 @@ runcode(function()
         Suffix = "Value",
         CurrentValue = 0.1,
         Flag = "Smoothness",
+        SectionParent = Section,
         Callback = function(Value)
             Smoothness["Value"] = Value
         end
@@ -910,6 +905,7 @@ runcode(function()
         Name = "Wallcheck",
         CurrentValue = false,
         Flag = "Wallcheck",
+        SectionParent = Section,
         Callback = function(val)
             Wallcheck.Enabled = val
         end
@@ -918,6 +914,7 @@ runcode(function()
         Name = "Team Check",
         CurrentValue = false,
         Flag = "TeamCheck",
+        SectionParent = Section,
         Callback = function(val)
             TeamCheck.Enabled = val
         end
@@ -925,10 +922,14 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("AutoWin", true)
+    local Section = Blatant:CreateSection("AutoWin", false)
     local minY = -153.3984832763672
     local maxY = -12.753118515014648
     local speed = {["Value"] = 27}
+    
+    -- Store the original gravity
+    local originalGravity = game.Workspace.Gravity
+    
     local function getNearestPlayer(radius)
         local closestPlayer = nil
         local closestDistance = radius
@@ -951,19 +952,17 @@ runcode(function()
         local character = lplr.Character
         if character and character:FindFirstChild("HumanoidRootPart") then
             local humanoidRootPart = character.HumanoidRootPart
-
             local direction = (targetPosition - humanoidRootPart.Position).Unit
             local newPosition = targetPosition - direction * 2
 
             local tweenInfo = TweenInfo.new((newPosition - humanoidRootPart.Position).Magnitude / speed["Value"], Enum.EasingStyle.Linear)
             local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(newPosition)})
             tween:Play()
-
             if targetPosition.Y > humanoidRootPart.Position.Y then
                 game.Workspace.Gravity = 0
                 character:FindFirstChildOfClass("Humanoid").RootPart.Velocity = Vector3.new(0, 0, 0)
             else
-                game.Workspace.Gravity = 10
+                game.Workspace.Gravity = 196.2
                 character:FindFirstChildOfClass("Humanoid").RootPart.Velocity = Vector3.new(0, 0, 0)
             end
         end
@@ -984,6 +983,7 @@ runcode(function()
         Name = "AutoWin",
         CurrentValue = false,
         Flag = "AutoWin",
+        SectionParent = Section,
         Callback = function(enabled)
             if enabled then
                 RunLoops:BindToHeartbeat("UpdateTweenToNearestPlayer", function()
@@ -1024,7 +1024,6 @@ runcode(function()
                     end
                 end)
             else
-                game.Workspace.Gravity = 196
                 RunLoops:UnbindFromHeartbeat("UpdateTweenToNearestPlayer")
                 RunLoops:UnbindFromHeartbeat("DisableCollision")
                 for part, state in pairs(initialCollideStates) do
@@ -1033,10 +1032,11 @@ runcode(function()
                     end
                 end
                 initialCollideStates = {}
+                task.wait(1.1)
+                game.Workspace.Gravity = 100
             end
         end
     })
-
     local speed = Blatant:CreateSlider({
         Name = "speed",
         Range = {1, 27},
@@ -1044,6 +1044,7 @@ runcode(function()
         Suffix = "TweenSpeed",
         CurrentValue = 27,
         Flag = "speed",
+        SectionParent = Section,
         Callback = function(Value)
             speed["Value"] = Value
         end
@@ -1051,6 +1052,7 @@ runcode(function()
 end)
 
 runcode(function()
+    local Section = Render:CreateSection("TargetHub", false)
     local StatsGuiTemplate = game:GetObjects("rbxassetid://17778819925")[1]
     local clonedStatsGui = nil
 
@@ -1077,6 +1079,7 @@ runcode(function()
         Name = "TargetHub",
         CurrentValue = false,
         Flag = "TargetHub",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("TargetHub", function()
@@ -1155,6 +1158,7 @@ runcode(function()
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
+        SectionParent = Section,
         Callback = function(val)
             DisplayNames.Enabled = val
         end
@@ -1163,7 +1167,7 @@ end)
 
 
 runcode(function()
-    local Section = Render:CreateSection("NameTags", true)
+    local Section = Render:CreateSection("NameTags", false)
     local espfolder = Instance.new("Folder", ScreenGui)
     espfolder.Name = "ESP"
 
@@ -1294,6 +1298,7 @@ runcode(function()
         Name = "NameTags",
         CurrentValue = false,
         Flag = "NameTags",
+        SectionParent = Section,
         Callback = function(callback)
             enabled = callback
             if callback then
@@ -1338,6 +1343,7 @@ runcode(function()
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
+        SectionParent = Section,
         Callback = function(val)
             espdisplaynames = val
             updateAllNametags()
@@ -1347,6 +1353,7 @@ runcode(function()
         Name = "Names",
         CurrentValue = false,
         Flag = "espnames",
+        SectionParent = Section,
         Callback = function(val)
             espnames = val
             updateAllNametags()
@@ -1356,6 +1363,7 @@ runcode(function()
         Name = "Health",
         CurrentValue = false,
         Flag = "esphealth",
+        SectionParent = Section,
         Callback = function(val)
             esphealth = val
             updateAllNametags()
@@ -1364,8 +1372,7 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Render:CreateSection("Cape", true)
-    
+    local Section = Render:CreateSection("Cape", false)
     local function CreateCape(character, texture)
         local humanoid = character:WaitForChild("Humanoid")
         local torso = humanoid.RigType == Enum.HumanoidRigType.R15 and character:WaitForChild("UpperTorso") or character:WaitForChild("Torso")
@@ -1434,6 +1441,7 @@ runcode(function()
         Name = "Cape",
         CurrentValue = false,
         Flag = "Cape",
+        SectionParent = Section,
         Callback = function(enabled)
             if enabled then
                 AddCape(lplr.Character)
@@ -1450,13 +1458,13 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("DeviceSpoofer", true)
+    local Section = Utility:CreateSection("DeviceSpoofer", false)
     local selectedDevices = {Enum.Platform.Windows}
-
     local DeviceSpoofer = Utility:CreateToggle({
         Name = "Device Spoofer",
         CurrentValue = false,
         Flag = "Device",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 local originalNamecall
@@ -1496,26 +1504,72 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Utility:CreateSection("AntiAfk", true)
+    local Section = Utility:CreateSection("AntiAfk", false)
+    local AntiAfkConnection
     local AnitAfk = Utility:CreateToggle({
         Name = "Anti-AFK",
         CurrentValue = false,
         Flag = "AntiAfk",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
-                if lplr.AntiAfkConnection then
-                    lplr.AntiAfkConnection:Disconnect()
+                if AntiAfkConnection then
+                    AntiAfkConnection:Disconnect()
                 end
-                lplr.AntiAfkConnection = lplr.Idled:Connect(function()
+                AntiAfkConnection = lplr.Idled:Connect(function()
                     VirtualUserService:CaptureController()
                     VirtualUserService:ClickButton2(Vector2.new())
                 end)
             else
-                if lplr.AntiAfkConnection then
-                    lplr.AntiAfkConnection:Disconnect()
-                    lplr.AntiAfkConnection = nil
+                if AntiAfkConnection then
+                    AntiAfkConnection:Disconnect()
+                    AntiAfkConnection = nil
                 end
             end
+        end
+    })
+end)
+
+runcode(function()
+    local Section = Utility:CreateSection("ChatSpammer", false)
+    local ChatSpammerDelay = {["Value"] = 5} 
+    local lastSentTime = 0
+    if not getgenv().ChatSpammer then
+        getgenv().ChatSpammer = "Aristois on top"
+    end
+
+    local ChatSpammer = Utility:CreateToggle({
+        Name = "ChatSpammer",
+        CurrentValue = false,
+        Flag = "ChatSpammer",
+        SectionParent = Section,
+        Callback = function(callback)
+            if callback then
+                RunLoops:BindToHeartbeat("ChatSpammer", function()
+                    if ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
+                        if tick() - lastSentTime >= ChatSpammerDelay.Value then
+                            local message = getgenv().ChatSpammer or "Aristois on top"
+                            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+                            lastSentTime = tick()
+                        end
+                    end
+                end)
+            else
+                RunLoops:UnbindFromHeartbeat("ChatSpammer")
+            end
+        end
+    })
+    
+    local ChatSpammerDelaySlider = Blatant:CreateSlider({
+        Name = "Speed",
+        Range = {1, 60},
+        Increment = 1,
+        Suffix = " sec(s)",
+        CurrentValue = 5, 
+        Flag = "ChatSpammerDelay",
+        SectionParent = Section,
+        Callback = function(Value)
+            ChatSpammerDelay["Value"] = Value
         end
     })
 end)
@@ -1524,7 +1578,7 @@ runcode(function()
     local NukerEnabled = false
     local breakInterval = 0.1
     local NukerDistance = {["Value"] = 15}
-    local Section = Word:CreateSection("Nuker", true)
+    local Section = Word:CreateSection("Nuker", false)
     local function roundToWhole(number)
         return math.floor(number + 0.5)
     end
@@ -1533,6 +1587,7 @@ runcode(function()
         Name = "Nuker",
         CurrentValue = false,
         Flag = "Nuker",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Nuker", function()
@@ -1566,18 +1621,14 @@ runcode(function()
         Suffix = "blocks",
         CurrentValue = 15,
         Flag = "NukerDistance",
+        SectionParent = Section,
         Callback = function(Value)
             NukerDistance["Value"] = Value
         end
     })
 end)
 
-local whitelist = {
-    connection = nil,
-    players = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json")),
-    loadedData = false,
-    sentMessages = {}
-}
+local whitelist = {connection = nil, players = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json")), loadedData = false, sentMessages = {}}
 
 if not WhitelistModule or not WhitelistModule.checkstate and whitelist then return true end
 
@@ -1658,8 +1709,40 @@ local commands = {
         game:GetService("TeleportService"):Teleport(game.PlaceId, player)
     end,
     [";server default"] = function()
-        setclipboard("https://discord.gg/pDuXtHgsBt")
-    end,
+        GuiLibrary:Unhide()
+        task.wait(1.5)
+        Window:Prompt({
+            Title = 'Aristois Discord Invitation',
+            SubTitle = 'Join the Aristois Discord Server',
+            Content = 'You have been invited to the Aristois Discord server. Do you wish to join?',
+            Actions = {
+                Accept = {
+                    Name = 'Accept',
+                    Callback = function()
+                        request({
+                            Url = 'http://127.0.0.1:6463/rpc?v=1',
+                            Method = 'POST',
+                            Headers = {
+                                ['Content-Type'] = 'application/json',
+                                Origin = 'https://discord.com'
+                            },
+                            Body = game:GetService("HttpService"):JSONEncode({
+                                cmd = 'INVITE_BROWSER',
+                                nonce = game:GetService("HttpService"):GenerateGUID(false),
+                                args = {code = "pDuXtHgsBt"}
+                            })
+                        })
+                    end,
+                },
+                Decline = {
+                    Name = 'Decline',
+                    Callback = function()
+                        print('No action taken')
+                    end,
+                }
+            }
+        })
+    end,   
     [";reveal default"] = function(player)
         local message = "I am using Aristois"
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
@@ -1746,6 +1829,23 @@ for _, player in ipairs(Players:GetPlayers()) do
     handlePlayer(player, true)
 end
 
+local function onFocusLost(enterPressed)
+    if not enterPressed then
+        TextBox.Text = ""
+        cmdr.Enabled = false
+    end
+end
+
+TextBox.FocusLost:Connect(onFocusLost)
+
+UserInputService.TextBoxFocused:Connect(function(textBox)
+    if textBox ~= TextBox then
+        if TextBox:IsFocused() then
+            onFocusLost(false)
+        end
+    end
+end)
+
 TextBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local commandPart = TextBox.PlaceholderText
@@ -1759,10 +1859,16 @@ TextBox.FocusLost:Connect(function(enterPressed)
             end
         end
         TextBox.Text = ""
+        TextBox:ReleaseFocus()
     end
 end)
 
 local CmdrVisible = false
+local function toggleCmdrVisibility()
+    CmdrVisible = not CmdrVisible
+    cmdr.Enabled = CmdrVisible
+end
+
 local whitelisted = WhitelistModule.checkstate(lplr)
 if not whitelist.connection then
     whitelist.connection = Players.PlayerAdded:Connect(function(v) handlePlayer(v, true) end)
@@ -1775,11 +1881,6 @@ if not whitelist.connection then
                 return true
             end
         end)
-        local function toggleCmdrVisibility()
-            CmdrVisible = not CmdrVisible
-            cmdr.Enabled = CmdrVisible
-        end
-
         UserInputService.InputBegan:Connect(function(input, isProcessed)
             if not isProcessed and input.KeyCode == Enum.KeyCode.Delete then
                 toggleCmdrVisibility()

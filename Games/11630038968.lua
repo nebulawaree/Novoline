@@ -1493,6 +1493,7 @@ runcode(function()
         Options = {"Windows", "IOS", "Android", "XBoxOne", "PS3", "PS4", "Linux", "UWP"},
         CurrentOption = "Windows",
         Flag = "DeviceSelector", 
+        SectionParent = Section,
         Callback = function(Option)
             selectedDevices = {}
             for _, device in ipairs(Option) do

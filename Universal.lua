@@ -1241,7 +1241,7 @@ runcode(function()
                                     return
                                 end
                                 local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                                local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
+                                local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, direction.Y, direction.Z))
                                 game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"])
                             end
                         else

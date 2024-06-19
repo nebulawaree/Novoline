@@ -849,83 +849,53 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("Aim Assist", false)
+    local Section = Blatant:CreateSection("Aim Assist",true)
+    local Distance = {["Value"] = 32}
     local Smoothness = {["Value"] = 0.1}
     local TeamCheck = {Enabled = false}
     local Wallcheck = {Enabled = false}
-    local MouseLock = {Enabled = false}
-    local LockOnPlayer = {Enabled = false}
-    local Keybind = "Q"
-    local currentTarget = nil
 
     local function isPlayerVisible(player)
-        local Ray = Ray.new(Camera.CFrame.Position, (player.Character.HumanoidRootPart.Position - Camera.CFrame.Position).unit * 1000)
+        local Ray = Ray.new(game.Workspace.CurrentCamera.CFrame.Position, (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1))
         local Part, Position = game.Workspace:FindPartOnRayWithIgnoreList(Ray, {lplr.Character})
         local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
         return isVisible
-    end
-
-    local function getNearestPlayerToMouse()
-        local nearest, nearestDistance = nil, math.huge
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player ~= lplr and (not TeamCheck.Enabled or player.Team ~= lplr.Team) then
-                local character = player.Character
-                if character and character:FindFirstChild("HumanoidRootPart") then
-                    local pos = character.HumanoidRootPart.Position
-                    local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(pos)
-                    if onScreen then
-                        local mousePos = game.Players.LocalPlayer:GetMouse()
-                        local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenPos.X, screenPos.Y)).magnitude
-                        if distance < nearestDistance then
-                            nearest, nearestDistance = player, distance
-                        end
-                    end
-                end
-            end
-        end
-        return nearest
     end
 
     local AimAssist = Blatant:CreateToggle({
         Name = "Aim Assist",
         CurrentValue = false,
         Flag = "AimAssist",
-        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("AimAssist", function()
-                    if MouseLock.Enabled then
-                        if LockOnPlayer.Enabled and currentTarget then
-                            local nearest = currentTarget
-                            if nearest then
-                                if Wallcheck.Enabled and not isPlayerVisible(nearest) then
-                                    return
-                                end
-                                local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                                local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, 0, direction.Z))
-                                game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"])
+                    local nearest = getNearestPlayer(Distance["Value"], false ,TeamCheck.Enabled)
+                    if nearest then
+                        local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                        if distanceToNearest <= 18 then
+                            if Wallcheck.Enabled and not isPlayerVisible(nearest) then
+                                return
                             end
-                        else
-                            currentTarget = getNearestPlayerToMouse()
-                            if currentTarget then
-                                if Wallcheck.Enabled and not isPlayerVisible(currentTarget) then
-                                    currentTarget = nil
-                                    return
-                                end
-                                local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                                direction = Vector3.new(direction.X, direction.Y, direction.Z)
-                                local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + direction)
-                                game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
-                            end
+                            local direction = (nearest.Character.HumanoidRootPart.Position - Camera.CFrame.Position).unit
+                            local lookAt = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Vector3.new(direction.X, direction.Y, direction.Z))
+                            Camera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
                         end
-                    else
-                        currentTarget = nil
                     end
                 end)
             else
                 RunLoops:UnbindFromHeartbeat("AimAssist")
-                currentTarget = nil
             end
+        end
+    })
+    local AimAssistDistanceSlider = Blatant:CreateSlider({
+        Name = "Distance",
+        Range = {1, 32},
+        Increment = 1,
+        Suffix = "Distance",
+        CurrentValue = 32,
+        Flag = "AimAssistDistance",
+        Callback = function(Value)
+            Distance["Value"] = Value
         end
     })
     local SmoothnessSlider = Blatant:CreateSlider({
@@ -935,7 +905,6 @@ runcode(function()
         Suffix = "Value",
         CurrentValue = 0.1,
         Flag = "Smoothness",
-        SectionParent = Section,
         Callback = function(Value)
             Smoothness["Value"] = Value
         end
@@ -944,7 +913,6 @@ runcode(function()
         Name = "Wallcheck",
         CurrentValue = false,
         Flag = "Wallcheck",
-        SectionParent = Section,
         Callback = function(val)
             Wallcheck.Enabled = val
         end
@@ -953,43 +921,8 @@ runcode(function()
         Name = "Team Check",
         CurrentValue = false,
         Flag = "TeamCheck",
-        SectionParent = Section,
         Callback = function(val)
             TeamCheck.Enabled = val
-        end
-    })
-    local LockOnPlayerToggle = Blatant:CreateToggle({
-        Name = "Lock On Player",
-        CurrentValue = false,
-        Flag = "LockOnPlayer",
-        SectionParent = Section,
-        Callback = function(val)
-            LockOnPlayer.Enabled = val
-        end
-    })
-    local KeybindToggle = Blatant:CreateKeybind({
-        Name = "Mouse Lock Keybind",
-        CurrentKeybind = Keybind,
-        HoldToInteract = false,
-        Flag = "Keybind1",
-        SectionParent = Section,
-        Callback = function()
-            MouseLock.Enabled = not MouseLock.Enabled
-            if not MouseLock.Enabled then
-                currentTarget = nil
-            end
-        end,
-    })
-    local MouseLockToggle = Blatant:CreateToggle({
-        Name = "Mouse Lock",
-        CurrentValue = false,
-        Flag = "MouseLock",
-        SectionParent = Section,
-        Callback = function(val)
-            MouseLock.Enabled = val
-            if not val then
-                currentTarget = nil
-            end
         end
     })
 end)

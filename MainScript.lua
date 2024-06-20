@@ -23,6 +23,9 @@ else
     shared.AristoisPlaceId = game.PlaceId
 end
 
+assert(not shared.Executed, "Already Injected")
+shared.Executed = true
+
 if shared.AristoisPlaceId == 6872274481 or shared.AristoisPlaceId == 11630038968 then
     if shared.ReadFile then
         loadstring(readfile("Aristois/Games/" .. shared.AristoisPlaceId .. ".lua"))()

@@ -9,7 +9,7 @@ Original by Sirius
 Arrays  | Designing + Programming + New Features
 
 ]]
-if shared.Executed then
+if Executed then
 	local Release = "Release 1B"
 	local NotificationDuration = 6.5
 	local RayfieldFolder = "Rayfield"
@@ -114,7 +114,7 @@ if shared.Executed then
 	local CoreGui = game:GetService("CoreGui")
 	local LocalPlayer = game:GetService('Players').LocalPlayer
 	local TextService = game:GetService("TextService") 
-	local Rayfield = game:GetObjects("rbxassetid://17616175575")[1]
+	local Rayfield = game:GetObjects("rbxassetid://18137040845")[1]
 	local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 
 	Rayfield.Enabled = false
@@ -238,7 +238,13 @@ if shared.Executed then
 		return Color3.fromRGB(Color.R, Color.G, Color.B)
 	end
 
+	local hasRun = false
 	local function LoadConfiguration(Configuration)
+		if hasRun then
+			return
+		end
+
+		hasRun = true
 		local Data = HttpService:JSONDecode(Configuration)
 		for FlagName, FlagValue in next, Data do
 			if RayfieldLibrary.Flags[FlagName] then
@@ -246,16 +252,21 @@ if shared.Executed then
 					if RayfieldLibrary.Flags[FlagName].Type == "ColorPicker" then
 						RayfieldLibrary.Flags[FlagName]:Set(UnpackColor(FlagValue))
 					else
-						if RayfieldLibrary.Flags[FlagName].CurrentValue or RayfieldLibrary.Flags[FlagName].CurrentKeybind or RayfieldLibrary.Flags[FlagName].CurrentOption or RayfieldLibrary.Flags[FlagName].Color ~= FlagValue then RayfieldLibrary.Flags[FlagName]:Set(FlagValue) end
+						if RayfieldLibrary.Flags[FlagName].CurrentValue or RayfieldLibrary.Flags[FlagName].CurrentKeybind or RayfieldLibrary.Flags[FlagName].CurrentOption or RayfieldLibrary.Flags[FlagName].Color ~= FlagValue then 
+							RayfieldLibrary.Flags[FlagName]:Set(FlagValue) 
+						end
 					end    
 				end)
 			else
-				RayfieldLibrary:Notify({Title = "Flag Error", Content = "Rayfield was unable to find '"..FlagName.. "'' in the current script"})
+				RayfieldLibrary:Notify({
+					Title = "Flag Error", 
+					Content = "Rayfield was unable to find '"..FlagName.. "' in the current script"
+				})
 			end
 		end
 	end
 
-	local function SaveConfiguration()
+	function RayfieldLibrary:SaveConfiguration()
 		if not CEnabled then return end
 		local Data = {}
 		for i,v in pairs(RayfieldLibrary.Flags) do
@@ -557,6 +568,7 @@ if shared.Executed then
 		TweenService:Create(NotePrompt.Load.UIStroke,Infos,{Transparency = 0}):Play()
 		TweenService:Create(NotePrompt.Load.Shadow,Infos,{ImageTransparency = .8}):Play()
 	end
+
 	function ClosePrompt()
 		local PromptUI = Prompt.Prompt
 		clicked = false
@@ -578,6 +590,7 @@ if shared.Executed then
 		wait(.5)
 		Prompt.Visible = false
 	end
+
 	function RayfieldLibrary:Notify(NotificationSettings)
 		spawn(function()
 			local ActionCompleted = true
@@ -739,6 +752,7 @@ if shared.Executed then
 		wait(0.2)
 		Debounce = false
 	end
+
 	function Hide()
 		if not SideBarClosed then
 			task.spawn(CloseSideBar)
@@ -797,6 +811,7 @@ if shared.Executed then
 		Main.Visible = false
 		Debounce = false
 	end
+
 	local function Unhide()
 		Debounce = true
 		Main.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -1564,7 +1579,7 @@ if shared.Executed then
 						TweenService:Create(Button.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 						TweenService:Create(Button.ElementIndicator, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0.9}):Play()
 					else
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 						TweenService:Create(Button, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
 						TweenService:Create(Button.ElementIndicator, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
 						TweenService:Create(Button.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
@@ -1879,7 +1894,7 @@ if shared.Executed then
 					end
 
 					if InputSettings.RemoveTextAfterFocusLost then Input.InputFrame.InputBox.Text = "" end
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end)
 
 				Input.MouseEnter:Connect(function()
@@ -2109,7 +2124,7 @@ if shared.Executed then
 							table.remove(DropdownSettings.Items.Selected,table.find(DropdownSettings.Items.Selected,OptionInTable))
 							RefreshSelected()
 							TweenService:Create(DropdownOption, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
-							SaveConfiguration()
+							RayfieldLibrary:SaveConfiguration()
 							return
 						end
 						if not Multi and DropdownSettings.Items.Selected[1] then
@@ -2161,7 +2176,7 @@ if shared.Executed then
 							
 						end
 						Debounce = false
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 					end)
 				end
 				local function AddOptions(Options,Selected)
@@ -2554,7 +2569,7 @@ if shared.Executed then
 							Dropdown.List.Visible = false
 						end
 						Debounce = false	
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 					end)
 				end
 				
@@ -2615,7 +2630,7 @@ if shared.Executed then
 							end
 						end
 					end
-					--SaveConfiguration()
+					--RayfieldLibrary:SaveConfiguration()
 				end
 
 				if Settings.ConfigurationSaving then
@@ -2709,7 +2724,7 @@ if shared.Executed then
 					CheckingForKey = false
 					if Keybind.KeybindFrame.KeybindBox.Text == nil or "" then
 						Keybind.KeybindFrame.KeybindBox.Text = KeybindSettings.CurrentKeybind
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 					end
 				end)
 
@@ -2730,7 +2745,7 @@ if shared.Executed then
 							Keybind.KeybindFrame.KeybindBox.Text = tostring(NewKeyNoEnum)
 							KeybindSettings.CurrentKeybind = tostring(NewKeyNoEnum)
 							Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
-							SaveConfiguration()
+							RayfieldLibrary:SaveConfiguration()
 						end
 					elseif KeybindSettings.CurrentKeybind ~= nil and (input.KeyCode == Enum.KeyCode[KeybindSettings.CurrentKeybind] and not processed) then  --Test
 						local Held = true
@@ -2778,7 +2793,7 @@ if shared.Executed then
 					Keybind.KeybindFrame.KeybindBox.Text = tostring(NewKeybind)
 					KeybindSettings.CurrentKeybind = tostring(NewKeybind)
 					Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end
 				function KeybindSettings:Destroy()
 					Keybind:Destroy()
@@ -2910,7 +2925,7 @@ if shared.Executed then
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 					end
 
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end)
 				function ToggleSettings:Set(NewToggleValue)
 					if NewToggleValue then
@@ -2955,7 +2970,7 @@ if shared.Executed then
 						TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 					end
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end
 				function ToggleSettings:Destroy()
 					Toggle:Destroy()
@@ -3131,7 +3146,7 @@ if shared.Executed then
 					pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 					local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end)
 				--RGB
 				local function rgbBoxes(box,toChange)
@@ -3150,7 +3165,7 @@ if shared.Executed then
 					end
 					local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end
 
 				ColorPicker.RGB.RInput.InputBox.FocusLost:connect(function()
@@ -3197,7 +3212,7 @@ if shared.Executed then
 						ColorPicker.HexInput.InputBox.Text = string.format("#%02X%02X%02X",color.R*0xFF,color.G*0xFF,color.B*0xFF)
 						pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 						ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 					end
 					if sliderDragging then 
 						local localX = math.clamp(mouse.X-Slider.AbsolutePosition.X,0,Slider.AbsoluteSize.X)
@@ -3215,7 +3230,7 @@ if shared.Executed then
 						ColorPicker.HexInput.InputBox.Text = string.format("#%02X%02X%02X",color.R*0xFF,color.G*0xFF,color.B*0xFF)
 						pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 						ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 					end
 				end)
 
@@ -3376,7 +3391,7 @@ if shared.Executed then
 						end
 
 						SliderSettings.CurrentValue = NewValue
-						SaveConfiguration()
+						RayfieldLibrary:SaveConfiguration()
 					end
 				end
 				Slider.Main.Interact.MouseButton1Down:Connect(function(X)
@@ -3412,7 +3427,7 @@ if shared.Executed then
 						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 					end
 					SliderSettings.CurrentValue = NewVal
-					SaveConfiguration()
+					RayfieldLibrary:SaveConfiguration()
 				end
 				function SliderSettings:Destroy()
 					Slider:Destroy()
@@ -3556,7 +3571,6 @@ if shared.Executed then
 		return Window
 	end
 
-
 	function RayfieldLibrary:Destroy()
 		Rayfield:Destroy()
 	end
@@ -3634,7 +3648,7 @@ if shared.Executed then
 		Debounce = false 
 	end)
 
-	Rayfield.XzynsWindow.Hide.MouseButton1Click:Connect(function()
+	Rayfield.XzynsWindow.Topbar.Hide.MouseButton1Click:Connect(function()
 		Hidden = not Hidden 
 		Rayfield.XzynsWindow.Visible = not Hidden
 		task.wait()
@@ -3664,17 +3678,20 @@ if shared.Executed then
 		end
 	end
 
+	local configurationLoaded = false
+
 	function RayfieldLibrary:LoadConfiguration()
-		if CEnabled then
+		if not configurationLoaded and CEnabled then
 			pcall(function()
 				if isfile(ConfigurationFolder .. "/" .. CFileName .. ConfigurationExtension) then
 					LoadConfiguration(readfile(ConfigurationFolder .. "/" .. CFileName .. ConfigurationExtension))
 					RayfieldLibrary:Notify({Title = "Configuration Loaded", Content = "The configuration file for this script has been loaded from a previous session"})
+					configurationLoaded = true
 				end
 			end)
 		end
 	end
-	task.delay(9, RayfieldLibrary.LoadConfiguration, RayfieldLibrary)
 
+	task.delay(9, RayfieldLibrary.LoadConfiguration, RayfieldLibrary)
 	return RayfieldLibrary
 end

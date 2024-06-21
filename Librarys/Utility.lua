@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local lplr = Players.LocalPlayer
 local Utility = {}
 local PlayerAddedEvent = Instance.new("BindableEvent")
 
@@ -66,7 +67,6 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, entityName)
-    local lplr = Players.LocalPlayer
     local targetData = {
         nearestEntity = nil,
         dist = math.huge,
@@ -118,7 +118,6 @@ function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, e
 end
 
 function Utility.getNearestPlayerToMouse(teamCheck)
-    local lplr = Players.LocalPlayer
     local nearestPlayer, nearestDistance = nil, math.huge
 
     for _, player in ipairs(Players:GetPlayers()) do

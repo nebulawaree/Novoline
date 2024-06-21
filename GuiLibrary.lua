@@ -114,7 +114,7 @@ if shared.Executed then
 	local CoreGui = game:GetService("CoreGui")
 	local LocalPlayer = game:GetService('Players').LocalPlayer
 	local TextService = game:GetService("TextService") 
-	local Rayfield = game:GetObjects("rbxassetid://18137040845")[1]
+	local Rayfield = game:GetObjects("rbxassetid://17616175575")[1]
 	local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
 
 	Rayfield.Enabled = false

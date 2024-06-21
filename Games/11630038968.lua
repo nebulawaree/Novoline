@@ -250,7 +250,7 @@ runcode(function()
                 RunLoops:BindToHeartbeat("Killaura", function()
                     nearest = PlayerUtility.getNearestEntity(Distance["Value"], false, false, "BoxingDummy")
                     swordtype = swordtype or GetSword()
-                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and PlayerUtility.IsAlive(lplr) and PlayerUtility.IsAlive(nearest) then
+                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
                         if nearest and FacePlayerEnabled.Enabled then
                             local playerPosition = lplr.Character.HumanoidRootPart.Position

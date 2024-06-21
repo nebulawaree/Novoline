@@ -12,7 +12,7 @@ local TextChatService = game:GetService("TextChatService")
 local getcustomasset = getsynasset or getcustomasset
 local HttpService = game:GetService("HttpService")
 local VirtualUserService = game:GetService("VirtualUser")
-local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
+local GuiLibrary = shared.GuiLibrary 
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
@@ -61,24 +61,7 @@ local Window = GuiLibrary:CreateWindow({
        Key = {"Hello"}
     }
  })
-
- if not isfile("Aristois/configs/rememberJoin") then
-    task.wait()
-    Window:Prompt({
-        Title = 'Guide',
-        SubTitle = 'How to see sections',
-        Content = 'To see the other sections like ‘Blatant,’ click on the icon on the top right of the gui.',
-        Actions = {
-            Accept = {
-                Name = 'Accept',
-                Callback = function()
-                    writefile("Aristois/configs/rememberJoin", "this will not show you the Prompt")
-                end,
-            }
-        }
-    })
-end
-
+ 
  do
     function RunLoops:BindToRenderStep(name, func)
         if RunLoops.RenderStepTable[name] == nil then

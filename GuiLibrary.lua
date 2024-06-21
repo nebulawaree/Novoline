@@ -3648,7 +3648,7 @@ if shared.Executed then
 		Debounce = false 
 	end)
 
-	Rayfield.XzynsWindow.Topbar.Hide.MouseButton1Click:Connect(function()
+	Rayfield.XzynsWindow.Hide.MouseButton1Click:Connect(function()
 		Hidden = not Hidden 
 		Rayfield.XzynsWindow.Visible = not Hidden
 		task.wait()

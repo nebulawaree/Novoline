@@ -12,18 +12,20 @@ local TextChatService = game:GetService("TextChatService")
 local getcustomasset = getsynasset or getcustomasset
 local HttpService = game:GetService("HttpService")
 local VirtualUserService = game:GetService("VirtualUser")
-local GuiLibrary = shared.GuiLibrary 
+local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
+local PlayerUtility = loadstring(readfile("Aristois/Librarys/Utility.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
+
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
 local request = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
+shared.WhitelistFile = WhitelistModule
 
 local Table = {
-    ChatStrings2 = {
-        ["Aristois"] = "Im using Aristois",
+    ChatStrings = {
+        Aristois = "I'm using Aristois",
     },
-    checkedPlayers = {},
-    Box = function()
+    createBoxAdornment = function()
         local boxHandleAdornment = Instance.new("BoxHandleAdornment")
         boxHandleAdornment.Size = Vector3.new(4, 6, 4)
         boxHandleAdornment.Color3 = Color3.new(1, 0, 0)
@@ -62,7 +64,7 @@ local Window = GuiLibrary:CreateWindow({
     }
  })
  
- do
+do
     function RunLoops:BindToRenderStep(name, func)
         if RunLoops.RenderStepTable[name] == nil then
             RunLoops.RenderStepTable[name] = RunService.RenderStepped:Connect(func)
@@ -109,67 +111,6 @@ local Render = Window:CreateTab("Render")
 local Utility = Window:CreateTab("Utility")
 local Word = Window:CreateTab("Word")
 local Paragraph = Utility:CreateParagraph({Title = "ChatSpammer", Content = "If you would like to change the message on the ChatSpammer getgenv().ChatSpammer = 'yourmessage'"})
-
-local function IsAlive(plr)
-    if not plr then
-        return false
-    end
-    
-    if typeof(plr) == "Instance" and plr:IsA("Player") then
-        return plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0
-    end
-    
-    if typeof(plr) == "table" then
-        for _, player in ipairs(plr) do
-            if typeof(player) == "Instance" and player:IsA("Player") then
-                if not (player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0) then
-                    return false
-                end
-            else
-                return false 
-            end
-        end
-        return true
-    end
-    
-    return false 
-end
-
-local function getNearestPlayer(maxDist, findNearestHealthPlayer, teamCheck)
-    local Players = Players:GetPlayers()
-    local targetData = {
-        nearestPlayer = nil,
-        dist = math.huge,
-        lowestHealth = math.huge
-    }
-
-    local function updateTargetData(entity, mag, health)
-        if findNearestHealthPlayer and health < targetData.lowestHealth then
-            targetData.lowestHealth = health
-            targetData.nearestPlayer = entity
-        elseif mag < targetData.dist then
-            targetData.dist = mag
-            targetData.nearestPlayer = entity
-        end
-    end
-    for _, player in ipairs(Players) do
-        if player ~= lplr and player.Character and IsAlive(player) and IsAlive(lplr) and WhitelistModule.Isattack(player) then
-            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
-                local health = player.Character:FindFirstChild("Humanoid").Health
-                
-                if mag < maxDist then
-                    if not teamCheck or player.Team ~= lplr.Team then
-                        updateTargetData(player, mag, health)
-                    end
-                end
-            end
-        end
-    end
-
-    return targetData.nearestPlayer
-end
 
 local function SpeedMultiplier()
     local baseMultiplier = 1
@@ -241,7 +182,7 @@ runcode(function()
     local FacePlayerEnabled = {Enabled = false}
     local Boxes = {Enabled = false}
     local TeamCheck = {Enabled = false}
-    local boxHandleAdornment = Table.Box()
+    local boxHandleAdornment = Table.createBoxAdornment()
     local Distance = {Value = 32}
     
     local function updateBoxAdornment(nearest)
@@ -270,8 +211,8 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
                     task.wait(0.01)
-                    nearest = getNearestPlayer(Distance["Value"], false, TeamCheck.Enabled)
-                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
+                    nearest = PlayerUtility.getNearestEntity(Distance["Value"], false, TeamCheck.Enabled)
+                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") then
                         if FacePlayerEnabled.Enabled then
                             lplr.Character:SetPrimaryPartCFrame(CFrame.new(lplr.Character.HumanoidRootPart.Position, Vector3.new(nearest.Character.HumanoidRootPart.Position.X, lplr.Character.HumanoidRootPart.Position.Y, nearest.Character.HumanoidRootPart.Position.Z)))
                         end
@@ -345,7 +286,7 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Speed", function(dt)
-                    if IsAlive(lplr) then
+                    if PlayerUtility.IsAlive(lplr) then
                         local speedMultiplier = SpeedMultiplier()
                         local speedIncrease = SpeedSlider.Value
                         local currentSpeed = lplr.Character.Humanoid.WalkSpeed
@@ -483,13 +424,11 @@ runcode(function()
                     local flyUp = UserInputService:IsKeyDown(Enum.KeyCode.Space)
                     local flyDown = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
                     local velocity = flyVelocity + Vector3.new(0, (flyUp and 50 or 0) + (flyDown and -50 or 0), 0)
-
                     if flightEnabled then
                         humanoidRootPart.AssemblyLinearVelocity = velocity
                     else
                         humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                     end
-    
                     if airTimer > 1000 then
                         local ray = Ray.new(humanoidRootPart.Position, Vector3.new(0, -1000, 0))
                         local ignoreList = {player, character}
@@ -526,54 +465,67 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("HitBoxs", false)
-    local OriginalProperties = {} 
+    local Section = Blatant:CreateSection("HitBoxes", false)
+    local OriginalProperties = {}
     local BoxSize = {["Value"] = 10}
-    local Transparency = {["Value"] = 1} 
-    local HitBoxs = Blatant:CreateToggle({
-        Name = "HitBoxs",
+    local Transparency = {["Value"] = 0.7}
+
+    local function RestoreOriginalProperties()
+        for player, props in pairs(OriginalProperties) do
+            if player and player.Character then
+                local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    humanoidRootPart.Size = Vector3.new(1, 1, 1)
+                    humanoidRootPart.Transparency = props.Transparency
+                    humanoidRootPart.BrickColor = props.BrickColor
+                    humanoidRootPart.Material = props.Material
+                    humanoidRootPart.CanCollide = props.CanCollide
+                end
+            end
+        end
+        OriginalProperties = {}
+    end
+
+    local HitBoxesToggle = Blatant:CreateToggle({
+        Name = "HitBoxes",
         CurrentValue = false,
         Flag = "HitBoxExpander",
         SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("HitBoxExpander", function()
-                    for i,v in ipairs(Players:GetPlayers()) do
-                        if v ~= lplr then
-                            local character = v.Character
-                            if character and IsAlive(v) then
-                                if not OriginalProperties[v] then
-                                    OriginalProperties[v] = {Transparency = character.HumanoidRootPart.Transparency, BrickColor = character.HumanoidRootPart.BrickColor, Material = character.HumanoidRootPart.Material, CanCollide = character.HumanoidRootPart.CanCollide}
+                    for _, player in ipairs(Players:GetPlayers()) do
+                        if player ~= lplr and PlayerUtility.IsAlive(player) then
+                            local character = player.Character
+                            if character then
+                                if not OriginalProperties[player] then
+                                    OriginalProperties[player] = {
+                                        Transparency = character.HumanoidRootPart.Transparency,
+                                        BrickColor = character.HumanoidRootPart.BrickColor,
+                                        Material = character.HumanoidRootPart.Material,
+                                        CanCollide = character.HumanoidRootPart.CanCollide
+                                    }
                                 end
                                 character.HumanoidRootPart.Size = Vector3.new(BoxSize["Value"], BoxSize["Value"], BoxSize["Value"])
-                                character.HumanoidRootPart.Transparency = Transparency.Value
+                                character.HumanoidRootPart.Transparency = Transparency["Value"]
                                 character.HumanoidRootPart.BrickColor = BrickColor.new("Really blue")
-                                character.HumanoidRootPart.CanCollide = true
                                 character.HumanoidRootPart.Material = Enum.Material.Plastic
+                                character.HumanoidRootPart.CanCollide = true
                             end
                         end
                     end
-                    task.wait(0.1)
                 end)
             else
                 RunLoops:UnbindFromHeartbeat("HitBoxExpander")
-                for player, props in pairs(OriginalProperties) do
-                    if player and player.Character then
-                        player.Character.HumanoidRootPart.Transparency = props.Transparency
-                        player.Character.HumanoidRootPart.BrickColor = props.BrickColor
-                        player.Character.HumanoidRootPart.Material = props.Material
-                        player.Character.HumanoidRootPart.CanCollide = props.CanCollide
-                    end
-                end
-                OriginalProperties = {}
+                RestoreOriginalProperties()
             end
         end
     })
-    local HitBoxSize = Blatant:CreateSlider({
+    local HitBoxSizeSlider = Blatant:CreateSlider({
         Name = "HitBoxSize",
         Range = {1, 30},
         Increment = 1,
-        Suffix = "Size",
+        Suffix = " Size",
         CurrentValue = 10,
         Flag = "HitBoxSize",
         SectionParent = Section,
@@ -590,7 +542,7 @@ runcode(function()
         Flag = "TransparencySlider",
         SectionParent = Section,
         Callback = function(Value)
-            Transparency.Value = Value
+            Transparency["Value"] = Value
         end,
     })
 end)
@@ -617,7 +569,6 @@ runcode(function()
                     Spin.Parent = rootPart
                     Spin.MaxTorque = Vector3.new(0, math.huge, 0)
                     Spin.AngularVelocity = Vector3.new(0, spinSpeed.Value, 0)
-                    
                     spawn(function()
                         repeat
                             Spin.AngularVelocity = Vector3.new(0, spinSpeed.Value, 0)
@@ -915,10 +866,10 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("TargetHub", function()
-                    if IsAlive(lplr) then
+                    if PlayerUtility.IsAlive(lplr) then
                         if nearest then
                             local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                            if distanceToNearest <= 25 and IsAlive(nearest) then
+                            if distanceToNearest <= 25 and PlayerUtility.IsAlive(nearest) then
                                 if not clonedStatsGui then
                                     setupStatsGui(nearest)
                                 else
@@ -1176,7 +1127,6 @@ runcode(function()
     local TeamCheck = {Enabled = false}
     local Wallcheck = {Enabled = false}
     local MouseLock = {Enabled = false}
-    local LockOnPlayer = {Enabled = false}
     local Keybind = "Q"
     local currentTarget = nil
 
@@ -1186,26 +1136,13 @@ runcode(function()
         local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
         return isVisible
     end
-
-    local function getNearestPlayerToMouse()
-        local nearest, nearestDistance = nil, math.huge
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player ~= lplr and (not TeamCheck.Enabled or player.Team ~= lplr.Team) then
-                local character = player.Character
-                if character and character:FindFirstChild("HumanoidRootPart") then
-                    local pos = character.HumanoidRootPart.Position
-                    local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(pos)
-                    if onScreen then
-                        local mousePos = game.Players.LocalPlayer:GetMouse()
-                        local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenPos.X, screenPos.Y)).magnitude
-                        if distance < nearestDistance then
-                            nearest, nearestDistance = player, distance
-                        end
-                    end
-                end
-            end
+    local function aimAtPlayer(player)
+        if not player then
+            return
         end
-        return nearest
+        local direction = (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
+        local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + direction)
+        game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"])
     end
 
     local AimAssist = Blatant:CreateToggle({
@@ -1217,27 +1154,20 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("AimAssist", function()
                     if MouseLock.Enabled then
-                        if LockOnPlayer.Enabled and currentTarget then
-                            local nearest = currentTarget
-                            if nearest then
-                                if Wallcheck.Enabled and not isPlayerVisible(nearest) then
-                                    return
-                                end
-                                local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                                local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + Vector3.new(direction.X, direction.Y, direction.Z))
-                                game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"])
+                        if currentTarget then
+                            if Wallcheck.Enabled and not isPlayerVisible(currentTarget) then
+                                currentTarget = nil
+                                return
                             end
+                            aimAtPlayer(currentTarget)
                         else
-                            currentTarget = getNearestPlayerToMouse()
+                            currentTarget = PlayerUtility.getNearestPlayerToMouse(TeamCheck.Enabled)
                             if currentTarget then
                                 if Wallcheck.Enabled and not isPlayerVisible(currentTarget) then
                                     currentTarget = nil
                                     return
                                 end
-                                local direction = (nearest.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
-                                direction = Vector3.new(direction.X, direction.Y, direction.Z)
-                                local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + direction)
-                                game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
+                                aimAtPlayer(currentTarget)
                             end
                         end
                     else
@@ -1280,15 +1210,6 @@ runcode(function()
             TeamCheck.Enabled = val
         end
     })
-    local LockOnPlayerToggle = Blatant:CreateToggle({
-        Name = "Lock On Player",
-        CurrentValue = false,
-        Flag = "LockOnPlayer",
-        SectionParent = Section,
-        Callback = function(val)
-            LockOnPlayer.Enabled = val
-        end
-    })
     local KeybindToggle = Blatant:CreateKeybind({
         Name = "Mouse Lock Keybind",
         CurrentKeybind = Keybind,
@@ -1316,7 +1237,6 @@ runcode(function()
     })
 end)
 
-
 local whitelist = {connection = nil, players = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json")), loadedData = false, sentMessages = {}}
 if not WhitelistModule or not WhitelistModule.checkstate and whitelist then return true end
 
@@ -1326,7 +1246,7 @@ local TextBox = Instance.new("TextBox")
 local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
 cmdr.Enabled = false
 cmdr.Name = "cmdr"
-cmdr.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+cmdr.Parent = game.CoreGui
 cmdr.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 Frame.Parent = cmdr
@@ -1495,11 +1415,11 @@ local function handlePlayer(player, PlayerAdded)
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
             local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
             if newchannel and player ~= lplr then
-                newchannel:SendAsync(Table.ChatStrings2.Aristois)
+                newchannel:SendAsync(Table.ChatStrings.Aristois)
             end
         elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
             if player ~= lplr then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings.Aristois, "All")
             end
         end
 
@@ -1557,13 +1477,27 @@ local function toggleCmdrVisibility()
     cmdr.Enabled = CmdrVisible
 end
 
+local whitelistloop = coroutine.create(function()
+    repeat
+        local newData = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
+        if newData then
+            whitelist.players = newData
+        end
+        task.wait(5)
+    until shared.SwitchServers or not shared.Executed
+end)
+
+coroutine.resume(whitelistloop)
+
 local whitelisted = WhitelistModule.checkstate(lplr)
 if not whitelist.connection then
-    whitelist.connection = Players.PlayerAdded:Connect(function(v) handlePlayer(v, true) end)
+    whitelist.connection = Players.PlayerAdded:Connect(function(player)
+        handlePlayer(player, true)
+    end)
     if whitelisted and whitelist.connection then
         if whitelist.loadedData then task.wait() print("Data loaded successfully.") end
         Players.PlayerRemoving:Connect(function(playerLeaving)
-            if whitelist.sentMessages[playerLeaving.UserId] then 
+            if whitelist.sentMessages[playerLeaving.UserId] then
                 whitelist.sentMessages[playerLeaving.UserId] = nil
             elseif not whitelist.connection then
                 return true
@@ -1574,18 +1508,12 @@ if not whitelist.connection then
                 toggleCmdrVisibility()
             end
         end)
-        local function checkmessage(msg, plr)
-            if plr == lplr and msg == Table.ChatStrings2.Aristois then
-                return true
-            end
-            return false
-        end
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-            TextChatService.MessageReceived:Connect(function(tab : TextChatMessage)
+            TextChatService.MessageReceived:Connect(function(tab)
                 if tab.TextSource then
                     local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
                     local message = tab.Text
-                    if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
+                    if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings.Aristois) then
                         local playerId = speaker.UserId
                         if not whitelist.sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
@@ -1614,7 +1542,7 @@ if not whitelist.connection then
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings.Aristois then
                         local playerId = speaker.UserId
                         if not whitelist.sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
@@ -1635,20 +1563,13 @@ if not whitelist.connection then
                             whitelist.sentMessages[playerId] = true
                         end
                     end
-                    local obj = {ContentText = messageData.Message, Visible = true}
-                    local sub = messageData.Message:find(': ')
-                    if sub then
-                        local msgContent = messageData.Message:sub(sub + 3, #messageData.Message)
-                        if checkmessage(msgContent, speaker) then
-                            obj.Visible = false
-                        end
-                    end
                 end)
             end
         end
     end
 end
-Players.PlayerAdded:Connect(function()
+
+Players.PlayerAdded:Connect(function(player)
     WhitelistModule.UpdateTags()
 end)
 

@@ -1319,7 +1319,7 @@ runcode(function()
         cape.CanCollide = false
         cape.TopSurface = Enum.SurfaceType.Smooth
         cape.BottomSurface = Enum.SurfaceType.Smooth
-        cape.Size = Vector3.new(0.2, 0.2, 0.2)
+        cape.Size = Vector3.new(0.2, 17.5, 0.2)
         cape.Transparency = 0
         local decal = Instance.new("Decal", cape)
         decal.Texture = texture

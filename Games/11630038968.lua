@@ -1,5 +1,4 @@
 repeat task.wait() until game:IsLoaded()
-getgenv().SecureMode = true
 local Players = game:GetService("Players")
 local lplr = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
@@ -13,18 +12,21 @@ local TextChatService = game:GetService("TextChatService")
 local getcustomasset = getsynasset or getcustomasset
 local HttpService = game:GetService("HttpService")
 local VirtualUserService = game:GetService("VirtualUser")
-local GuiLibrary = shared.GuiLibrary 
+getgenv().SecureMode = true
+local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
+local PlayerUtility = loadstring(readfile("Aristois/Librarys/Utility.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
+
 local defaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
 local request = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
+shared.WhitelistFile = WhitelistModule
 
 local Table = {
-    ChatStrings2 = {
-        ["Aristois"] = "Im using Aristois",
+    ChatStrings = {
+        Aristois = "I'm using Aristois",
     },
-    checkedPlayers = {},
-    Box = function()
+    createBoxAdornment = function()
         local boxHandleAdornment = Instance.new("BoxHandleAdornment")
         boxHandleAdornment.Size = Vector3.new(4, 6, 4)
         boxHandleAdornment.Color3 = Color3.new(1, 0, 0)
@@ -64,22 +66,6 @@ local Window = GuiLibrary:CreateWindow({
        Key = {"Hello"}
     }
  })
-
-if not isfile("Aristois/configs/rememberJoin") then
-    Window:Prompt({
-        Title = 'Guide',
-        SubTitle = 'How to see sections',
-        Content = 'To see the other sections like ‘Blatant,’ click on the icon on the top right of the gui.',
-        Actions = {
-            Accept = {
-                Name = 'Accept',
-                Callback = function()
-                    writefile("Aristois/configs/rememberJoin", "this will not show you the Prompt")
-                end,
-            }
-        }
-    })
-end
 
  do
     function RunLoops:BindToRenderStep(name, func)
@@ -128,86 +114,6 @@ local Render = Window:CreateTab("Render")
 local Utility = Window:CreateTab("Utility")
 local Word = Window:CreateTab("Word")
 local Paragraph = Utility:CreateParagraph({Title = "ChatSpammer", Content = "If you would like to change the message on the ChatSpammer getgenv().ChatSpammer = 'yourmessage'"})
-
-local function IsAlive(plr)
-    if not plr then
-        return false
-    end
-    
-    if typeof(plr) == "Instance" and plr:IsA("Player") then
-        return plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0
-    end
-    
-    if typeof(plr) == "table" then
-        for _, player in ipairs(plr) do
-            if typeof(player) == "Instance" and player:IsA("Player") then
-                if not (player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0) then
-                    return false
-                end
-            else
-                return false 
-            end
-        end
-        return true
-    end
-    
-    return false 
-end
-
-local function getNearestPlayer(maxDist, findNearestHealthPlayer)
-    local Players = Players:GetPlayers()
-    local targetData = {
-        nearestPlayer = nil,
-        dist = math.huge,
-        lowestHealth = math.huge
-    }
-
-    local nearestBoxingDummy = nil
-    local nearestDist = math.huge
-
-    local function updateTargetData(entity, mag)
-        if mag < targetData.dist then
-            targetData.dist = mag
-            targetData.nearestPlayer = entity
-        end
-    end
-
-    for _, player in ipairs(Players) do
-        if player ~= lplr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and IsAlive(player) and IsAlive(lplr) and WhitelistModule.Isattack(player) then
-            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
-                if mag < maxDist then
-                    local health = player.Character:FindFirstChild("Humanoid").Health
-                    updateTargetData(player, mag, health)
-                end
-            end
-        end
-    end
-
-    for _, entity in ipairs(workspace:GetChildren()) do
-        if entity.Name == "BoxingDummy" and entity:IsA("Model") then
-            local rootPart = entity:FindFirstChild("HumanoidRootPart")
-            if rootPart then
-                local dist = (rootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude
-                if dist < nearestDist and dist < maxDist then
-                    nearestDist = dist
-                    nearestBoxingDummy = entity
-                end
-            end
-        end
-    end
-    if nearestBoxingDummy then
-        local mockPlayer = {
-            Name = "BoxingDummy",
-            Character = nearestBoxingDummy,
-            Distance = nearestDist,
-            Health = 0
-        }
-        updateTargetData(mockPlayer, nearestDist, 0)
-    end
-    return targetData.nearestPlayer
-end
 
 local function runcode(func) func() end
 
@@ -313,7 +219,7 @@ runcode(function()
     local Section = Blatant:CreateSection("Killaura", false)
     local FacePlayerEnabled = {Enabled = false}
     local Boxes = {Enabled = false}
-    local boxHandleAdornment = Table.Box()
+    local boxHandleAdornment = Table.createBoxAdornment()
     local Distance = {Value = 32}
     local swordtype
 
@@ -342,9 +248,9 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
-                    nearest = getNearestPlayer(Distance["Value"])
+                    nearest = PlayerUtility.getNearestEntity(Distance["Value"], false, false)
                     swordtype = swordtype or GetSword()
-                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and IsAlive(lplr) and IsAlive(nearest) then
+                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and PlayerUtility.IsAlive(lplr) and PlayerUtility.IsAlive(nearest) then
                         remotes.AttackRemote:InvokeServer(nearest.Character, true, swordtype)
                         if nearest and FacePlayerEnabled.Enabled then
                             local playerPosition = lplr.Character.HumanoidRootPart.Position
@@ -417,7 +323,7 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Speed", function(dt)
-                    if IsAlive(lplr) then
+                    if PlayerUtility.IsAlive(lplr) then
                         local speedMultiplier = SpeedMultiplier()
                         local speedIncrease = SpeedSlider.Value
                         local currentSpeed = lplr.Character.Humanoid.WalkSpeed
@@ -793,8 +699,8 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("ProjectileAura", function()
-                    nearest = getNearestPlayer(distance["Value"])
-                    if nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) and IsAlive(nearest) and IsAlive(lplr) then
+                    nearest = PlayerUtility.getNearestEntity(distance["Value"], false, false)
+                    if nearest and not nearest.Character:FindFirstChild("ForceField") and isVisible(nearest) and PlayerUtility.IsAlive(nearest) and PlayerUtility.IsAlive(lplr) then
                         local predictedPosition = predictPosition(nearest)
                         if canshoot() and not firing then
                             firing = true
@@ -849,53 +755,62 @@ runcode(function()
 end)
 
 runcode(function()
-    local Section = Blatant:CreateSection("Aim Assist",true)
-    local Distance = {["Value"] = 32}
+    local Section = Blatant:CreateSection("Aim Assist", false)
     local Smoothness = {["Value"] = 0.1}
     local TeamCheck = {Enabled = false}
     local Wallcheck = {Enabled = false}
+    local MouseLock = {Enabled = false}
+    local Keybind = "Q"
+    local currentTarget = nil
 
     local function isPlayerVisible(player)
-        local Ray = Ray.new(game.Workspace.CurrentCamera.CFrame.Position, (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit * (Distance["Value"] + 1))
+        local Ray = Ray.new(Camera.CFrame.Position, (player.Character.HumanoidRootPart.Position - Camera.CFrame.Position).unit * 1000)
         local Part, Position = game.Workspace:FindPartOnRayWithIgnoreList(Ray, {lplr.Character})
         local isVisible = (Part == nil or Part:IsDescendantOf(player.Character))
         return isVisible
+    end
+    local function aimAtPlayer(player)
+        if not player then
+            return
+        end
+        local direction = (player.Character.HumanoidRootPart.Position - game.Workspace.CurrentCamera.CFrame.Position).unit
+        local lookAt = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + direction)
+        game.Workspace.CurrentCamera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"])
     end
 
     local AimAssist = Blatant:CreateToggle({
         Name = "Aim Assist",
         CurrentValue = false,
         Flag = "AimAssist",
+        SectionParent = Section,
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("AimAssist", function()
-                    local nearest = getNearestPlayer(Distance["Value"], false ,TeamCheck.Enabled)
-                    if nearest then
-                        local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                        if distanceToNearest <= 18 then
-                            if Wallcheck.Enabled and not isPlayerVisible(nearest) then
+                    if MouseLock.Enabled then
+                        if currentTarget then
+                            if Wallcheck.Enabled and not isPlayerVisible(currentTarget) then
+                                currentTarget = nil
                                 return
                             end
-                            local direction = (nearest.Character.HumanoidRootPart.Position - Camera.CFrame.Position).unit
-                            local lookAt = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Vector3.new(direction.X, direction.Y, direction.Z))
-                            Camera.CFrame = game.Workspace.CurrentCamera.CFrame:Lerp(lookAt, Smoothness["Value"]) 
+                            aimAtPlayer(currentTarget)
+                        else
+                            currentTarget = PlayerUtility.getNearestPlayerToMouse(TeamCheck.Enabled)
+                            if currentTarget then
+                                if Wallcheck.Enabled and not isPlayerVisible(currentTarget) then
+                                    currentTarget = nil
+                                    return
+                                end
+                                aimAtPlayer(currentTarget)
+                            end
                         end
+                    else
+                        currentTarget = nil
                     end
                 end)
             else
                 RunLoops:UnbindFromHeartbeat("AimAssist")
+                currentTarget = nil
             end
-        end
-    })
-    local AimAssistDistanceSlider = Blatant:CreateSlider({
-        Name = "Distance",
-        Range = {1, 32},
-        Increment = 1,
-        Suffix = "Distance",
-        CurrentValue = 32,
-        Flag = "AimAssistDistance",
-        Callback = function(Value)
-            Distance["Value"] = Value
         end
     })
     local SmoothnessSlider = Blatant:CreateSlider({
@@ -905,6 +820,7 @@ runcode(function()
         Suffix = "Value",
         CurrentValue = 0.1,
         Flag = "Smoothness",
+        SectionParent = Section,
         Callback = function(Value)
             Smoothness["Value"] = Value
         end
@@ -913,6 +829,7 @@ runcode(function()
         Name = "Wallcheck",
         CurrentValue = false,
         Flag = "Wallcheck",
+        SectionParent = Section,
         Callback = function(val)
             Wallcheck.Enabled = val
         end
@@ -921,8 +838,34 @@ runcode(function()
         Name = "Team Check",
         CurrentValue = false,
         Flag = "TeamCheck",
+        SectionParent = Section,
         Callback = function(val)
             TeamCheck.Enabled = val
+        end
+    })
+    local KeybindToggle = Blatant:CreateKeybind({
+        Name = "Mouse Lock Keybind",
+        CurrentKeybind = Keybind,
+        HoldToInteract = false,
+        Flag = "Keybind1",
+        SectionParent = Section,
+        Callback = function()
+            MouseLock.Enabled = not MouseLock.Enabled
+            if not MouseLock.Enabled then
+                currentTarget = nil
+            end
+        end,
+    })
+    local MouseLockToggle = Blatant:CreateToggle({
+        Name = "Mouse Lock",
+        CurrentValue = false,
+        Flag = "MouseLock",
+        SectionParent = Section,
+        Callback = function(val)
+            MouseLock.Enabled = val
+            if not val then
+                currentTarget = nil
+            end
         end
     })
 end)
@@ -932,8 +875,6 @@ runcode(function()
     local minY = -153.3984832763672
     local maxY = -12.753118515014648
     local speed = {["Value"] = 27}
-
-    local originalGravity = game.Workspace.Gravity
     
     local function getNearestPlayer(radius)
         local closestPlayer = nil
@@ -994,7 +935,7 @@ runcode(function()
                 RunLoops:BindToHeartbeat("UpdateTweenToNearestPlayer", function()
                     task.wait(0.1)
                     local nearest = getNearestPlayer(300)
-                    if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") and IsAlive(lplr) then
+                    if nearest and nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") and PlayerUtility.IsAlive(lplr) then
                         local targetPosition = nearest.Character.HumanoidRootPart.Position
                         if targetPosition.Y > minY and targetPosition.Y < maxY then
                             tweenToPosition(targetPosition)
@@ -1113,10 +1054,10 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("TargetHub", function()
-                    if IsAlive(lplr) then
+                    if PlayerUtility.IsAlive(lplr) then
                         if nearest then
                             local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                            if distanceToNearest <= 25 and IsAlive(nearest) then
+                            if distanceToNearest <= 25 and PlayerUtility.IsAlive(nearest) then
                                 if not clonedStatsGui then
                                     setupStatsGui(nearest)
                                 else
@@ -1589,7 +1530,7 @@ runcode(function()
             if callback then
                 RunLoops:BindToHeartbeat("Nuker", function()
                     task.wait(0.1)
-                    if IsAlive(lplr) then
+                    if PlayerUtility.IsAlive(lplr) then
                         local nearestBlockPosition = nil
                         for _, block in ipairs(Workspace.Map:GetChildren()) do
                             if block.Name == "Block" then
@@ -1626,7 +1567,6 @@ runcode(function()
 end)
 
 local whitelist = {connection = nil, players = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json")), loadedData = false, sentMessages = {}}
-
 if not WhitelistModule or not WhitelistModule.checkstate and whitelist then return true end
 
 local cmdr = Instance.new("ScreenGui")
@@ -1635,7 +1575,7 @@ local TextBox = Instance.new("TextBox")
 local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
 cmdr.Enabled = false
 cmdr.Name = "cmdr"
-cmdr.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+cmdr.Parent = game.CoreGui
 cmdr.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 Frame.Parent = cmdr
@@ -1716,7 +1656,7 @@ local commands = {
                 Accept = {
                     Name = 'Accept',
                     Callback = function()
-                        requestfunc({
+                        request({
                             Url = 'http://127.0.0.1:6463/rpc?v=1',
                             Method = 'POST',
                             Headers = {
@@ -1739,7 +1679,7 @@ local commands = {
                 }
             }
         })
-    end,   
+    end,    
     [";reveal default"] = function(player)
         local message = "I am using Aristois"
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
@@ -1804,11 +1744,11 @@ local function handlePlayer(player, PlayerAdded)
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
             local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(player.UserId)
             if newchannel and player ~= lplr then
-                newchannel:SendAsync(Table.ChatStrings2.Aristois)
+                newchannel:SendAsync(Table.ChatStrings.Aristois)
             end
         elseif ReplicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
             if player ~= lplr then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings2.Aristois, "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w " .. player.Name .. " " .. Table.ChatStrings.Aristois, "All")
             end
         end
 
@@ -1866,13 +1806,27 @@ local function toggleCmdrVisibility()
     cmdr.Enabled = CmdrVisible
 end
 
+local whitelistloop = coroutine.create(function()
+    repeat
+        local newData = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
+        if newData then
+            whitelist.players = newData
+        end
+        task.wait(5)
+    until shared.SwitchServers or not shared.Executed
+end)
+
+coroutine.resume(whitelistloop)
+
 local whitelisted = WhitelistModule.checkstate(lplr)
 if not whitelist.connection then
-    whitelist.connection = Players.PlayerAdded:Connect(function(v) handlePlayer(v, true) end)
+    whitelist.connection = Players.PlayerAdded:Connect(function(player)
+        handlePlayer(player, true)
+    end)
     if whitelisted and whitelist.connection then
         if whitelist.loadedData then task.wait() print("Data loaded successfully.") end
         Players.PlayerRemoving:Connect(function(playerLeaving)
-            if whitelist.sentMessages[playerLeaving.UserId] then 
+            if whitelist.sentMessages[playerLeaving.UserId] then
                 whitelist.sentMessages[playerLeaving.UserId] = nil
             elseif not whitelist.connection then
                 return true
@@ -1883,18 +1837,12 @@ if not whitelist.connection then
                 toggleCmdrVisibility()
             end
         end)
-        local function checkmessage(msg, plr)
-            if plr == lplr and msg == Table.ChatStrings2.Aristois then
-                return true
-            end
-            return false
-        end
         if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-            TextChatService.MessageReceived:Connect(function(tab : TextChatMessage)
+            TextChatService.MessageReceived:Connect(function(tab)
                 if tab.TextSource then
                     local speaker = Players:GetPlayerByUserId(tab.TextSource.UserId)
                     local message = tab.Text
-                    if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings2.Aristois) then
+                    if speaker and string.find(tab.TextChannel.Name, "RBXWhisper") and string.find(message, Table.ChatStrings.Aristois) then
                         local playerId = speaker.UserId
                         if not whitelist.sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
@@ -1923,7 +1871,7 @@ if not whitelist.connection then
             if onMessageDoneFiltering then
                 onMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
                     local speaker, message = Players[messageData.FromSpeaker], messageData.Message
-                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings2.Aristois then
+                    if messageData.MessageType == "Whisper" and message == Table.ChatStrings.Aristois then
                         local playerId = speaker.UserId
                         if not whitelist.sentMessages[playerId] then
                             WhitelistModule.AddExtraTag(speaker, "DEFAULT USER", Color3.fromRGB(255, 0, 0))
@@ -1944,18 +1892,15 @@ if not whitelist.connection then
                             whitelist.sentMessages[playerId] = true
                         end
                     end
-                    local obj = {ContentText = messageData.Message, Visible = true}
-                    local sub = messageData.Message:find(': ')
-                    if sub then
-                        local msgContent = messageData.Message:sub(sub + 3, #messageData.Message)
-                        if checkmessage(msgContent, speaker) then
-                            obj.Visible = false
-                        end
-                    end
                 end)
             end
         end
     end
 end
 
+Players.PlayerAdded:Connect(function(player)
+    WhitelistModule.UpdateTags()
+end)
+
+WhitelistModule.UpdateTags()
 GuiLibrary:LoadConfiguration()

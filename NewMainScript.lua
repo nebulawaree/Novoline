@@ -87,4 +87,6 @@ if updateAvailable then
     updateFiles(latestCommit)
 end
 
-return loadstring(readfile("Aristois/MainScript.lua"))()
+if not shared.Executed then
+    loadstring(readfile("Aristois/MainScript.lua"))()
+end

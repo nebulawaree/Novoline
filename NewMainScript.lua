@@ -89,4 +89,6 @@ end
 
 if not shared.Executed then
     loadstring(readfile("Aristois/MainScript.lua"))()
+else
+    warn("cannot run all ready Executed")
 end

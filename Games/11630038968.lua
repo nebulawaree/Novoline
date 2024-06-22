@@ -1321,11 +1321,12 @@ runcode(function()
         cape.BottomSurface = Enum.SurfaceType.Smooth
         cape.Size = Vector3.new(0.2, 0.2, 0.2)
         cape.Transparency = 0
+        cape.BrickColor = BrickColor.new("Really black")
         local decal = Instance.new("Decal", cape)
         decal.Texture = texture
         decal.Face = Enum.NormalId.Back
         local mesh = Instance.new("BlockMesh", cape)
-        mesh.Scale = Vector3.new(9, 17.5, 0.5)
+        mesh.Scale = Vector3.new(9, 17.5, 0.08)
         local motor = Instance.new("Motor", cape)
         motor.Part0 = cape
         motor.Part1 = torso

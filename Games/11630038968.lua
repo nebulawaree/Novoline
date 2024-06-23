@@ -1104,114 +1104,92 @@ runcode(function()
 end)
 
 runcode(function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local Camera = workspace.CurrentCamera
+
     local Section = Render:CreateSection("NameTags", false)
-    local espfolder = Instance.new("Folder", ScreenGui)
-    espfolder.Name = "ESP"
-
-    local Nametag = Instance.new("BillboardGui")
-    local NameTag = Instance.new("TextLabel")
-    local UIGradient = Instance.new("UIGradient")
-
-    Nametag.Name = "Nametag"
-    Nametag.Parent = game.ReplicatedStorage
-    Nametag.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    Nametag.Active = true
-    Nametag.LightInfluence = 1.000
-    Nametag.Size = UDim2.new(5, 0, 1, 0)
-    Nametag.StudsOffset = Vector3.new(0, 2, 0)
-
-    NameTag.Name = "NameTag"
-    NameTag.Parent = Nametag
-    NameTag.BackgroundTransparency = 1.000 
-    NameTag.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    NameTag.BorderSizePixel = 0
-    NameTag.Size = UDim2.new(1, 0, 1, 0)
-    NameTag.Font = Enum.Font.Nunito
-    NameTag.Text = "Name"
-    NameTag.TextColor3 = Color3.fromRGB(0, 0, 0)
-    NameTag.TextScaled = true
-    NameTag.TextSize = 14.000
-    NameTag.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-    NameTag.TextStrokeTransparency = 0.000
-    NameTag.TextWrapped = true
-
-    UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(85, 85, 255))}
-    UIGradient.Rotation = 90
-    UIGradient.Parent = NameTag
-
-    local nametags = {}
-    local originalDisplayDistanceTypes = {}
     local enabled = false
-
     local espdisplaynames = false
     local espnames = false
     local esphealth = false
+    local nameTags = {}
+    local originalDisplayDistanceTypes = {}
 
-    local function updateNametagText(player, NametagClone)
-        local displayName = player.DisplayName
-        local username = player.Name
-        local health = player.Character and player.Character:FindFirstChildOfClass("Humanoid") and player.Character:FindFirstChildOfClass("Humanoid").Health or 0
+    local function createNameTag(player)
+        local nameTag = Drawing.new("Text")
+        nameTag.Color = Color3.fromRGB(255, 80, 10)
+        nameTag.Outline = true
+        nameTag.OutlineColor = Color3.fromRGB(0, 0, 0)
+        nameTag.Transparency = 1
+        nameTag.Size = 14
+        nameTag.Center = true
+        nameTag.Font = Drawing.Fonts.UI
+        nameTag.Visible = false
 
-        local text = ""
-        if espdisplaynames then
-            text = displayName
-        end
-        if espnames then
-            if text ~= "" then
-                text = text .. " (@" .. username .. ")"
+        nameTags[player] = nameTag
+
+        local function updateNameTag()
+            if enabled and player.Character and player.Character:FindFirstChild("Head") then
+                local head = player.Character.Head
+                local vector, onScreen = Camera:WorldToViewportPoint(head.Position)
+
+                if onScreen then
+                    local offset = Vector3.new(0, 3, 0)
+                    local worldPosition = head.Position + offset
+                    local vector, onScreen = Camera:WorldToViewportPoint(worldPosition)
+
+                    if onScreen then
+                        local part1 = player.Character:WaitForChild("HumanoidRootPart", math.huge).Position
+                        local part2 = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position or Vector3.new(0, 0, 0)
+                        local dist = (part1 - part2).Magnitude
+
+                        local displayName = player.DisplayName
+                        local username = player.Name
+                        local health = player.Character and player.Character:FindFirstChildOfClass("Humanoid") and player.Character:FindFirstChildOfClass("Humanoid").Health or 0
+
+                        local text = ""
+                        if espdisplaynames then
+                            text = displayName
+                        end
+                        if espnames then
+                            if text ~= "" then
+                                text = text .. " (@" .. username .. ")"
+                            else
+                                text = "@" .. username
+                            end
+                        end
+                        if esphealth then
+                            text = text .. " [" .. tostring(math.floor(health)) .. "]"
+                        end
+
+                        nameTag.Position = Vector2.new(vector.X, vector.Y)
+                        nameTag.Text = "(" .. tostring(math.floor(tonumber(dist))) .. ") " .. text
+                        nameTag.Visible = true
+                    else
+                        nameTag.Visible = false
+                    end
+                else
+                    nameTag.Visible = false
+                end
             else
-                text = "@" .. username
+                nameTag.Visible = false
             end
         end
-        if esphealth then
-            text = text .. " [" .. tostring(math.floor(health)) .. "]"
-        end
 
-        NametagClone.NameTag.Text = text
+        RunService.RenderStepped:Connect(updateNameTag)
     end
 
-    local function attachNametag(player, character)
-        local head = character:WaitForChild("Head", 5)
-        if head then
-            local NametagClone = Nametag:Clone()
-            NametagClone.Parent = head
-            nametags[player] = NametagClone
-
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                originalDisplayDistanceTypes[player] = humanoid.DisplayDistanceType
-                humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-            end
-
-            updateNametagText(player, NametagClone)
+    local function hideHumanoidDisplay(player, character)
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            originalDisplayDistanceTypes[player] = humanoid.DisplayDistanceType
+            humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
         end
     end
 
-    local function createNametag(player)
-        if not nametags[player] and enabled then
-            if player.Character then
-                attachNametag(player, player.Character)
-            end
-
-            player.CharacterAdded:Connect(function(character)
-                attachNametag(player, character)
-            end)
-        end
-    end
-
-    local function onPlayerAdded(player)
-        if enabled then
-            createNametag(player)
-        end
-    end
-
-    game.Players.PlayerAdded:Connect(onPlayerAdded)
-
-    local function removeNametag(player)
-        if nametags[player] then
-            nametags[player]:Destroy()
-            nametags[player] = nil
-        end
+    local function restoreHumanoidDisplay(player)
         if originalDisplayDistanceTypes[player] and player.Character then
             local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
@@ -1221,17 +1199,48 @@ runcode(function()
         originalDisplayDistanceTypes[player] = nil
     end
 
-    game.Players.PlayerRemoving:Connect(removeNametag)
+    local function initializeNameTags()
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createNameTag(player)
+                if player.Character then
+                    hideHumanoidDisplay(player, player.Character)
+                end
+                player.CharacterAdded:Connect(function(character)
+                    hideHumanoidDisplay(player, character)
+                    createNameTag(player)
+                end)
+            end
+        end
 
-    local function updateAllNametags()
-        for player, nametag in pairs(nametags) do
+        Players.PlayerAdded:Connect(function(player)
+            if player ~= LocalPlayer then
+                player.CharacterAdded:Connect(function(character)
+                    hideHumanoidDisplay(player, character)
+                    createNameTag(player)
+                end)
+            end
+        end)
+
+        Players.PlayerRemoving:Connect(function(player)
+            if nameTags[player] then
+                nameTags[player]:Remove()
+                nameTags[player] = nil
+            end
+            restoreHumanoidDisplay(player)
+        end)
+    end
+
+    local function updateAllNameTags()
+        for player, nameTag in pairs(nameTags) do
             if player.Character then
-                updateNametagText(player, nametag)
+                nameTag:Remove()
+                createNameTag(player)
             end
         end
     end
 
-    local NameTags = Render:CreateToggle({
+    local NameTagsToggle = Render:CreateToggle({
         Name = "NameTags",
         CurrentValue = false,
         Flag = "NameTags",
@@ -1239,71 +1248,48 @@ runcode(function()
         Callback = function(callback)
             enabled = callback
             if callback then
-                RunLoops:BindToHeartbeat("NameTags", function(dt)
-                    for _, player in ipairs(game.Players:GetPlayers()) do 
-                        if player.Character then
-                            if not nametags[player] then
-                                createNametag(player)
-                            else
-                                updateNametagText(player, nametags[player])
-                            end
-                        end
-                    end
-                    for _, child in ipairs(espfolder:GetChildren()) do 
-                        if not game.Players:FindFirstChild(child.Name) then
-                            child:Destroy()
-                        end
-                    end
-                end)
+                initializeNameTags()
             else
-                RunLoops:UnbindFromHeartbeat("NameTags")
-                espfolder:ClearAllChildren()
-                for player, tag in pairs(nametags) do
+                for player, tag in pairs(nameTags) do
                     if tag then
-                        tag:Destroy()
-                        nametags[player] = nil
+                        tag:Remove()
                     end
                 end
+                nameTags = {}
                 for player in pairs(originalDisplayDistanceTypes) do
-                    if player.Character then
-                        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                        if humanoid then
-                            humanoid.DisplayDistanceType = originalDisplayDistanceTypes[player]
-                        end
-                    end
-                    originalDisplayDistanceTypes[player] = nil
+                    restoreHumanoidDisplay(player)
                 end
             end
         end
-    })  
-    local DisplayNames = Render:CreateToggle({
+    })
+    local DisplayNamesToggle = Render:CreateToggle({
         Name = "DisplayNames",
         CurrentValue = false,
         Flag = "DisplayNames",
         SectionParent = Section,
         Callback = function(val)
             espdisplaynames = val
-            updateAllNametags()
+            updateAllNameTags()
         end
     })
-    local Names = Render:CreateToggle({
+    local NamesToggle = Render:CreateToggle({
         Name = "Names",
         CurrentValue = false,
         Flag = "espnames",
         SectionParent = Section,
         Callback = function(val)
             espnames = val
-            updateAllNametags()
+            updateAllNameTags()
         end
     })
-    local Health = Render:CreateToggle({
+    local HealthToggle = Render:CreateToggle({
         Name = "Health",
         CurrentValue = false,
         Flag = "esphealth",
         SectionParent = Section,
         Callback = function(val)
             esphealth = val
-            updateAllNametags()
+            updateAllNameTags()
         end
     })
 end)

@@ -289,7 +289,7 @@ runcode(function()
         Callback = function(callback)
             if callback then
                 RunLoops:BindToHeartbeat("Killaura", function()
-                    local nearest = PlayerUtility.getNearestEntity(Distance["Value"], false, true)
+                    nearest = PlayerUtility.getNearestEntity(Distance["Value"], false, true)
                     local sword = getSword()
                     if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and nearest.Character:FindFirstChild("HumanoidRootPart") then
                         local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude

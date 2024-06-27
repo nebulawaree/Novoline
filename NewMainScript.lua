@@ -87,8 +87,5 @@ if updateAvailable then
     updateFiles(latestCommit)
 end
 
-if not shared.Executed then
-    loadstring(readfile("Aristois/MainScript.lua"))()
-else
-    warn("cannot run all ready Executed")
-end
+return loadstring(readfile("Aristois/MainScript.lua"))()
+

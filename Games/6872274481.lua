@@ -215,6 +215,7 @@ runcode(function()
     local FacePlayerEnabled = {Enabled = false}
     local BoxesEnabled = {Enabled = false}
     local AttackAnimEnabled = {Enabled = false}
+    local swing = {Enabled = false}
     local VMAnim = false
     local lastEndAnim = tick()
     local Anims = {
@@ -269,6 +270,16 @@ runcode(function()
         boxHandleAdornment.Adornee = nil
         boxHandleAdornment.Parent = nil
     end
+    
+    local function playanimation(id) 
+        if PlayerUtility.IsAlive(lplr) then 
+            local animation = Instance.new("Animation")
+            animation.AnimationId = id
+            local animatior = lplr.Character.Humanoid.Animator
+            animatior:LoadAnimation(animation):Play()
+        end
+    end
+
     local origC0 = ReplicatedStorage.Assets.Viewmodel.RightHand.RightWrist.C0
     local Killaura = Blatant:CreateToggle({
         Name = "Killaura",
@@ -298,6 +309,9 @@ runcode(function()
                         end
                         if FacePlayerEnabled.Enabled then
                             lplr.Character:SetPrimaryPartCFrame(CFrame.new(lplr.Character.HumanoidRootPart.Position, Vector3.new(nearest.Character.HumanoidRootPart.Position.X, lplr.Character.HumanoidRootPart.Position.Y, nearest.Character.HumanoidRootPart.Position.Z)))
+                        end
+                        if swing.Enabled then
+                            playanimation("rbxassetid://4947108314")
                         end
                         if AttackAnimEnabled.Enabled and distanceToNearest < 18 then
                             if not VMAnim then
@@ -398,6 +412,15 @@ runcode(function()
         SectionParent = Section,
         Callback = function(val)
             AttackAnimEnabled.Enabled = val
+        end
+    })
+    local AnimationToggle = Combat:CreateToggle({
+        Name = "Swing",
+        CurrentValue = false,
+        Flag = "Swing",
+        SectionParent = Section,
+        Callback = function(val)
+            swing.Enabled = val
         end
     })
     lplr.CharacterAdded:Connect(function()

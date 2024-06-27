@@ -1379,7 +1379,7 @@ runcode(function()
                         [9] = workspace:GetServerTimeNow() - 0.045
                     }
                     game:GetService("ReplicatedStorage"):WaitForChild("rbxts_include"):WaitForChild("node_modules"):WaitForChild("@rbxts"):WaitForChild("net"):WaitForChild("out"):WaitForChild("_NetManaged"):WaitForChild("ProjectileFire"):InvokeServer(unpack(args))
-                    task.wait(0.33)
+                    task.wait(0.45)
                     velo.Velocity = lplr.Character:FindFirstChild("HumanoidRootPart").CFrame.LookVector * 60 + Vector3.new(0,1,0)
                 end                    
             else

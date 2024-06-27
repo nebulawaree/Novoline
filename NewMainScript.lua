@@ -44,7 +44,7 @@ end
 
 local function updateFiles(commitHash)
     local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
-    local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua", "assets/cape.png"}
+    local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua", "assets/cape.png", "Games/6872274481.lua"}
     local threads = {}
     for _, filePath in ipairs(filesToUpdate) do
         local localFilePath = "Aristois/" .. filePath

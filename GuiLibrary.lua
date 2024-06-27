@@ -3692,6 +3692,6 @@ Arrays  | Designing + Programming + New Features
 		end
 	end
 
-	task.delay(9, RayfieldLibrary.LoadConfiguration, RayfieldLibrary)
+	task.delay(7.5, RayfieldLibrary.LoadConfiguration, RayfieldLibrary)
 	return RayfieldLibrary
 --end

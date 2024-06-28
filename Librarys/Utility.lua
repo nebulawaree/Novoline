@@ -131,7 +131,7 @@ function Utility.getNearestPlayerToMouse(teamCheck)
                 local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(pos)
                 if onScreen then
                     local mousePos = game.Players.LocalPlayer:GetMouse()
-                    local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
+                    local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenPos.X, screenPos.Y)).magnitude
                     if distance < nearestDistance then
                         nearestPlayer, nearestDistance = player, distance
                     end

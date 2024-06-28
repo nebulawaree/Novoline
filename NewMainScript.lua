@@ -74,7 +74,7 @@ if not betterisfile("Aristois/assets/cape.png") then
     writefile("Aristois/assets/cape.png", req.Body)
 end
 
-local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua"}
+local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Games/11630038968.lua", "assets/cape.png", "Games/6872274481.lua"}
 for _, filePath in ipairs(filesToUpdate) do
     if not betterisfile("Aristois/" .. filePath) then
         local fileUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/main/" .. filePath

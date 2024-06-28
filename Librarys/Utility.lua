@@ -72,6 +72,7 @@ function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, e
         dist = math.huge,
         lowestHealth = math.huge
     }
+    
     local function updateTargetData(entity, mag, health)
         if findNearestHealthEntity and health < targetData.lowestHealth then
             targetData.lowestHealth = health
@@ -81,6 +82,7 @@ function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, e
             targetData.nearestEntity = entity
         end
     end
+    
     for player in pairs(Utility.activePlayers) do
         if player ~= lplr and player.Character and Utility.IsAlive(player) and Utility.IsAlive(lplr) and shared.WhitelistFile.Isattack(player) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
@@ -96,6 +98,7 @@ function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, e
             end
         end
     end
+    
     for _, entity in ipairs(workspace:GetChildren()) do
         if entity.Name == entityName and entity:IsA("Model") then
             local rootPart = entity:FindFirstChild("HumanoidRootPart") or entity:FindFirstChild("PrimaryPart") or entity:FindFirstChildWhichIsA("BasePart")
@@ -128,7 +131,7 @@ function Utility.getNearestPlayerToMouse(teamCheck)
                 local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(pos)
                 if onScreen then
                     local mousePos = game.Players.LocalPlayer:GetMouse()
-                    local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenPos.X, screenPos.Y)).magnitude
+                    local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
                     if distance < nearestDistance then
                         nearestPlayer, nearestDistance = player, distance
                     end

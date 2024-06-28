@@ -13,7 +13,7 @@ local getcustomasset = getsynasset or getcustomasset
 local HttpService = game:GetService("HttpService")
 local VirtualUserService = game:GetService("VirtualUser")
 getgenv().SecureMode = true
-local GuiLibrary = shared.GuiLibrary
+local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local PlayerUtility = loadstring(readfile("Aristois/Librarys/Utility.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local weaponMeta = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/test/main/sword.json"))
@@ -291,79 +291,81 @@ runcode(function()
                 RunLoops:BindToHeartbeat("Killaura", function()
                     nearest = PlayerUtility.getNearestEntity(Distance["Value"], false, true)
                     local sword = getSword()
-                    if nearest and nearest.Character and not nearest.Character:FindFirstChild("ForceField") and nearest.Character:FindFirstChild("HumanoidRootPart") then
-                        local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
-                        switchItem(sword.Name, true)
-                        if sword and nearest then
-                            local selfPos = lplr.Character.HumanoidRootPart.Position + ((distanceToNearest > 14.3) and (CFrame.lookAt(lplr.Character.HumanoidRootPart.Position, nearest.Character.HumanoidRootPart.Position).LookVector * 4) or Vector3.new(0, 0, 0))
-                            bedwars.SwordHit:FireServer({
-                                weapon = sword,
-                                entityInstance = nearest.Character,
-                                validate = {
-                                    raycast = {},
-                                    targetPosition = {value = nearest.Character.HumanoidRootPart.Position},
-                                    selfPosition = {value = selfPos},
-                                },
-                                chargedAttack = {chargeRatio = 0}
-                            })
-                        end
-                        if FacePlayerEnabled.Enabled then
-                            lplr.Character:SetPrimaryPartCFrame(CFrame.new(lplr.Character.HumanoidRootPart.Position, Vector3.new(nearest.Character.HumanoidRootPart.Position.X, lplr.Character.HumanoidRootPart.Position.Y, nearest.Character.HumanoidRootPart.Position.Z)))
-                        end
-                        if swing.Enabled then
-                            playanimation("rbxassetid://4947108314")
-                        end
-                        if AttackAnimEnabled.Enabled and distanceToNearest < 18 then
-                            if not VMAnim then
-                                VMAnim = true
-                                local sequence = {}
-                                for i, v in pairs(Anims.Astral) do
-                                    table.insert(sequence, {CFrame = origC0 * v.CFrame, Time = v.Time}) 
-                                end
-                                local totalTime = 0
-                                for i, v in ipairs(sequence) do
-                                    totalTime = totalTime + v.Time
-                                end
-                                local startTime = tick()
-                                local connection
-                                for i, v in ipairs(sequence) do
-                                    local remainingTime = totalTime - (tick() - startTime)
-                                    local adjustedTime = v.Time
-                                    local tweenInfo = TweenInfo.new(adjustedTime)
-                                    local tween = TweenService:Create(Camera.Viewmodel.RightHand.RightWrist, tweenInfo, {C0 = v.CFrame})
-                                    tween:Play()
-                                    local elapsedTime = 0
-
-                                    local function update(deltaTime)
-                                        elapsedTime = elapsedTime + deltaTime
-                                        if elapsedTime >= adjustedTime then
-                                            tween:Cancel()
-                                        end
+                    if nearest then
+                    if nearest.Character and not nearest.Character:FindFirstChild("ForceField") and nearest.Character:FindFirstChild("HumanoidRootPart") then
+                            local distanceToNearest = (nearest.Character.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).magnitude
+                            switchItem(sword.Name, true)
+                            if sword and nearest then
+                                local selfPos = lplr.Character.HumanoidRootPart.Position + ((distanceToNearest > 14.3) and (CFrame.lookAt(lplr.Character.HumanoidRootPart.Position, nearest.Character.HumanoidRootPart.Position).LookVector * 4) or Vector3.new(0, 0, 0))
+                                bedwars.SwordHit:FireServer({
+                                    weapon = sword,
+                                    entityInstance = nearest.Character,
+                                    validate = {
+                                        raycast = {},
+                                        targetPosition = {value = nearest.Character.HumanoidRootPart.Position},
+                                        selfPosition = {value = selfPos},
+                                    },
+                                    chargedAttack = {chargeRatio = 0}
+                                })
+                            end
+                            if FacePlayerEnabled.Enabled then
+                                lplr.Character:SetPrimaryPartCFrame(CFrame.new(lplr.Character.HumanoidRootPart.Position, Vector3.new(nearest.Character.HumanoidRootPart.Position.X, lplr.Character.HumanoidRootPart.Position.Y, nearest.Character.HumanoidRootPart.Position.Z)))
+                            end
+                            if swing.Enabled then
+                                playanimation("rbxassetid://4947108314")
+                            end
+                            if AttackAnimEnabled.Enabled and distanceToNearest < 18 then
+                                if not VMAnim then
+                                    VMAnim = true
+                                    local sequence = {}
+                                    for i, v in pairs(Anims.Astral) do
+                                        table.insert(sequence, {CFrame = origC0 * v.CFrame, Time = v.Time}) 
                                     end
-                                    connection = RunService.RenderStepped:Connect(function(deltaTime)
-                                        update(deltaTime)
-                                        if elapsedTime >= adjustedTime then
-                                            connection:Disconnect()
+                                    local totalTime = 0
+                                    for i, v in ipairs(sequence) do
+                                        totalTime = totalTime + v.Time
+                                    end
+                                    local startTime = tick()
+                                    local connection
+                                    for i, v in ipairs(sequence) do
+                                        local remainingTime = totalTime - (tick() - startTime)
+                                        local adjustedTime = v.Time
+                                        local tweenInfo = TweenInfo.new(adjustedTime)
+                                        local tween = TweenService:Create(Camera.Viewmodel.RightHand.RightWrist, tweenInfo, {C0 = v.CFrame})
+                                        tween:Play()
+                                        local elapsedTime = 0
+
+                                        local function update(deltaTime)
+                                            elapsedTime = elapsedTime + deltaTime
+                                            if elapsedTime >= adjustedTime then
+                                                tween:Cancel()
+                                            end
                                         end
-                                    end)
-                                    repeat RunService.RenderStepped:Wait() until elapsedTime >= adjustedTime
+                                        connection = RunService.RenderStepped:Connect(function(deltaTime)
+                                            update(deltaTime)
+                                            if elapsedTime >= adjustedTime then
+                                                connection:Disconnect()
+                                            end
+                                        end)
+                                        repeat RunService.RenderStepped:Wait() until elapsedTime >= adjustedTime
+                                    end
+                                    VMAnim = false
+                                    for i, v in ipairs(Endanim) do
+                                        TweenService:Create(Camera.Viewmodel.RightHand.RightWrist, TweenInfo.new(v.Time), {C0 = origC0 * v.CFrame}):Play()
+                                    end
                                 end
-                                VMAnim = false
+                            end
+                            lastEndAnim = tick()
+                            updateBoxAdornment(nearest)
+                        else
+                            if AttackAnimEnabled.Enabled and tick() - lastEndAnim > 0.2 then
                                 for i, v in ipairs(Endanim) do
                                     TweenService:Create(Camera.Viewmodel.RightHand.RightWrist, TweenInfo.new(v.Time), {C0 = origC0 * v.CFrame}):Play()
                                 end
+                                lastEndAnim = tick()
                             end
+                            updateBoxAdornment(nil)
                         end
-                        lastEndAnim = tick()
-                        updateBoxAdornment(nearest)
-                    else
-                        if AttackAnimEnabled.Enabled and tick() - lastEndAnim > 0.2 then
-                            for i, v in ipairs(Endanim) do
-                                TweenService:Create(Camera.Viewmodel.RightHand.RightWrist, TweenInfo.new(v.Time), {C0 = origC0 * v.CFrame}):Play()
-                            end
-                            lastEndAnim = tick()
-                        end
-                        updateBoxAdornment(nil)
                     end
                 end)
             else

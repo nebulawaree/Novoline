@@ -724,7 +724,7 @@ runcode(function()
                         speedMultiplier = speedMultiplier + 0.6
                     end
                     if callback then
-                        speedMultiplier = speedMultiplier - 0.31
+                        speedMultiplier = speedMultiplier - 0.27
                     end
                     
                     local flySpeed = FlightSpeedSlider.Value * speedMultiplier
@@ -782,7 +782,7 @@ runcode(function()
                 if humanoidRootPart then
                     humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
                 end
-                Workspace.Gravity = 196.1999969482422  
+                Workspace.Gravity = 193.1999969482422  
             end
         end
     })
@@ -2332,7 +2332,7 @@ TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 TextBox.BackgroundTransparency = 1.000
 TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 TextBox.BorderSizePixel = 0
-TextBox.Position = UDim2.new(0, 0, -0.000999959302, 0)
+TextBox.Position = UDim2.new(0, 0, -0.00099999302, 0)
 TextBox.Size = UDim2.new(1, 0, 0, 30)
 TextBox.Font = Enum.Font.FredokaOne
 TextBox.Text = ""

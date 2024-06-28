@@ -13,7 +13,7 @@ local getcustomasset = getsynasset or getcustomasset
 local HttpService = game:GetService("HttpService")
 local VirtualUserService = game:GetService("VirtualUser")
 getgenv().SecureMode = true
-local GuiLibrary = shared.GuiLibrary
+local GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 local PlayerUtility = loadstring(readfile("Aristois/Librarys/Utility.lua"))()
 local WhitelistModule = loadstring(readfile("Aristois/Librarys/Whitelist.lua"))()
 local weaponMeta = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/test/main/sword.json"))
@@ -983,7 +983,7 @@ runcode(function()
                                 }
                                 local result = game:GetService("ReplicatedStorage").rbxts_include.node_modules["@rbxts"].net.out._NetManaged.ProjectileFire:InvokeServer(unpack(args))
                                 if not projectileFired then
-                                    shootProjectileAtTarget(lplr, target, projectileType, predictedPositionv1)
+                                    shootProjectileAtTarget(lplr, target, projectileType, targetPosition)
                                     projectileFired = true
                                 end
                                 if result then
@@ -1792,11 +1792,6 @@ runcode(function()
 end)
 
 runcode(function()
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local lplr = Players.LocalPlayer
-    local Camera = workspace.CurrentCamera
-
     local Section = Render:CreateSection("NameTags", false)
     local enabled = false
     local espdisplaynames = false

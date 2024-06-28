@@ -1,22 +1,18 @@
 local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
 
 local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/sha.lua", true))()
 local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
 
-local storedshahashes = {}
-
 local function hashUserIdAndUsername(userId, username)
     local combinedString = tostring(userId) .. tostring(username)
-    
-    if storedshahashes[combinedString] == nil then
-        storedshahashes[combinedString] = HashLib.sha512(combinedString .. "SelfReport")
-    end
-    
-    return storedshahashes[combinedString]
+    return HashLib.sha512(combinedString .. "SelfReport")
 end
 
 local ChatTagModule = {}
-local player = game.Players.LocalPlayer
+local player = Players.LocalPlayer
 local hashedCombined = hashUserIdAndUsername(player.UserId, player.Name)
 ChatTagModule.hashedCombined = hashedCombined
 ChatTagModule.hashUserIdAndUsername = hashUserIdAndUsername
@@ -50,10 +46,6 @@ end
 
 local ChatTag = {}
 function ChatTagModule.UpdateTags()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local TextChatService = game:GetService("TextChatService")
-
     local tagText, tagColor, playerType = ChatTagModule.getCustomTag(player)
     if tagText and tagColor then
         ChatTag[player.UserId] = {
@@ -134,5 +126,11 @@ function ChatTagModule.AddExtraTag(player, tagText, tagColor)
         PlayerType = "PRIVATE"
     } 
 end
+
+Players.PlayerRemoving:Connect(function(v)
+    if ChatTag[v.UserId] then
+        ChatTag[v.UserId] = nil
+    end
+end)
 
 return ChatTagModule

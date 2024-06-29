@@ -726,7 +726,7 @@ runcode(function()
                         speedMultiplier = speedMultiplier + 0.6
                     end
                     if callback then
-                        speedMultiplier = speedMultiplier - 0.27
+                        speedMultiplier = speedMultiplier - 0.21
                     end
                     
                     local flySpeed = FlightSpeedSlider.Value * speedMultiplier

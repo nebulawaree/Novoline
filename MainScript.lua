@@ -27,9 +27,17 @@ end
 assert(not shared.Executed, "Already Injected")
 shared.Executed = true
 
--- Load GuiLibrary and check for errors
+-- Load GuiLibrary from the provided URL and check for errors
 local success, result = pcall(function()
-    return loadstring(readfile("Aristois/GuiLibrary.lua"))()
+    return game:HttpGet("https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/GuiLibrary.lua")
+end)
+
+if not success then
+    error("Failed to fetch GuiLibrary.lua: " .. result)
+end
+
+success, result = pcall(function()
+    return loadstring(result)()
 end)
 
 if not success then

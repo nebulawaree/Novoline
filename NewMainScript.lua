@@ -1,9 +1,7 @@
--- Define the request function
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function()
     error("No HTTP request function is available")
 end
 
--- Debugging: Print which request function is being used
 print("Using request function: " .. (syn and "syn.request" or http and "http.request" or http_request and "http_request" or fluxus and "fluxus.request" or request and "request" or "None"))
 
 local folders = {"Novoline", "Novoline/Games", "Novoline/Librarys", "Novoline/assets"}

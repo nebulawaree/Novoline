@@ -1,4 +1,8 @@
 local queueonteleport = (syn and syn.queue_on_teleport) or queue_for_teleport or queue_on_teleport or queueonteleport
+if not queueonteleport then
+    error("queueonteleport function is not defined")
+end
+
 local GuiLibrary
 
 local games = {
@@ -27,8 +31,7 @@ local success, result = pcall(function()
 end)
 
 if not success then
-    warn("Failed to load GuiLibrary.lua: " .. result)
-    return
+    error("Failed to load GuiLibrary.lua: " .. result)
 end
 
 GuiLibrary = result
@@ -45,8 +48,7 @@ success, result = pcall(function()
 end)
 
 if not success then
-    warn("Failed to load game script: " .. result)
-    return
+    error("Failed to load game script: " .. result)
 end
 
 -- Coroutine for configuration saving loop
@@ -58,6 +60,10 @@ local configLoop = coroutine.create(function()
 end)
 
 local Window = shared.Window
+if not Window then
+    error("shared.Window is nil")
+end
+
 coroutine.resume(configLoop)
 
 -- Server switch script

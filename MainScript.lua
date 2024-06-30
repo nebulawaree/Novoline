@@ -28,7 +28,7 @@ assert(not shared.Executed, "Already Injected")
 shared.Executed = true
 
 local success, result = pcall(function()
-    return game:HttpGet("https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/GuiLibrary.lua")
+    return game:HttpGet("https://raw.githubusercontent.com/nebulawaree/Novoline/main/GuiLibrary.lua")
 end)
 
 if not success then
@@ -46,7 +46,7 @@ end
 GuiLibrary = result
 shared.GuiLibrary = GuiLibrary 
 
-local scriptPath = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
+local scriptPath = "Novoline/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
 local isUniversal = not currentGame or not isfile(scriptPath)
 
 if isUniversal then
@@ -57,7 +57,7 @@ end
 
 if isUniversal then
     success, result = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/Universal.lua")
+        return game:HttpGet("https://raw.githubusercontent.com/nebulawaree/Novoline/main/Universal.lua")
     end)
     if not success then
         error("Failed to fetch Universal.lua: " .. result)
@@ -91,14 +91,14 @@ coroutine.resume(configLoop)
 
 local ServerSwitchScript = [[
     shared.SwitchServers = true 
-    loadstring(readfile("Aristois/NewMainScript.lua"))()
+    loadstring(readfile("Novoline/NewMainScript.lua"))()
 ]]
 
 if shared.SwitchServers then
     GuiLibrary.SaveConfiguration()
 end
 
-if not isfile("Aristois/configs/rememberJoin.txt") then
+if not isfile("Novoline/configs/rememberJoin.txt") then
     task.wait()
     Window:Prompt({
         Title = 'Guide',
@@ -108,7 +108,7 @@ if not isfile("Aristois/configs/rememberJoin.txt") then
             Accept = {
                 Name = 'Accept',
                 Callback = function()
-                    writefile("Aristois/configs/rememberJoin.txt", "this will not show you the Prompt")
+                    writefile("Novoline/configs/rememberJoin.txt", "this will not show you the Prompt")
                 end,
             }
         }

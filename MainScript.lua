@@ -27,24 +27,30 @@ end
 assert(not shared.Executed, "Already Injected")
 shared.Executed = true
 
-local success, result = pcall(function()
-    return game:HttpGet("https://raw.githubusercontent.com/nebulawaree/Novoline/main/GuiLibrary.lua")
-end)
-
-if not success then
-    error("Failed to fetch GuiLibrary.lua: " .. result)
+local function fetchUrl(url)
+    local success, result = pcall(function()
+        return game:HttpGet(url)
+    end)
+    if not success then
+        error("Failed to fetch " .. url .. ": " .. result)
+    end
+    return result
 end
 
-success, result = pcall(function()
-    return loadstring(result)()
-end)
-
-if not success then
-    error("Failed to load GuiLibrary.lua: " .. result)
+local function loadScript(content, scriptName)
+    local success, result = pcall(function()
+        return loadstring(content)()
+    end)
+    if not success then
+        error("Failed to load " .. scriptName .. ": " .. result)
+    end
+    return result
 end
 
-GuiLibrary = result
-shared.GuiLibrary = GuiLibrary 
+local guiLibraryUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/main/GuiLibrary.lua"
+local guiLibraryContent = fetchUrl(guiLibraryUrl)
+GuiLibrary = loadScript(guiLibraryContent, "GuiLibrary.lua")
+shared.GuiLibrary = GuiLibrary
 
 local scriptPath = "Novoline/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
 local isUniversal = not currentGame or not isfile(scriptPath)
@@ -56,23 +62,16 @@ else
 end
 
 if isUniversal then
-    success, result = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/nebulawaree/Novoline/main/Universal.lua")
-    end)
-    if not success then
-        error("Failed to fetch Universal.lua: " .. result)
-    end
-    success, result = pcall(function()
-        return loadstring(result)()
-    end)
+    local universalUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/main/Universal.lua"
+    local universalContent = fetchUrl(universalUrl)
+    loadScript(universalContent, "Universal.lua")
 else
-    success, result = pcall(function()
-        return loadstring(readfile(scriptPath))()
-    end)
-end
-
-if not success then
-    error("Failed to load game script: " .. result)
+    if isfile(scriptPath) then
+        local gameScriptContent = readfile(scriptPath)
+        loadScript(gameScriptContent, scriptPath)
+    else
+        error("Game script does not exist at path: " .. scriptPath)
+    end
 end
 
 local configLoop = coroutine.create(function()

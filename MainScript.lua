@@ -1,10 +1,4 @@
 local queueonteleport = (syn and syn.queue_on_teleport) or queue_for_teleport or queue_on_teleport or queueonteleport
-if not queueonteleport then
-    error("queueonteleport function is not defined")
-else
-    print("queueonteleport function is defined")
-end
-
 local GuiLibrary
 
 local games = {
@@ -27,16 +21,7 @@ end
 assert(not shared.Executed, "Already Injected")
 shared.Executed = true
 
--- Load GuiLibrary and check for errors
-local success, result = pcall(function()
-    return loadstring(readfile("Aristois/GuiLibrary.lua"))()
-end)
-
-if not success then
-    error("Failed to load GuiLibrary.lua: " .. result)
-end
-
-GuiLibrary = result
+GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
 shared.GuiLibrary = GuiLibrary 
 
 local scriptPath = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
@@ -44,16 +29,8 @@ if not currentGame or not isfile(scriptPath) then
     scriptPath = "Aristois/Universal.lua"
 end
 
--- Load the game script and check for errors
-success, result = pcall(function()
-    return loadstring(readfile(scriptPath))()
-end)
+loadstring(readfile(scriptPath))()
 
-if not success then
-    error("Failed to load game script: " .. result)
-end
-
--- Coroutine for configuration saving loop
 local configLoop = coroutine.create(function()
     repeat
         GuiLibrary.SaveConfiguration()
@@ -62,13 +39,8 @@ local configLoop = coroutine.create(function()
 end)
 
 local Window = shared.Window
-if not Window then
-    error("shared.Window is nil")
-end
-
 coroutine.resume(configLoop)
 
--- Server switch script
 local ServerSwitchScript = [[
     shared.SwitchServers = true 
     loadstring(readfile("Aristois/NewMainScript.lua"))()

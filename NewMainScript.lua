@@ -17,7 +17,7 @@ end
 
 local function fetchLatestCommit()
     local success, response = pcall(function()
-        return game:HttpGet("https://api.github.com/repos/HimynameisLOL/Novoline/commits")
+        return game:HttpGet("https://api.github.com/repos/nebulawaree/Novoline/commits")
     end)
     if success then
         local commits = game:GetService("HttpService"):JSONDecode(response)
@@ -70,7 +70,7 @@ local function updateAvailable()
 end
 
 local function updateFiles(commitHash)
-    local baseUrl = "https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/"
+    local baseUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/main/"
     local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua", "Games/6872274481.lua"}
     local threads = {}
     for _, filePath in ipairs(filesToUpdate) do
@@ -96,7 +96,7 @@ end
 
 if not betterisfile("Novoline/assets/cape.png") then
     local req = requestfunc({
-        Url = "https://github.com/HimynameisLOL/Novoline/raw/main/assets/cape.png",
+        Url = "https://github.com/nebulawaree/Novoline/raw/main/assets/cape.png",
         Method = "GET"
     })
     if req and req.Body then
@@ -118,7 +118,7 @@ end
 local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua", "Games/6872274481.lua"}
 for _, filePath in ipairs(filesToUpdate) do
     if not betterisfile("Novoline/" .. filePath) then
-        local fileUrl = "https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/" .. filePath
+        local fileUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/main/" .. filePath
         print("Downloading file from URL: " .. fileUrl)
         downloadFileAsync(fileUrl, "Novoline/" .. filePath)
     else

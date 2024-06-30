@@ -1,5 +1,5 @@
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request or function() end
-local folders = {"Aristois", "Aristois/Games", "Aristois/Librarys", "Aristois/assets"}
+local folders = {"Novoline", "Novoline/Games", "Novoline/Librarys", "Novoline/assets"}
 for _, folder in ipairs(folders) do
     if not isfolder(folder) then
         makefolder(folder)
@@ -7,7 +7,7 @@ for _, folder in ipairs(folders) do
 end
 
 local function fetchLatestCommit()
-    local response = game:HttpGet("https://api.github.com/repos/XzynAstralz/Aristois/commits")
+    local response = game:HttpGet("https://api.github.com/repos/nebulawaree/Novoline/commits")
     local commits = game:GetService("HttpService"):JSONDecode(response)
     if commits and #commits > 0 then
         return commits[1].sha
@@ -32,7 +32,7 @@ end
 local function updateAvailable()
     local latestCommit = fetchLatestCommit()
     if latestCommit then
-        local lastCommitFile = "Aristois/commithash.txt"
+        local lastCommitFile = "Novoline/commithash.txt"
         if not isfile(lastCommitFile) then
             return true, latestCommit
         end
@@ -43,11 +43,11 @@ local function updateAvailable()
 end
 
 local function updateFiles(commitHash)
-    local baseUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/" .. commitHash .. "/"
+    local baseUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/" .. commitHash .. "/"
     local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua", "Games/6872274481.lua"}
     local threads = {}
     for _, filePath in ipairs(filesToUpdate) do
-        local localFilePath = "Aristois/" .. filePath
+        local localFilePath = "nebulawaree/" .. filePath
         if not betterisfile(localFilePath) or updateAvailable() then
             local fileUrl = baseUrl .. filePath
             table.insert(threads, coroutine.create(function()
@@ -63,22 +63,22 @@ local function updateFiles(commitHash)
             wait()
         end
     end
-    writefile("Aristois/commithash.txt", commitHash)
+    writefile("Novoline/commithash.txt", commitHash)
 end
 
-if not betterisfile("Aristois/assets/cape.png") then
+if not betterisfile("Novoline/assets/cape.png") then
     local req = requestfunc({
-        Url = "https://github.com/XzynAstralz/Aristois/raw/main/assets/cape.png",
+        Url = "https://github.com/nebulawaree/Novoline/raw/main/assets/cape.png",
         Method = "GET"
     })
-    writefile("Aristois/assets/cape.png", req.Body)
+    writefile("Novoline/assets/cape.png", req.Body)
 end
 
 local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua", "Games/6872274481.lua"}
 for _, filePath in ipairs(filesToUpdate) do
-    if not betterisfile("Aristois/" .. filePath) then
-        local fileUrl = "https://raw.githubusercontent.com/XzynAstralz/Aristois/main/" .. filePath
-        downloadFileAsync(fileUrl, "Aristois/" .. filePath)
+    if not betterisfile("Novoline/" .. filePath) then
+        local fileUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/main/" .. filePath
+        downloadFileAsync(fileUrl, "Novoline/" .. filePath)
     end
 end
 
@@ -88,7 +88,7 @@ if updateAvailable then
 end
 
 if not shared.Executed then
-    loadstring(readfile("Aristois/MainScript.lua"))()
+    loadstring(readfile("Novoline/MainScript.lua"))()
 else
     warn("cannot run all ready Executed")
 end

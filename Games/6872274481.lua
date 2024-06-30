@@ -784,7 +784,7 @@ runcode(function()
                 if humanoidRootPart then
                     humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
                 end
-                Workspace.Gravity = 193.1999969482422  
+                workspace.Gravity = 193.1999969482422  
             end
         end
     })

@@ -46,7 +46,7 @@ function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, e
     end
     
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= lplr and player.Character and Utility.IsAlive(player) and Utility.IsAlive(lplr) then
+        if player ~= lplr and player.Character and Utility.IsAlive(player) and Utility.IsAlive(lplr) and shared.WhitelistFile.Isattack(player) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude

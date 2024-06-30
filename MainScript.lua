@@ -1,6 +1,8 @@
 local queueonteleport = (syn and syn.queue_on_teleport) or queue_for_teleport or queue_on_teleport or queueonteleport
 if not queueonteleport then
     error("queueonteleport function is not defined")
+else
+    print("queueonteleport function is defined")
 end
 
 local GuiLibrary

@@ -21,7 +21,17 @@ end
 assert(not shared.Executed, "Already Injected")
 shared.Executed = true
 
-GuiLibrary = loadstring(readfile("Aristois/GuiLibrary.lua"))()
+-- Load GuiLibrary and check for errors
+local success, result = pcall(function()
+    return loadstring(readfile("Aristois/GuiLibrary.lua"))()
+end)
+
+if not success then
+    warn("Failed to load GuiLibrary.lua: " .. result)
+    return
+end
+
+GuiLibrary = result
 shared.GuiLibrary = GuiLibrary 
 
 local scriptPath = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
@@ -29,8 +39,17 @@ if not currentGame or not isfile(scriptPath) then
     scriptPath = "Aristois/Universal.lua"
 end
 
-loadstring(readfile(scriptPath))()
+-- Load the game script and check for errors
+success, result = pcall(function()
+    return loadstring(readfile(scriptPath))()
+end)
 
+if not success then
+    warn("Failed to load game script: " .. result)
+    return
+end
+
+-- Coroutine for configuration saving loop
 local configLoop = coroutine.create(function()
     repeat
         GuiLibrary.SaveConfiguration()
@@ -41,6 +60,7 @@ end)
 local Window = shared.Window
 coroutine.resume(configLoop)
 
+-- Server switch script
 local ServerSwitchScript = [[
     shared.SwitchServers = true 
     loadstring(readfile("Aristois/NewMainScript.lua"))()

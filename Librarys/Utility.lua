@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local lplr = Players.LocalPlayer
+
 local Utility = {}
-local PlayerAddedEvent = Instance.new("BindableEvent")
 
 function Utility.IsAlive(plr)
     if not plr then
@@ -28,44 +28,6 @@ function Utility.IsAlive(plr)
     return false 
 end
 
-Utility.activePlayers = {}
-Utility.PlayerAddedEvent = PlayerAddedEvent
-
-function Utility:addPlayer(player)
-    self.activePlayers[player] = true
-end
-
-function Utility:removePlayer(player)
-    self.activePlayers[player] = nil
-end
-
-function Utility:refreshActivePlayers()
-    self.activePlayers = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        self:addPlayer(player)
-    end
-    PlayerAddedEvent:Fire()
-end
-
-function Utility:stopEverything()
-    Players.PlayerAdded:Disconnect()
-    Players.PlayerRemoving:Disconnect()
-    PlayerAddedEvent:Destroy()
-    
-    self.activePlayers = {}
-end
-
-Utility:refreshActivePlayers()
-
-Players.PlayerAdded:Connect(function(player)
-    Utility:addPlayer(player)
-    PlayerAddedEvent:Fire()
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    Utility:removePlayer(player)
-end)
-
 function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, entityName)
     local targetData = {
         nearestEntity = nil,
@@ -83,8 +45,8 @@ function Utility.getNearestEntity(maxDist, findNearestHealthEntity, teamCheck, e
         end
     end
     
-    for player in pairs(Utility.activePlayers) do
-        if player ~= lplr and player.Character and Utility.IsAlive(player) and Utility.IsAlive(lplr) and shared.WhitelistFile.Isattack(player) then
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= lplr and player.Character and Utility.IsAlive(player) and Utility.IsAlive(lplr) then
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
                 local mag = (humanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude

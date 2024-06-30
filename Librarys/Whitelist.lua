@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 
 local HashLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/sha.lua", true))()
-local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/XzynAstralz/Whitelist/main/list.json"))
+local Whitelist = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/nebulawaree/Whitelist/main/list.json"))
 
 local function hashUserIdAndUsername(userId, username)
     local combinedString = tostring(userId) .. tostring(username)

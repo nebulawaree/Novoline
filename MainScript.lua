@@ -52,13 +52,16 @@ if not currentGame or not isfile(scriptPath) then
     scriptPath = "Aristois/Universal.lua"
 end
 
+-- Debugging: Log the script path that is being used
+print("Loading game script from path: " .. scriptPath)
+
 -- Load the game script and check for errors
 success, result = pcall(function()
     return loadstring(readfile(scriptPath))()
 end)
 
 if not success then
-    error("Failed to load game script: " .. result)
+    error("Failed to load game script from path " .. scriptPath .. ": " .. result)
 end
 
 -- Coroutine for configuration saving loop

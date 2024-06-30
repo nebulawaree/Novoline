@@ -7,7 +7,7 @@ for _, folder in ipairs(folders) do
 end
 
 local function fetchLatestCommit()
-    local response = game:HttpGet("https://api.github.com/repos/nebulawaree/Novoline/commits")
+    local response = game:HttpGet("https://api.github.com/repos/HimynameisLOL/Novoline/commits")
     local commits = game:GetService("HttpService"):JSONDecode(response)
     if commits and #commits > 0 then
         return commits[1].sha
@@ -43,11 +43,11 @@ local function updateAvailable()
 end
 
 local function updateFiles(commitHash)
-    local baseUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/" .. commitHash .. "/"
+    local baseUrl = "https://raw.githubusercontent.com/HimynameisLOL/Novoline/" .. commitHash .. "/"
     local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua", "Games/6872274481.lua"}
     local threads = {}
     for _, filePath in ipairs(filesToUpdate) do
-        local localFilePath = "nebulawaree/" .. filePath
+        local localFilePath = "HimynameisLOL/" .. filePath
         if not betterisfile(localFilePath) or updateAvailable() then
             local fileUrl = baseUrl .. filePath
             table.insert(threads, coroutine.create(function()
@@ -68,7 +68,7 @@ end
 
 if not betterisfile("Novoline/assets/cape.png") then
     local req = requestfunc({
-        Url = "https://github.com/nebulawaree/Novoline/raw/main/assets/cape.png",
+        Url = "https://github.com/HimynameisLOL/Novoline/raw/main/assets/cape.png",
         Method = "GET"
     })
     writefile("Novoline/assets/cape.png", req.Body)
@@ -77,7 +77,7 @@ end
 local filesToUpdate = {"NewMainScript.lua", "MainScript.lua", "GuiLibrary.lua", "Universal.lua", "Librarys/Whitelist.lua", "Librarys/Utility.lua", "Games/11630038968.lua", "Games/6872274481.lua"}
 for _, filePath in ipairs(filesToUpdate) do
     if not betterisfile("Novoline/" .. filePath) then
-        local fileUrl = "https://raw.githubusercontent.com/nebulawaree/Novoline/main/" .. filePath
+        local fileUrl = "https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/" .. filePath
         downloadFileAsync(fileUrl, "Novoline/" .. filePath)
     end
 end

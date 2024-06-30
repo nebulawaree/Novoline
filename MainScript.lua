@@ -27,7 +27,6 @@ end
 assert(not shared.Executed, "Already Injected")
 shared.Executed = true
 
--- Load GuiLibrary from the provided URL and check for errors
 local success, result = pcall(function()
     return game:HttpGet("https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/GuiLibrary.lua")
 end)
@@ -50,14 +49,12 @@ shared.GuiLibrary = GuiLibrary
 local scriptPath = "Aristois/Games/" .. tostring(shared.AristoisPlaceId) .. ".lua"
 local isUniversal = not currentGame or not isfile(scriptPath)
 
--- Debugging: Log the script path that is being used
 if isUniversal then
     print("Fetching Universal.lua from URL")
 else
     print("Loading game script from path: " .. scriptPath)
 end
 
--- Load the game script or Universal.lua from the URL and check for errors
 if isUniversal then
     success, result = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/HimynameisLOL/Novoline/main/Universal.lua")
@@ -78,7 +75,6 @@ if not success then
     error("Failed to load game script: " .. result)
 end
 
--- Coroutine for configuration saving loop
 local configLoop = coroutine.create(function()
     repeat
         GuiLibrary.SaveConfiguration()
@@ -93,7 +89,6 @@ end
 
 coroutine.resume(configLoop)
 
--- Server switch script
 local ServerSwitchScript = [[
     shared.SwitchServers = true 
     loadstring(readfile("Aristois/NewMainScript.lua"))()
